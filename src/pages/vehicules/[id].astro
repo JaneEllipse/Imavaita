@@ -80,7 +80,7 @@ const images = [v.couverture, ...v.galerie].filter(Boolean);
               <label><input type="radio" name="chauffeur" value="à discuter" checked /><span>À voir</span></label>
             </div>
           </fieldset>
-          <a class="btn btn--wa resa__btn" href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" data-wa={`fiche:${vehicule.id}`}>
+          <a data-masque-bulle class="btn btn--wa resa__btn" href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" data-wa={`fiche:${vehicule.id}`}>
             <IconeWhatsApp />Réserver sur WhatsApp
           </a>
           <p class="note">Le message s'ouvre dans WhatsApp avec ces informations : vous le relisez avant de l'envoyer. Rien n'est enregistré sur ce site.</p>
@@ -150,7 +150,7 @@ const images = [v.couverture, ...v.galerie].filter(Boolean);
   .tarifs { list-style: none; padding: 0; margin: 0 0 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
   .tarifs li, .tarifs-devis { display: flex; flex-direction: column; padding: 12px 14px; border-radius: 14px; background: var(--orange-50); }
   .tarifs small, .tarifs-devis small { color: var(--texte-doux); font-size: .8rem; }
-  .tarifs strong, .tarifs-devis strong { font-family: var(--titre); color: var(--orange-600); font-size: 1.3rem; }
+  .tarifs strong, .tarifs-devis strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.3rem; }
   .tarifs-devis span { font-size: .85rem; color: var(--texte-doux); }
   .resa__form { display: grid; gap: 14px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--bord); }
   .resa__titre { font-family: var(--titre); font-weight: 700; color: var(--marine-900); margin: 0; }

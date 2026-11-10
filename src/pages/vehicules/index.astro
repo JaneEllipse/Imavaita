@@ -8,7 +8,7 @@ import { site, getVehicules } from '../../lib/site';
 const vehicules = await getVehicules();
 const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
 // Pas de filtres inutiles si le catalogue est restreint (brief §5).
-const avecFiltres = categories.length > 1 && vehicules.length > 3;
+const avecFiltres = categories.length > 1 && vehicules.length > 6;
 ---
 <Base titre="Nos véhicules" description={`Catalogue des véhicules en location chez ${site.nom} : ${categories.join(', ')}. Réservation sur WhatsApp.`}>
   <EntetePage surtitre="Notre flotte" titre="Nos véhicules" intro="Choisissez un véhicule puis envoyez-nous vos dates sur WhatsApp. La disponibilité et le tarif vous sont confirmés par notre équipe." />
@@ -44,6 +44,19 @@ const avecFiltres = categories.length > 1 && vehicules.length > 3;
 
 <style>
   .section--catalogue { padding-top: 32px; }
+  /* Mobile : cartes compactes (photo à gauche) pour parcourir le catalogue sans défilement interminable */
+  @media (max-width: 600px) {
+    .grille { gap: 14px; }
+    .grille :global(.cv) { flex-direction: row; border-radius: 16px; }
+    .grille :global(.cv__media) { flex: 0 0 38%; aspect-ratio: auto; min-height: 100%; }
+    .grille :global(.cv__corps) { padding: 12px 14px; min-width: 0; }
+    .grille :global(.cv h3) { font-size: 1.05rem; }
+    .grille :global(.cv__resume), .grille :global(.cv__cat) { display: none; }
+    .grille :global(.cv__caracs) { margin-bottom: 8px; }
+    .grille :global(.cv__pied) { padding-top: 8px; gap: 8px; }
+    .grille :global(.cv__voir) { min-height: 42px; padding: .4em .8em; font-size: .9rem; }
+    .grille :global(.cv__wa) { min-height: 42px; width: 42px; }
+  }
   .grille { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
   .filtres { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
   .filtres button { min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--bord); background: #fff; font: inherit; font-weight: 600; cursor: pointer; box-shadow: var(--ombre); transition: background .2s, color .2s; }

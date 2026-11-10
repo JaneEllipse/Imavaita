@@ -31,10 +31,10 @@ const href = `/vehicules/${vehicule.id}/`;
     </ul>
     <div class="cv__pied">
       <p class="cv__prix">
-        {v.prix_jour ? <><span>À partir de</span><strong>{formatPrix(v.prix_jour)}</strong><span>/ jour</span></> : <><span>Tarif</span><strong>sur demande</strong></>}
+        {v.prix_jour ? <><span>À partir de</span><strong>{formatPrix(v.prix_jour)}</strong><span>/ jour</span></> : <span class="cv__devis">Tarif sur demande</span>}
       </p>
       <div class="cv__actions">
-        <a href={href} class="btn btn--contour cv__voir">Voir le véhicule</a>
+        <a href={href} class="btn btn--contour cv__voir">Voir et réserver</a>
         <a href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" class="btn btn--wa cv__wa" data-wa={`carte:${vehicule.id}`} aria-label={`Réserver ${v.nom} sur WhatsApp`}><IconeWhatsApp /></a>
       </div>
     </div>
@@ -51,7 +51,7 @@ const href = `/vehicules/${vehicule.id}/`;
   .cv__vide :global(svg) { width: 72px; height: 72px; }
   .cv__badges { position: absolute; top: 14px; left: 14px; display: flex; gap: 6px; }
   .cv__corps { display: flex; flex-direction: column; flex: 1; padding: 18px 20px 20px; }
-  .cv__cat { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-600); margin-bottom: .3em; }
+  .cv__cat { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-texte); margin-bottom: .3em; }
   .cv h3 { font-size: 1.25rem; margin-bottom: .35em; }
   .cv h3 a { text-decoration: none; color: inherit; }
   .cv__resume { font-size: .94rem; color: var(--texte-doux); margin-bottom: .8em; }
@@ -60,7 +60,8 @@ const href = `/vehicules/${vehicule.id}/`;
   .cv__caracs :global(svg) { width: 16px; height: 16px; }
   .cv__pied { margin-top: auto; display: grid; gap: 12px; padding-top: 14px; border-top: 1px dashed var(--bord); }
   .cv__prix { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; line-height: 1.3; font-size: .85rem; color: var(--texte-doux); }
-  .cv__prix strong { font-family: var(--titre); color: var(--orange-600); font-size: 1.15rem; }
+  .cv__prix strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.15rem; }
+  .cv__devis { font-weight: 600; color: var(--marine); }
   .cv__actions { display: flex; gap: 8px; }
   .cv__voir { flex: 1; min-height: 46px; padding: .5em 1.1em; }
   .cv__wa { min-height: 46px; width: 46px; padding: 0; }

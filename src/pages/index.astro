@@ -108,7 +108,7 @@ const jsonld = {
     </section>
   )}
 
-  <section class="bandeau">
+  <section class="bandeau" data-masque-bulle>
     <div class="conteneur bandeau__contenu revele">
       <div>
         <h2>Besoin d'un véhicule ?</h2>
@@ -128,7 +128,7 @@ const jsonld = {
   .hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgb(255 255 255 / .04) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .04) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(180deg, #000, transparent 85%); pointer-events: none; }
   .hero__grille { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
   .hero__surtitre { color: #ffb347; }
-  .hero h1 { color: #fff; max-width: 13ch; text-shadow: 0 4px 24px rgb(0 0 0 / .2); }
+  .hero h1 { color: #fff; max-width: 16ch; text-shadow: 0 4px 24px rgb(0 0 0 / .2); }
   .hero__accroche { font-size: clamp(1.05rem, 2.2vw, 1.25rem); max-width: 40ch; color: #dbe6f5; }
   .hero__atouts { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; margin: 22px 0 30px; }
   .hero__atouts li { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .95rem; }
