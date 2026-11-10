@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
-import { site } from '../lib/site';
+import { site, filAriane } from '../lib/site';
 import faq from '../data/faq.json';
 
 const icones = ['volant', 'calendrier', 'avion', 'personnes'] as const;
@@ -13,7 +13,7 @@ const jsonld = {
   mainEntity: faq.questions.map((q) => ({ '@type': 'Question', name: q.question, acceptedAnswer: { '@type': 'Answer', text: q.reponse } })),
 };
 ---
-<Base titre="Tarifs et services" description={`Tarifs, services et conditions de location de véhicules chez ${site.nom}.`} jsonld={jsonld}>
+<Base titre="Tarifs et services" titreSeo={`Tarifs et services de location de voiture à ${site.ville}`} description={`Location avec ou sans chauffeur, courte ou longue durée, transferts aéroport et groupes à ${site.ville}. Tarif confirmé sur WhatsApp, sans engagement.`} jsonld={[jsonld, filAriane(Astro.site, [{ nom: 'Tarifs et services', chemin: '/tarifs-services/' }])]}>
   <EntetePage surtitre="Tarifs et services" titre="Une formule pour chaque besoin" intro="Le tarif dépend du véhicule, de la durée et des options. Il vous est confirmé sur WhatsApp avant toute réservation, sans engagement." />
   <section class="section">
     <div class="conteneur">

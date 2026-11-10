@@ -1,5 +1,8 @@
 import { getCollection, type CollectionEntry } from 'astro:content';
+import { getImage } from 'astro:assets';
 import site from '../data/site.json';
+import logo from '../assets/logo-imavaita.png';
+import photoAgence from '../assets/maquette/hero-lome.jpg';
 
 export { site };
 export type Vehicule = CollectionEntry<'vehicules'>;
@@ -43,3 +46,35 @@ export const carte = {
 };
 /** Adresse lisible : « rue…, Lomé, Togo » (la ville seule si l'adresse n'est pas encore saisie). */
 export const adresseComplete = [site.adresse.trim(), site.ville, 'Togo'].filter(Boolean).join(', ');
+
+/** Données structurées de l'agence (schema.org AutoRental), réutilisées par les pages. */
+export async function entreprise(base: URL | undefined) {
+  const url = new URL('/', base).href;
+  const logoUrl = new URL((await getImage({ src: logo, format: 'png' })).src, base).href;
+  const imageUrl = new URL((await getImage({ src: photoAgence, format: 'jpg' })).src, base).href;
+  const [lat, lng] = site.gps.split(',').map((n) => Number(n.trim()));
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'AutoRental',
+    '@id': `${url}#agence`,
+    name: site.nom,
+    url,
+    description: `${site.slogan}. ${site.accroche}`,
+    logo: logoUrl,
+    image: imageUrl,
+    ...(site.telephone ? { telephone: site.telephone } : {}),
+    ...(site.email ? { email: site.email } : {}),
+    address: { '@type': 'PostalAddress', ...(site.adresse ? { streetAddress: site.adresse } : {}), addressLocality: site.ville, addressCountry: 'TG' },
+    ...(Number.isFinite(lat) && Number.isFinite(lng) && site.gps ? { geo: { '@type': 'GeoCoordinates', latitude: lat, longitude: lng } } : {}),
+    ...(carte.lien ? { hasMap: carte.lien } : {}),
+    areaServed: [{ '@type': 'City', name: site.ville }, { '@type': 'Country', name: 'Togo' }],
+    currenciesAccepted: 'XOF',
+  };
+}
+
+/** Fil d'Ariane schema.org. */
+export const filAriane = (base: URL | undefined, etapes: { nom: string; chemin: string }[]) => ({
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [{ nom: 'Accueil', chemin: '/' }, ...etapes].map((e, i) => ({ '@type': 'ListItem', position: i + 1, name: e.nom, item: new URL(e.chemin, base).href })),
+});

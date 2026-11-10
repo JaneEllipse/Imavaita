@@ -3,6 +3,9 @@ Options -Indexes
 ErrorDocument 404 /404.html
 
 RewriteEngine On
+# Une seule adresse pour Google : www.imavaita.com renvoie vers imavaita.com (en HTTPS)
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
 # Forcer HTTPS
 RewriteCond %{HTTPS} !=on
 RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

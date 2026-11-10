@@ -72,6 +72,7 @@ collections:
           - { name: zones, label: Zones desservies, widget: string }
           - { name: horaires, label: Horaires, widget: string }
           - { name: google_maps_url, label: Lien Google Maps (fiche de l'agence), widget: string, required: false, hint: "Bouton Partager de la fiche Google Maps de l'agence. Utilisé pour « Nous trouver sur Google Maps »." }
+          - { name: google_verification, label: Code de vérification Google Search Console, widget: string, required: false, hint: "Search Console > Ajouter une propriété > Préfixe de l'URL > Balise HTML : coller uniquement la valeur de content=\"…\"." }
           - { name: gps, label: Coordonnées GPS de l'agence, widget: string, required: false, hint: "Ex. 6.1319, 1.2228 (clic droit sur le point exact dans Google Maps, puis copier les chiffres). Affiche la carte et le bouton Itinéraire sur la page Contact. Vide : l'adresse est utilisée." }
           - { name: avantages, label: Avantages (accueil), widget: list, max: 4, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: string }] }
           - { name: services, label: Services, widget: list, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: text }] }

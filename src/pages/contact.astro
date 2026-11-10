@@ -5,14 +5,15 @@ import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
 import monument from '../assets/maquette/monument-lome.jpg';
-import { site, carte, adresseComplete } from '../lib/site';
+import { site, carte, adresseComplete, entreprise, filAriane } from '../lib/site';
+const jsonld = [await entreprise(Astro.site), filAriane(Astro.site, [{ nom: 'Contact', chemin: '/contact/' }])];
 const infos = [
   site.telephone && { icone: 'telephone', titre: 'Téléphone', html: `<a href="tel:${site.telephone.replace(/\s/g, '')}">${site.telephone}</a>` },
   site.email && { icone: 'mail', titre: 'Email', html: `<a href="mailto:${site.email}">${site.email}</a>` },
   site.horaires && { icone: 'horloge', titre: 'Horaires', html: site.horaires },
 ].filter(Boolean) as { icone: 'telephone' | 'mail' | 'horloge'; titre: string; html: string }[];
 ---
-<Base titre="Contact" description={`Contactez ${site.nom} sur WhatsApp pour louer un véhicule au Togo. Agence à ${site.ville}.`}>
+<Base titre="Contact" titreSeo={`Contact et adresse de l'agence à ${site.ville}`} description={`Contactez ${site.nom}, location de véhicules à ${site.ville} : WhatsApp, adresse de l'agence, plan d'accès et itinéraire Google Maps.`} jsonld={jsonld}>
   <EntetePage titre="Contact" intro="Le plus rapide : WhatsApp. Indiquez le véhicule souhaité, vos dates et le lieu de prise en charge." image={monument} fil={[{ label: 'Contact' }]} />
   <section class="section">
     <div class="conteneur contact">

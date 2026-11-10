@@ -1,10 +1,10 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import IconeWhatsApp from '../../components/IconeWhatsApp.astro';
 import Icone from '../../components/Icone.astro';
-import { site, getVehicules, formatPrix, waLink, numeroWa, type Vehicule } from '../../lib/site';
+import { site, getVehicules, formatPrix, waLink, numeroWa, filAriane, type Vehicule } from '../../lib/site';
 
 export async function getStaticPaths() {
   const vehicules = await getVehicules();
@@ -26,12 +26,34 @@ const options = v.options.filter((o) => o !== 'Climatisation');
 const tarifs = [['Jour', v.prix_jour], ['Semaine', v.prix_semaine], ['Mois', v.prix_mois]].filter(([, p]) => p) as [string, number][];
 const images = [v.couverture, ...v.galerie].filter((i) => !!i) as NonNullable<typeof v.couverture>[];
 
+// Données structurées : fil d'Ariane + véhicule (l'offre n'apparaît que si un tarif est publié).
+const url = new URL(`/vehicules/${vehicule.id}/`, Astro.site).href;
+const photos = await Promise.all(images.map(async (img) => new URL((await getImage({ src: img, format: 'jpg' })).src, Astro.site).href));
+const jsonld = [
+  filAriane(Astro.site, [{ nom: 'Nos véhicules', chemin: '/vehicules/' }, { nom: v.nom, chemin: `/vehicules/${vehicule.id}/` }]),
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Vehicle',
+    name: v.nom,
+    url,
+    category: v.categorie,
+    ...(v.resume ? { description: v.resume } : {}),
+    ...(photos.length ? { image: photos } : {}),
+    ...(v.marque ? { brand: { '@type': 'Brand', name: v.marque } } : {}),
+    ...(v.modele ? { model: v.modele } : {}),
+    ...(v.places ? { vehicleSeatingCapacity: v.places } : {}),
+    ...(v.transmission ? { vehicleTransmission: v.transmission } : {}),
+    ...(v.carburant ? { fuelType: v.carburant } : {}),
+    ...(v.prix_jour ? { offers: { '@type': 'Offer', url, price: v.prix_jour, priceCurrency: 'XOF', businessFunction: 'http://purl.org/goodrelations/v1#LeaseOut', offeredBy: { '@id': new URL('/#agence', Astro.site).href }, priceSpecification: { '@type': 'UnitPriceSpecification', price: v.prix_jour, priceCurrency: 'XOF', unitCode: 'DAY' } } } : {}),
+  },
+];
+
 // Message prérempli (sans JavaScript) ; le script ci-dessous le complète avec les champs saisis.
 const message = (debut = 'JJ/MM/AAAA', fin = 'JJ/MM/AAAA', lieu = site.ville, chauffeur = 'à préciser') =>
   `Bonjour ${site.nom}, je souhaite réserver le véhicule « ${v.nom} » du ${debut} au ${fin}.\n` +
   `Lieu de prise en charge : ${lieu}\nAvec chauffeur : ${chauffeur}`;
 ---
-<Base titre={v.nom} description={v.resume ?? `${v.nom} en location chez ${site.nom}. Réservation sur WhatsApp.`} noindex={v.statut !== 'publie'} vehicule={v.nom}>
+<Base titre={v.nom} titreSeo={`Location ${v.nom} à ${site.ville}`} description={`${v.resume ? v.resume + ' ' : ''}${v.nom} en location à ${site.ville}${v.places && !/places/i.test(v.nom) ? `, ${v.places} places` : ''}. ${v.prix_jour ? `À partir de ${formatPrix(v.prix_jour)} par jour.` : 'Tarif sur demande.'} Réservation sur WhatsApp.`} image={v.couverture} noindex={v.statut !== 'publie'} vehicule={v.nom} jsonld={jsonld}>
   <section class="section fiche-section">
     <div class="conteneur">
       <nav class="fil" aria-label="Fil d'Ariane">
@@ -44,7 +66,7 @@ const message = (debut = 'JJ/MM/AAAA', fin = 'JJ/MM/AAAA', lieu = site.ville, ch
           <div class="galerie" data-galerie>
             <div class="galerie__vue" tabindex="0" aria-label={`Photos du véhicule ${v.nom}`}>
               {images.length > 0
-                ? images.map((img, i) => <Image src={img} alt={i === 0 ? v.nom : `${v.nom}, photo ${i + 1}`} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 620px" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} />)
+                ? images.map((img, i) => <Image src={img} alt={i === 0 ? `${v.nom} en location à ${site.ville}` : `${v.nom}, photo ${i + 1}`} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 620px" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} />)
                 : <div class="galerie__vide"><Icone nom="voiture" /></div>}
             </div>
             {images.length > 1 && (

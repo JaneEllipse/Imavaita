@@ -3,10 +3,10 @@ import Base from '../layouts/Base.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
-import { site } from '../lib/site';
+import { site, filAriane } from '../lib/site';
 const icones = ['bouclier', 'chrono', 'carte', 'casque'] as const;
 ---
-<Base titre="À propos" description={`${site.nom}, location de véhicules au Togo : notre approche et nos engagements.`}>
+<Base titre="À propos" titreSeo={`À propos, location de véhicules au Togo`} description={`${site.nom}, agence de location de véhicules à ${site.ville} : notre approche, nos engagements et notre façon de travailler, simple et directe sur WhatsApp.`} jsonld={filAriane(Astro.site, [{ nom: 'À propos', chemin: '/a-propos/' }])}>
   <EntetePage surtitre="À propos" titre={`${site.nom}, la location simplifiée`} intro={`${site.nom} propose la location de véhicules au Togo, avec ou sans chauffeur, pour les particuliers comme pour les entreprises.`} />
   <section class="section">
     <div class="conteneur apropos">

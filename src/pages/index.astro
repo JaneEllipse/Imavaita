@@ -6,25 +6,17 @@ import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import Icone from '../components/Icone.astro';
 import photoHero from '../assets/maquette/hero-lome.jpg';
 import monument from '../assets/maquette/monument-lome.jpg';
-import { site, getVehicules, adresseComplete } from '../lib/site';
+import { site, getVehicules, adresseComplete, entreprise } from '../lib/site';
 
 const vehicules = await getVehicules();
 // Règle anti-surcharge : 4 fiches maximum sur l'accueil, « à la une » d'abord.
 const une = [...vehicules].sort((a, b) => Number(b.data.a_la_une) - Number(a.data.a_la_une)).slice(0, 4);
 const icones = ['bouclier', 'chrono', 'carte', 'casque'] as const;
 
-const jsonld = {
-  '@context': 'https://schema.org',
-  '@type': 'AutoRental',
-  name: site.nom,
-  url: Astro.site?.toString(),
-  ...(site.telephone ? { telephone: site.telephone } : {}),
-  ...(site.email ? { email: site.email } : {}),
-  address: { '@type': 'PostalAddress', ...(site.adresse ? { streetAddress: site.adresse } : {}), addressLocality: site.ville, addressCountry: 'TG' },
-  ...(site.google_maps_url ? { hasMap: site.google_maps_url } : {}),
-};
+const jsonld = await entreprise(Astro.site);
+const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
 ---
-<Base titre={site.nom} description={`${site.slogan}. ${site.accroche}`} jsonld={jsonld}>
+<Base titre={site.nom} titreSeo={`Location de voiture à ${site.ville}, Togo`} description={`Location de véhicules à ${site.ville} et dans tout le Togo${categories.length ? ` (${categories.join(', ')})` : ''}, avec ou sans chauffeur. Réservation rapide sur WhatsApp.`} jsonld={jsonld}>
   <section class="hero">
     <div class="hero__photo">
       <Image src={photoHero} alt="SUV sur une avenue de Lomé, au pied du monument de l'Indépendance" widths={[480, 760, 1042]} sizes="(max-width: 900px) 100vw, 62vw" loading="eager" fetchpriority="high" />
