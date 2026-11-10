@@ -1,9 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import EntetePage from '../components/EntetePage.astro';
+import Icone from '../components/Icone.astro';
 import { site } from '../lib/site';
 import faq from '../data/faq.json';
 
+const icones = ['volant', 'calendrier', 'avion', 'personnes'] as const;
 const jsonld = {
   '@context': 'https://schema.org',
   '@type': 'FAQPage',
@@ -11,28 +14,57 @@ const jsonld = {
 };
 ---
 <Base titre="Tarifs et services" description={`Tarifs, services et conditions de location de véhicules chez ${site.nom}.`} jsonld={jsonld}>
+  <EntetePage surtitre="Tarifs et services" titre="Une formule pour chaque besoin" intro="Le tarif dépend du véhicule, de la durée et des options. Il vous est confirmé sur WhatsApp avant toute réservation, sans engagement." />
   <section class="section">
     <div class="conteneur">
-      <h1 class="titre-section">Tarifs et services</h1>
-      <p class="intro">Les tarifs de chaque véhicule figurent sur sa fiche. Ils sont indicatifs : le prix final dépend de la durée, du lieu et des options, et vous est confirmé sur WhatsApp.</p>
-      <div class="grille">
-        {site.services.map((s) => <div class="carte"><h2 class="h3">{s.titre}</h2><p>{s.texte}</p></div>)}
+      <div class="grille services">
+        {site.services.map((s, i) => (
+          <div class="carte revele" style={`transition-delay:${i * 90}ms`}>
+            <span class="pastille"><Icone nom={icones[i % icones.length]} /></span>
+            <h2 class="h3">{s.titre}</h2><p>{s.texte}</p>
+          </div>
+        ))}
+      </div>
+      <div class="tarif-encart revele">
+        <div>
+          <h2>Comment est calculé le tarif ?</h2>
+          <ul>
+            <li><Icone nom="voiture" />Le véhicule choisi</li>
+            <li><Icone nom="calendrier" />La durée : jour, semaine ou mois</li>
+            <li><Icone nom="volant" />Les options : chauffeur, livraison</li>
+          </ul>
+        </div>
+        <div class="tarif-encart__actions">
+          <a class="btn btn--contour" href="/vehicules/">Voir les véhicules</a>
+          <BoutonWhatsApp libelle="Demander un devis" source="tarifs" message={`Bonjour ${site.nom}, je souhaite un devis de location.\nVéhicule : …\nDates : du … au …\nAvec chauffeur : oui / non`} />
+        </div>
       </div>
     </div>
   </section>
-  <section class="section section--doux">
-    <div class="conteneur prose">
-      <h2 class="titre-section">Questions fréquentes</h2>
-      {faq.questions.map((q) => (
-        <details class="faq"><summary>{q.question}</summary><p>{q.reponse}</p></details>
-      ))}
-      <p style="margin-top:24px"><BoutonWhatsApp libelle="Poser une question sur WhatsApp" source="faq" message={`Bonjour ${site.nom}, j'ai une question sur la location :`} /></p>
-    </div>
-  </section>
+  {faq.questions.length > 0 && (
+    <section class="section section--doux">
+      <div class="conteneur prose">
+        <h2 class="titre-section">Questions fréquentes</h2>
+        {faq.questions.map((q) => (
+          <details class="faq"><summary>{q.question}</summary><p>{q.reponse}</p></details>
+        ))}
+      </div>
+    </section>
+  )}
 </Base>
 <style>
-  .h3 { font-size: 1.15rem; }
-  .faq { background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); margin-bottom: 10px; }
-  .faq summary { cursor: pointer; font-weight: 700; padding: 14px 16px; min-height: 48px; }
-  .faq p { padding: 0 16px 14px; margin: 0; }
+  .h3 { font-size: 1.2rem; }
+  .services { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+  .tarif-encart { margin-top: 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding: 32px; border-radius: 24px; color: #fff; background: radial-gradient(500px 240px at 100% 0%, rgb(255 140 0 / .3), transparent 70%), linear-gradient(120deg, var(--marine-900), var(--marine-700)); box-shadow: var(--ombre-forte); }
+  .tarif-encart h2 { color: #fff; font-size: 1.5rem; }
+  .tarif-encart ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .tarif-encart li { display: flex; align-items: center; gap: 10px; color: #dbe6f5; }
+  .tarif-encart :global(.ico) { width: 22px; height: 22px; color: #ffb347; }
+  .tarif-encart__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .faq { background: #fff; border: 1px solid var(--bord); border-radius: 16px; margin-bottom: 12px; box-shadow: var(--ombre); }
+  .faq summary { cursor: pointer; font-family: var(--titre); font-weight: 600; padding: 18px 20px; min-height: 48px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--orange-600); font-size: 1.4rem; line-height: 1; transition: transform .2s; }
+  .faq[open] summary::after { transform: rotate(45deg); }
+  .faq p { padding: 0 20px 18px; margin: 0; color: var(--texte-doux); }
 </style>

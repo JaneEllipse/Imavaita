@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
+import EntetePage from '../components/EntetePage.astro';
 import { site } from '../lib/site';
 ---
 <Base titre="Confidentialité" description={`Politique de confidentialité du site ${site.nom}.`}>
+  <EntetePage titre="Confidentialité et cookies" />
   <section class="section"><div class="conteneur prose">
-    <h1>Confidentialité et cookies</h1>
-    <p><strong>[Texte à faire valider]</strong></p>
     <p>Ce site ne comporte ni formulaire enregistré, ni compte client, ni paiement en ligne. Les champs de la fiche véhicule servent uniquement à préparer votre message WhatsApp : ils ne sont pas transmis à notre serveur.</p>
     <p>Lorsque vous nous écrivez sur WhatsApp, vos échanges sont soumis aux conditions de WhatsApp et utilisés par {site.nom} uniquement pour traiter votre demande.</p>
     <p>Le site n'utilise pas de cookie publicitaire. Si un outil de statistiques de fréquentation est activé, il sera décrit ici.</p>

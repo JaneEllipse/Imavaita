@@ -1,16 +1,32 @@
 ---
 import Base from '../layouts/Base.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import EntetePage from '../components/EntetePage.astro';
+import Icone from '../components/Icone.astro';
 import { site } from '../lib/site';
+const icones = ['bouclier', 'chrono', 'carte', 'casque'] as const;
 ---
-<Base titre="À propos" description={`Présentation de ${site.nom}, location de véhicules au Togo.`}>
+<Base titre="À propos" description={`${site.nom}, location de véhicules au Togo : notre approche et nos engagements.`}>
+  <EntetePage surtitre="À propos" titre={`${site.nom}, la location simplifiée`} intro={`${site.nom} propose la location de véhicules au Togo, avec ou sans chauffeur, pour les particuliers comme pour les entreprises.`} />
   <section class="section">
-    <div class="conteneur prose">
-      <h1 class="titre-section">À propos d'{site.nom}</h1>
-      <p><strong>[À rédiger avec IMAVAITA]</strong> Présentation de l'entreprise, son histoire et son équipe. Uniquement des informations et engagements vérifiés, avec photos réelles de l'agence ou de l'équipe si le client le souhaite.</p>
-      <h2>Nos engagements</h2>
-      <ul>{site.avantages.map((a) => <li><strong>{a.titre}</strong> : {a.texte}</li>)}</ul>
-      <p><BoutonWhatsApp source="a-propos" /></p>
+    <div class="conteneur apropos">
+      <div class="prose revele">
+        <h2>Notre approche</h2>
+        <p>Louer un véhicule doit rester simple. Vous choisissez dans notre catalogue, vous nous écrivez sur WhatsApp, et notre équipe vous répond avec une proposition claire : véhicule, dates, tarif et conditions.</p>
+        <p>Pas de formulaire compliqué ni de paiement en ligne : un échange direct avec une personne de notre équipe, du premier message jusqu'à la remise des clés.</p>
+        <p><BoutonWhatsApp source="a-propos" /></p>
+      </div>
+      <div class="grille engagements">
+        {site.avantages.map((a, i) => (
+          <div class="carte revele" style={`transition-delay:${i * 90}ms`}><span class="pastille"><Icone nom={icones[i % icones.length]} /></span><h3>{a.titre}</h3><p>{a.texte}</p></div>
+        ))}
+      </div>
     </div>
   </section>
 </Base>
+<style>
+  .apropos { display: grid; gap: 48px; grid-template-columns: 1fr 1fr; align-items: start; }
+  .engagements { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 900px) { .apropos { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) { .engagements { grid-template-columns: 1fr; } }
+</style>
