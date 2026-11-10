@@ -1,5 +1,5 @@
 # Interface d'administration IMAVAITA (Sveltia CMS, compatible Decap CMS).
-# Chaque enregistrement crée un commit sur GitHub ; l'action « Build et déploiement » republie le site sur Infomaniak (~2 min).
+# Chaque enregistrement crée un commit sur GitHub ; l'action « Build et déploiement » republie le site sur Infomaniak en FTPS (~2 min).
 # Connexion : bouton « Sign In Using Access Token » (jeton GitHub personnel, voir docs/GUIDE_ADMIN.md).
 # Garder ces champs alignés avec src/content.config.ts.
 backend:

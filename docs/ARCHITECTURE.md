@@ -43,21 +43,20 @@ Titres et descriptions par page, URL canoniques, `sitemap.xml` (véhicules publi
 
 Le site est un dossier de fichiers statiques (`dist/`). L'action GitHub `.github/workflows/build.yml` :
 1. construit le site à chaque modification de `main` (y compris les enregistrements faits depuis l'admin) ;
-2. l'envoie sur l'hébergement Infomaniak par **rsync via SSH**. Tant que les secrets ne sont pas configurés, l'envoi est simplement ignoré.
+2. l'envoie sur l'hébergement Infomaniak en **FTPS** (FTP chiffré) avec `SamKirkland/FTP-Deploy-Action`, qui n'envoie que les fichiers modifiés. Tant que les secrets ne sont pas configurés, l'envoi est simplement ignoré.
 
 `public/.htaccess` gère sur Apache : HTTPS forcé, page 404, cache long des fichiers `/_astro/`, compression, en-têtes de sécurité.
 
-### Mise en place (une seule fois)
-1. **Manager Infomaniak** → Hébergement web → *FTP / SSH* : créer (ou récupérer) un utilisateur SSH ; noter le **serveur** (ex. `xxxx.ftp.infomaniak.com`) et l'**utilisateur**.
-2. **Dossier du site** : Hébergement → *Sites* → le site → dossier racine (ex. `sites/imavaita.com`). ⚠️ L'envoi remplace tout le contenu de ce dossier : il doit être réservé au site.
-3. **Clé SSH de déploiement** : générer une paire `ssh-keygen -t ed25519 -C deploy-imavaita -f deploy_imavaita` ; ajouter la clé publique (`.pub`) dans `~/.ssh/authorized_keys` du compte SSH Infomaniak.
-4. **GitHub** → dépôt → *Settings* → *Secrets and variables* → *Actions* → ajouter :
-   - `INFOMANIAK_HOST` : le serveur
-   - `INFOMANIAK_USER` : l'utilisateur SSH
-   - `INFOMANIAK_PATH` : le chemin du dossier du site (ex. `sites/imavaita.com`)
-   - `INFOMANIAK_SSH_KEY` : le contenu de la clé **privée** `deploy_imavaita`
-5. *Actions* → « Build et déploiement » → *Run workflow* pour le premier envoi.
-6. Domaine : mettre le domaine définitif dans `astro.config.mjs` (`site`) et `public/admin/config.yml` (`site_url`), et activer le certificat SSL (Let's Encrypt) dans le Manager.
+### Mise en place (une seule fois, sans clé ni ligne de commande)
+1. **Manager Infomaniak** → Hébergement web → *FTP / SSH* : créer un compte FTP dédié (ex. `deploy-imavaita`) avec un mot de passe fort, limité si possible au dossier du site. Noter le **serveur FTP** affiché sur cette page.
+2. **Dossier du site** : Hébergement → *Sites* → le site → dossier racine (ex. `sites/imavaita.com/`). Il doit servir uniquement à ce site.
+3. **GitHub** → dépôt → *Settings* → *Secrets and variables* → *Actions* → *New repository secret*, un par ligne :
+   - `FTP_SERVER` : le serveur FTP
+   - `FTP_USERNAME` : l'identifiant FTP
+   - `FTP_PASSWORD` : le mot de passe FTP
+   - `FTP_DIR` : le dossier du site **avec un « / » final** (ex. `sites/imavaita.com/`) ; si absent, `web/` est utilisé.
+4. *Actions* → « Build et déploiement » → *Run workflow* pour le premier envoi.
+5. Domaine : mettre le domaine définitif dans `astro.config.mjs` (`site`) et `public/admin/config.yml` (`site_url`), et activer le certificat SSL (Let's Encrypt) dans le Manager.
 
 ### Connexion à l'admin (sans serveur d'authentification)
 Sveltia CMS propose « Sign In Using Access Token » : chaque administrateur crée un **jeton GitHub à granularité fine** limité au dépôt `JaneEllipse/Imavaita`, permission *Contents : Read and write*, avec une date d'expiration (voir `docs/GUIDE_ADMIN.md`). Aucun service tiers à héberger.

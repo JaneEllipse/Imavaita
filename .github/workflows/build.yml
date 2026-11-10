@@ -21,22 +21,21 @@ jobs:
       - uses: actions/upload-artifact@v4
         with: { name: dist, path: dist, include-hidden-files: true, retention-days: 3 }
 
-  # Envoie dist/ sur l'hébergement Infomaniak à chaque modification de main
-  # (y compris celles faites depuis l'admin). Ne s'exécute que si les secrets sont configurés.
+  # Envoie dist/ sur l'hébergement Infomaniak (FTPS) à chaque modification de main,
+  # y compris celles faites depuis l'admin. Ne s'exécute que si les secrets sont configurés.
   deploy:
     needs: build
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
-      HOST: ${{ secrets.INFOMANIAK_HOST }}
-      USER: ${{ secrets.INFOMANIAK_USER }}
-      DEST: ${{ secrets.INFOMANIAK_PATH }}
+      FTP_SERVER: ${{ secrets.FTP_SERVER }}
+      FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
     steps:
       - name: Vérifier la configuration
         id: cfg
         run: |
-          if [ -z "$HOST" ] || [ -z "$USER" ] || [ -z "$DEST" ]; then
-            echo "Secrets Infomaniak absents : déploiement ignoré (voir docs/ARCHITECTURE.md)."
+          if [ -z "$FTP_SERVER" ] || [ -z "$FTP_USERNAME" ]; then
+            echo "Secrets FTP absents : déploiement ignoré (voir docs/ARCHITECTURE.md)."
             echo "ok=false" >> "$GITHUB_OUTPUT"
           else
             echo "ok=true" >> "$GITHUB_OUTPUT"
@@ -44,13 +43,16 @@ jobs:
       - uses: actions/download-artifact@v4
         if: steps.cfg.outputs.ok == 'true'
         with: { name: dist, path: dist }
-      - name: Envoyer sur Infomaniak (rsync over SSH)
+      - name: Envoyer sur Infomaniak (FTPS)
         if: steps.cfg.outputs.ok == 'true'
-        env:
-          SSH_KEY: ${{ secrets.INFOMANIAK_SSH_KEY }}
-        run: |
-          mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          rsync -rlvz --delete --exclude '.well-known/' \
-            -e "ssh -i ~/.ssh/id_deploy" dist/ "$USER@$HOST:$DEST/"
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./dist/
+          # Dossier du site sur l'hébergement, avec « / » final. Par défaut : web/
+          server-dir: ${{ secrets.FTP_DIR || 'web/' }}
+          exclude: |
+            **/.well-known/**
