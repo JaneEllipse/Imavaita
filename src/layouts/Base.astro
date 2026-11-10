@@ -3,16 +3,25 @@ import '@fontsource/poppins/latin-600.css';
 import '@fontsource/poppins/latin-700.css';
 import '@fontsource/poppins/latin-800.css';
 import '../styles/global.css';
-import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
+import imagePartage from '../assets/maquette/hero-lome.jpg';
 import logo from '../assets/logo-imavaita.png';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
 import BulleWhatsApp from '../components/BulleWhatsApp.astro';
 import Icone from '../components/Icone.astro';
 import { site, waLink, messageGeneral, carte, adresseComplete } from '../lib/site';
 
-interface Props { titre: string; description: string; jsonld?: Record<string, unknown>; noindex?: boolean; vehicule?: string }
-const { titre, description, jsonld, noindex = false, vehicule } = Astro.props;
-const titreComplet = titre === site.nom ? `${site.nom} – ${site.slogan}` : `${titre} | ${site.nom}`;
+/**
+ * titreSeo : titre de l'onglet et de Google (mots-clés locaux), sans le nom de la marque qui est ajouté.
+ * image : visuel des partages (WhatsApp, Facebook) ; par défaut la photo de l'accueil.
+ */
+interface Props { titre: string; titreSeo?: string; description: string; image?: ImageMetadata; jsonld?: Record<string, unknown> | Record<string, unknown>[]; noindex?: boolean; vehicule?: string }
+const { titre, titreSeo, description, image, jsonld, noindex = false, vehicule } = Astro.props;
+const titreComplet = titreSeo ? `${titreSeo} | ${site.nom}` : titre === site.nom ? `${site.nom} – ${site.slogan}` : `${titre} | ${site.nom}`;
+const source = image ?? imagePartage;
+const partage = await getImage({ src: source, width: Math.min(1200, source.width), format: 'jpg', quality: 80 });
+const imageUrl = new URL(partage.src, Astro.site).href;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const chemin = Astro.url.pathname;
 
@@ -34,7 +43,10 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
     <title>{titreComplet}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="robots" content={noindex ? 'noindex' : 'index, follow, max-image-preview:large'} />
+    {site.google_verification && <meta name="google-site-verification" content={site.google_verification} />}
+    <meta name="geo.region" content="TG" />
+    <meta name="geo.placename" content={site.ville} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#00306e" />
     <meta property="og:type" content="website" />
@@ -43,6 +55,12 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
     <meta property="og:title" content={titreComplet} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={imageUrl} />
+    <meta property="og:image:width" content={String(partage.attributes.width)} />
+    <meta property="og:image:height" content={String(partage.attributes.height)} />
+    <meta property="og:image:alt" content={titre} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
   </head>
   <body>
