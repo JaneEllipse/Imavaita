@@ -19,6 +19,10 @@
   --ombre: 0 1px 2px rgb(0 27 64 / .06), 0 8px 24px rgb(0 27 64 / .08);
   --ombre-forte: 0 2px 4px rgb(0 27 64 / .08), 0 18px 40px rgb(0 27 64 / .16);
   --largeur: 1180px;
+  /* Matière d'arrière-plan : grain très fin et lignes « routes » (SVG inline, < 3 Ko) */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0.1 0 0 0 0 0.25 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --grain-clair: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --lignes: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='420' fill='none' stroke='%23fff' stroke-opacity='.06' stroke-width='1.2'%3E%3Cpath d='M-10 16 L20 28 L50 32 L80 28 L110 24 L140 27 L170 29 L200 23 L230 11 L260 6 L290 10 L320 17 L350 17 L380 14 L410 18 L440 29 L470 36 L500 31 L530 22 L560 20 L590 22'/%3E%3Cpath d='M-10 83 L20 84 L50 77 L80 74 L110 75 L140 72 L170 60 L200 47 L230 46 L260 54 L290 61 L320 62 L350 64 L380 74 L410 85 L440 87 L470 78 L500 67 L530 64 L560 63 L590 57'/%3E%3Cpath d='M-10 134 L20 125 L50 120 L80 117 L110 108 L140 93 L170 84 L200 89 L230 102 L260 110 L290 113 L320 120 L350 132 L380 140 L410 134 L440 119 L470 108 L500 104 L530 100 L560 92 L590 86'/%3E%3Cpath d='M-10 158 L20 159 L50 160 L80 154 L110 144 L140 143 L170 152 L200 160 L230 161 L260 159 L290 162 L320 171 L350 173 L380 164 L410 153 L440 151 L470 154 L500 154 L530 147 L560 145 L590 152'/%3E%3Cpath d='M-10 202 L20 199 L50 189 L80 183 L110 188 L140 201 L170 210 L200 211 L230 212 L260 218 L290 223 L320 218 L350 204 L380 193 L410 192 L440 194 L470 192 L500 188 L530 192 L560 206 L590 218'/%3E%3Cpath d='M-10 234 L20 226 L50 226 L80 239 L110 255 L140 264 L170 264 L200 266 L230 272 L260 271 L290 258 L320 240 L350 231 L380 232 L410 234 L440 233 L470 234 L500 246 L530 264 L560 274 L590 271'/%3E%3Cpath d='M-10 283 L20 286 L50 298 L80 306 L110 305 L140 300 L170 302 L200 307 L230 305 L260 294 L290 284 L320 284 L350 291 L380 292 L410 289 L440 289 L470 299 L500 309 L530 310 L560 302 L590 297'/%3E%3Cpath d='M-10 337 L20 352 L50 359 L80 355 L110 352 L140 353 L170 353 L200 344 L230 330 L260 322 L290 326 L320 334 L350 335 L380 335 L410 342 L440 356 L470 363 L500 359 L530 349 L560 344 L590 343'/%3E%3Cpath d='M-10 409 L20 411 L50 405 L80 401 L110 400 L140 393 L170 378 L200 364 L230 362 L260 371 L290 380 L320 383 L350 388 L380 400 L410 413 L440 415 L470 404 L500 391 L530 386 L560 382 L590 374'/%3E%3C/svg%3E");
   --titre: 'Poppins', system-ui, sans-serif;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   color: var(--texte);
@@ -39,7 +43,8 @@ p { margin: 0 0 1em; }
 
 .conteneur { width: min(100% - 32px, var(--largeur)); margin-inline: auto; }
 .section { padding-block: clamp(56px, 8vw, 96px); position: relative; }
-.section--doux { background: linear-gradient(180deg, var(--fond-doux), #fff); }
+.section--doux { background: var(--grain), linear-gradient(180deg, var(--fond-doux), #fff); }
+.section--pierre { background: var(--grain), radial-gradient(900px 400px at 100% 0%, rgb(255 140 0 / .06), transparent 70%), linear-gradient(180deg, #eef2f8, #f8fafc 60%, #fff); }
 .surtitre { display: inline-block; font-family: var(--titre); font-weight: 600; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase; color: var(--orange-texte); margin-bottom: .6em; }
 .titre-section::after { content: ''; display: block; width: 64px; height: 4px; background: linear-gradient(90deg, var(--orange), #ffb347); border-radius: 2px; margin-top: 14px; }
 .titre-section--centre { text-align: center; }

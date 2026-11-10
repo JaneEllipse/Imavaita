@@ -54,7 +54,7 @@ const message = (debut = 'JJ/MM/AAAA', fin = 'JJ/MM/AAAA', lieu = site.ville, ch
   `Lieu de prise en charge : ${lieu}\nAvec chauffeur : ${chauffeur}`;
 ---
 <Base titre={v.nom} titreSeo={`Location ${v.nom} à ${site.ville}`} description={`${v.resume ? v.resume + ' ' : ''}${v.nom} en location à ${site.ville}${v.places && !/places/i.test(v.nom) ? `, ${v.places} places` : ''}. ${v.prix_jour ? `À partir de ${formatPrix(v.prix_jour)} par jour.` : 'Tarif sur demande.'} Réservation sur WhatsApp.`} image={v.couverture} noindex={v.statut !== 'publie'} vehicule={v.nom} jsonld={jsonld}>
-  <section class="section fiche-section">
+  <section class="section fiche-section section--pierre">
     <div class="conteneur">
       <nav class="fil" aria-label="Fil d'Ariane">
         <a href="/"><Icone nom="maison" />Accueil</a><span aria-hidden="true">›</span>

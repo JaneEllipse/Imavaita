@@ -1,45 +1,58 @@
 ---
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CarteVehicule from '../components/CarteVehicule.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import Icone from '../components/Icone.astro';
 import photoHero from '../assets/maquette/hero-lome.jpg';
 import monument from '../assets/maquette/monument-lome.jpg';
+import routeLome from '../assets/maquette/banniere-catalogue.jpg';
+import suvLome from '../assets/vehicules/suv-4x4-2.jpg';
 import { site, getVehicules, adresseComplete, entreprise } from '../lib/site';
 
 const vehicules = await getVehicules();
 // Règle anti-surcharge : 4 fiches maximum sur l'accueil, « à la une » d'abord.
 const une = [...vehicules].sort((a, b) => Number(b.data.a_la_une) - Number(a.data.a_la_une)).slice(0, 4);
-const icones = ['bouclier', 'chrono', 'carte', 'casque'] as const;
+const icones = ['bouclier', 'eclair', 'calendrier', 'casque'] as const;
+// Diaporama du héros : visuels provisoires, à remplacer par les photos réelles d'IMAVAITA.
+const diapos = [
+  { src: photoHero, alt: "SUV sur une avenue de Lomé, au pied du monument de l'Indépendance", pos: '70% 60%' },
+  { src: routeLome, alt: '', pos: '30% 60%' },
+  { src: suvLome, alt: '', pos: '50% 55%' },
+];
 
 const jsonld = await entreprise(Astro.site);
 const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
+// Diapositives suivantes : chargées seulement après l'affichage de la page (poids initial inchangé).
+const suivantes = await Promise.all(diapos.slice(1).map(async (d) => {
+  const img = await getImage({ src: d.src, widths: [640, 960, 1400], quality: 55 });
+  return { srcset: img.srcSet.attribute, pos: d.pos, w: d.src.width, h: d.src.height };
+}));
 ---
 <Base titre={site.nom} titreSeo={`Location de voiture à ${site.ville}, Togo`} description={`Location de véhicules à ${site.ville} et dans tout le Togo${categories.length ? ` (${categories.join(', ')})` : ''}, avec ou sans chauffeur. Réservation rapide sur WhatsApp.`} jsonld={jsonld}>
   <section class="hero">
-    <div class="hero__photo">
-      <Image src={photoHero} alt="SUV sur une avenue de Lomé, au pied du monument de l'Indépendance" widths={[480, 760, 1042]} sizes="(max-width: 900px) 100vw, 62vw" loading="eager" fetchpriority="high" />
+    <div class="hero__diapo">
+      <Image src={diapos[0].src} alt={diapos[0].alt} widths={[640, 960, 1400]} sizes="100vw" quality={70} style={`object-position:${diapos[0].pos}`} loading="eager" fetchpriority="high" />
+      {suivantes.map((d) => <img data-srcset={d.srcset} sizes="100vw" alt="" width={d.w} height={d.h} style={`object-position:${d.pos}`} decoding="async" />)}
     </div>
-    <div class="conteneur hero__grille">
-      <div class="hero__texte">
-        <span class="surtitre hero__surtitre">{site.slogan}</span>
-        <h1>Location de véhicules à {site.ville}</h1>
-        <p class="hero__accroche">{site.accroche}</p>
-        <ul class="hero__atouts">
-          <li><Icone nom="voiture" /><span><strong>Véhicules</strong> bien entretenus</span></li>
-          <li><Icone nom="bouclier" /><span><strong>Réservation</strong> simple et rapide</span></li>
-          <li><Icone nom="casque" /><span><strong>Équipe locale</strong> à votre écoute</span></li>
-        </ul>
-      </div>
+    <div class="conteneur hero__contenu">
+      <span class="surtitre hero__surtitre">{site.slogan}</span>
+      <h1>Location de véhicules à {site.ville}</h1>
+      <p class="hero__accroche">{site.accroche}</p>
       <div class="hero__actions" data-masque-bulle>
         <BoutonWhatsApp source="hero" />
         <a href="/vehicules/" class="btn btn--clair">Voir nos véhicules<Icone nom="fleche" /></a>
       </div>
+      <ul class="hero__atouts">
+        <li><Icone nom="badge" /><span><strong>Véhicules</strong> bien entretenus</span></li>
+        <li><Icone nom="volant" /><span><strong>Avec ou sans</strong> chauffeur</span></li>
+        <li><Icone nom="casque" /><span><strong>Équipe locale</strong> à votre écoute</span></li>
+      </ul>
     </div>
+    <div class="hero__points" aria-hidden="true">{diapos.map(() => <span></span>)}</div>
   </section>
 
-  <section class="section">
+  <section class="section section--pierre">
     <div class="conteneur">
       <div class="entete-section revele">
         <div>
@@ -51,6 +64,22 @@ const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
       {une.length > 0
         ? <div class="grille grille--vehicules">{une.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVehicule vehicule={v} /></div>)}</div>
         : <p class="intro">Notre catalogue est en cours de mise en ligne. Écrivez-nous sur WhatsApp pour connaître les véhicules disponibles.</p>}
+    </div>
+  </section>
+
+
+  <section class="section section--serree bande-photo">
+    <div class="bande-photo__fond"><Image src={routeLome} alt="" widths={[640, 960, 1400]} sizes="100vw" quality={55} loading="lazy" /></div>
+    <div class="conteneur">
+      <div class="revele titre-section--centre">
+        <span class="surtitre">Simple et rapide</span>
+        <h2 class="titre-section titre-section--centre">Réservez en 3 étapes</h2>
+      </div>
+      <ol class="etapes">
+        <li class="revele"><span class="etapes__num">1</span><Icone nom="suv" /><strong>Choisissez votre véhicule</strong><p>Parcourez le catalogue et ouvrez la fiche qui vous intéresse.</p></li>
+        <li class="revele" style="transition-delay:100ms"><span class="etapes__num">2</span><Icone nom="message" /><strong>Écrivez-nous sur WhatsApp</strong><p>Le message est prérempli : ajoutez vos dates et le lieu de prise en charge.</p></li>
+        <li class="revele" style="transition-delay:200ms"><span class="etapes__num">3</span><Icone nom="cle" /><strong>Recevez la confirmation</strong><p>Notre équipe vous confirme la disponibilité, le tarif et les modalités.</p></li>
+      </ol>
     </div>
   </section>
 
@@ -68,20 +97,6 @@ const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
           </div>
         ))}
       </div>
-    </div>
-  </section>
-
-  <section class="section section--serree">
-    <div class="conteneur">
-      <div class="revele titre-section--centre">
-        <span class="surtitre">Simple et rapide</span>
-        <h2 class="titre-section titre-section--centre">Réservez en 3 étapes</h2>
-      </div>
-      <ol class="etapes">
-        <li class="revele"><span class="etapes__num">1</span><Icone nom="voiture" /><strong>Choisissez votre véhicule</strong><p>Parcourez le catalogue et ouvrez la fiche qui vous intéresse.</p></li>
-        <li class="revele" style="transition-delay:100ms"><span class="etapes__num">2</span><Icone nom="message" /><strong>Écrivez-nous sur WhatsApp</strong><p>Le message est prérempli : ajoutez vos dates et le lieu de prise en charge.</p></li>
-        <li class="revele" style="transition-delay:200ms"><span class="etapes__num">3</span><Icone nom="check" /><strong>Recevez la confirmation</strong><p>Notre équipe vous confirme la disponibilité, le tarif et les modalités.</p></li>
-      </ol>
     </div>
   </section>
 
@@ -114,48 +129,64 @@ const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
   </section>
 </Base>
 
+<script>
+  // Charge les photos 2 et 3 du diaporama une fois la page affichée ; sans JavaScript, la première reste seule.
+  const charger = () => document.querySelectorAll<HTMLImageElement>('.hero__diapo img[data-srcset]').forEach((img) => { img.srcset = img.dataset.srcset!; });
+  const plusTard = () => ('requestIdleCallback' in window ? requestIdleCallback(charger, { timeout: 3000 }) : setTimeout(charger, 1500));
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) (document.readyState === 'complete' ? plusTard() : addEventListener('load', plusTard));
+</script>
+
 <style>
-  /* Héros : la photo occupe la droite et se fond dans le marine (maquette du 10/11). */
-  .hero { position: relative; overflow: hidden; isolation: isolate; color: #fff; background: var(--marine-900); padding: clamp(48px, 7vw, 96px) 0 clamp(48px, 6vw, 80px); min-height: min(560px, 78vh); display: flex; align-items: center; }
-  .hero__photo { position: absolute; z-index: -1; top: 0; right: 0; bottom: 0; width: 64%; }
-  .hero__photo :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 60% 60%; }
-  .hero__photo::after { content: ''; position: absolute; inset: 0;
+  /* Héros : diaporama plein cadre (fondu + zoom lent), texte sur voile marine, à la manière de PGH. */
+  .hero { position: relative; overflow: hidden; isolation: isolate; color: #fff; background: var(--marine-900); min-height: min(640px, 86vh); display: flex; align-items: center; padding: clamp(56px, 8vw, 104px) 0 clamp(72px, 8vw, 104px); }
+  .hero__diapo { position: absolute; inset: 0; z-index: -1; }
+  .hero__diapo :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: zoom 18s linear infinite; }
+  .hero__diapo :global(img:nth-child(2)) { opacity: 0; animation: zoom 18s linear infinite, fondu2 18s ease-in-out infinite; }
+  .hero__diapo :global(img:nth-child(3)) { opacity: 0; animation: zoom 18s linear infinite, fondu3 18s ease-in-out infinite; }
+  .hero__diapo::after { content: ''; position: absolute; inset: 0;
     background:
-      linear-gradient(90deg, var(--marine-900) 0%, rgb(0 27 64 / .85) 18%, rgb(0 27 64 / .25) 48%, transparent 70%),
-      linear-gradient(0deg, rgb(0 27 64 / .55) 0%, transparent 30%); }
-  .hero::before { content: ''; position: absolute; z-index: -2; inset: 0; background: radial-gradient(60% 80% at 0% 100%, #0a3f86 0%, transparent 70%); }
-  .hero__grille { display: grid; gap: 28px; }
-  .hero__texte { max-width: 540px; }
+      linear-gradient(90deg, rgb(0 27 64 / .94) 0%, rgb(0 27 64 / .78) 34%, rgb(0 27 64 / .25) 62%, rgb(0 27 64 / .1) 100%),
+      linear-gradient(0deg, rgb(0 27 64 / .7) 0%, transparent 35%); }
+  @keyframes zoom { from { transform: scale(1); } to { transform: scale(1.08); } }
+  @keyframes fondu2 { 0%, 30% { opacity: 0; } 36%, 63% { opacity: 1; } 69%, 100% { opacity: 0; } }
+  @keyframes fondu3 { 0%, 63% { opacity: 0; } 69%, 94% { opacity: 1; } 100% { opacity: 0; } }
+  .hero__contenu { position: relative; }
+  .hero__contenu > * { max-width: 560px; }
   .hero__surtitre { color: #ffb347; display: inline-flex; align-items: center; gap: 12px; }
   .hero__surtitre::after { content: ''; width: 40px; height: 2px; background: var(--orange); }
-  .hero h1 { color: #fff; font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 16ch; }
-  .hero__accroche { font-size: clamp(1rem, 1.6vw, 1.15rem); max-width: 42ch; color: #d5e1f2; }
-  .hero__atouts { display: flex; flex-wrap: wrap; gap: 14px 26px; list-style: none; padding: 0; margin: 26px 0 0; }
-  .hero__atouts li { display: flex; align-items: center; gap: 10px; font-size: .84rem; line-height: 1.3; color: #d5e1f2; max-width: 150px; }
+  .hero h1 { color: #fff; font-size: clamp(2.2rem, 5.2vw, 3.6rem); max-width: 14ch; text-shadow: 0 2px 24px rgb(0 0 0 / .25); }
+  .hero__accroche { font-size: clamp(1rem, 1.6vw, 1.15rem); max-width: 42ch; color: #e1e9f5; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .hero__atouts { display: flex; flex-wrap: wrap; gap: 14px 28px; list-style: none; padding: 22px 0 0; margin: 30px 0 0; border-top: 1px solid rgb(255 255 255 / .16); max-width: 600px !important; }
+  .hero__atouts li { display: flex; align-items: center; gap: 10px; font-size: .84rem; line-height: 1.3; color: #d5e1f2; }
   .hero__atouts strong { display: block; color: #fff; font-weight: 600; }
-  .hero__atouts :global(svg) { width: 28px; height: 28px; color: var(--orange); flex: none; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
-
+  .hero__atouts :global(svg) { width: 30px; height: 30px; color: var(--orange); flex: none; }
+  .hero__points { position: absolute; left: 50%; bottom: 22px; translate: -50% 0; display: flex; gap: 8px; }
+  .hero__points span { width: 26px; height: 3px; border-radius: 2px; background: rgb(255 255 255 / .3); overflow: hidden; position: relative; }
+  .hero__points span::after { content: ''; position: absolute; inset: 0; background: var(--orange); transform: scaleX(0); transform-origin: left; animation: point 18s linear infinite; }
+  .hero__points span:nth-child(2)::after { animation-delay: 6s; }
+  .hero__points span:nth-child(3)::after { animation-delay: 12s; }
+  @keyframes point { 0% { transform: scaleX(0); } 33.3% { transform: scaleX(1); } 33.4%, 100% { transform: scaleX(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__diapo :global(img) { animation: none !important; }
+    .hero__points { display: none; }
+  }
   @media (max-width: 900px) {
-    /* Mobile : texte, puis la photo fondue en haut et en bas, puis les boutons */
-    .hero { min-height: 0; padding: 36px 0 28px; align-items: stretch; }
-    .hero__photo { position: relative; z-index: 0; order: 2; width: auto; height: 250px; margin-top: 4px; }
-    .hero__photo::after { background: linear-gradient(180deg, var(--marine-900) 0%, transparent 28%, transparent 62%, var(--marine-900) 100%); }
-    .hero__texte { order: 1; }
-    .hero__actions { order: 3; flex-direction: column; margin-top: -8px; position: relative; }
+    .hero { min-height: 0; align-items: flex-end; padding: 200px 0 52px; }
+    .hero__diapo::after { background: linear-gradient(180deg, rgb(0 27 64 / .15) 0%, rgb(0 27 64 / .65) 38%, rgb(0 27 64 / .95) 72%); }
+    .hero__actions { flex-direction: column; }
     .hero__actions .btn { width: 100%; }
     .hero__atouts { display: none; }
   }
-  .hero > .conteneur { position: relative; }
-  @media (max-width: 900px) { .hero { display: flex; flex-direction: column; } .hero > .conteneur { display: contents; } .hero__texte, .hero__actions { width: min(100% - 32px, var(--largeur)); margin-inline: auto; } }
 
   .btn--petit { min-height: 44px; padding: .45em 1.1em; font-size: .92rem; }
   .grille--vehicules { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 20px; }
   .section--serree { padding-block: clamp(48px, 6vw, 72px); }
   .grille--atouts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin-top: 8px; }
-  .atout { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); padding: 20px; box-shadow: 0 1px 2px rgb(0 27 64 / .05); }
-  .atout .pastille { width: 44px; height: 44px; border-radius: 12px; margin: 0; flex: none; }
-  .atout .pastille :global(.ico) { width: 24px; height: 24px; }
+  .atout { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); padding: 22px; box-shadow: 0 1px 2px rgb(0 27 64 / .05); transition: border-color .25s, box-shadow .25s; }
+  .atout:hover { border-color: #ffc580; box-shadow: var(--ombre); }
+  .atout .pastille { width: 48px; height: 48px; border-radius: 12px; margin: 0; flex: none; }
+  .atout .pastille :global(.ico) { width: 26px; height: 26px; }
   .atout h3 { font-size: 1.05rem; margin-bottom: .2em; }
   .atout p { margin: 0; font-size: .92rem; color: var(--texte-doux); }
   @media (max-width: 900px) {
@@ -166,12 +197,18 @@ const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
     .atout { flex-direction: column; gap: 10px; padding: 16px; }
   }
   .etapes { position: relative; display: grid; gap: 24px; grid-template-columns: repeat(3, 1fr); padding: 0; margin: 36px 0 0; list-style: none; }
-  .etapes::before { content: ''; position: absolute; top: 30px; left: 18%; right: 18%; border-top: 2px dashed #ffc580; }
+  .etapes::before { content: ''; position: absolute; top: 30px; left: 18%; right: 18%; border-top: 2px dashed rgb(255 179 71 / .7); }
   .etapes li { position: relative; text-align: center; padding: 0 12px; }
   .etapes li > :global(svg) { display: block; margin: 0 auto 12px; width: 60px; height: 60px; padding: 16px; border-radius: 50%; background: #fff; color: var(--marine); box-shadow: var(--ombre); position: relative; }
+  .bande-photo { position: relative; isolation: isolate; overflow: hidden; color: #fff; background: var(--marine-900); }
+  .bande-photo__fond { position: absolute; inset: 0; z-index: -1; }
+  .bande-photo__fond :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 60% 60%; }
+  .bande-photo__fond::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgb(0 27 64 / .9), rgb(0 27 64 / .78)); }
+  .bande-photo .titre-section { color: #fff; }
+  .bande-photo .surtitre { color: #ffb347; }
   .etapes__num { position: absolute; top: -6px; left: calc(50% + 14px); z-index: 1; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--orange); color: #fff; font-family: var(--titre); font-weight: 700; font-size: .8rem; }
-  .etapes strong { display: block; font-family: var(--titre); color: var(--marine-900); font-size: 1.05rem; margin-bottom: 4px; }
-  .etapes p { color: var(--texte-doux); font-size: .95rem; margin: 0 auto; max-width: 30ch; }
+  .etapes strong { display: block; font-family: var(--titre); color: #fff; font-size: 1.05rem; margin-bottom: 4px; }
+  .etapes p { color: #d5e1f2; font-size: .95rem; margin: 0 auto; max-width: 30ch; }
   @media (max-width: 760px) { .etapes { grid-template-columns: 1fr; } .etapes::before { display: none; } }
 
   /* Appel final : marine à gauche, monument à droite, séparés par un biais orange */
