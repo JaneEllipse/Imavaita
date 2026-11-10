@@ -1,0 +1,38 @@
+---
+import Base from '../layouts/Base.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import { site } from '../lib/site';
+import faq from '../data/faq.json';
+
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.questions.map((q) => ({ '@type': 'Question', name: q.question, acceptedAnswer: { '@type': 'Answer', text: q.reponse } })),
+};
+---
+<Base titre="Tarifs et services" description={`Tarifs, services et conditions de location de véhicules chez ${site.nom}.`} jsonld={jsonld}>
+  <section class="section">
+    <div class="conteneur">
+      <h1 class="titre-section">Tarifs et services</h1>
+      <p class="intro">Les tarifs de chaque véhicule figurent sur sa fiche. Ils sont indicatifs : le prix final dépend de la durée, du lieu et des options, et vous est confirmé sur WhatsApp.</p>
+      <div class="grille">
+        {site.services.map((s) => <div class="carte"><h2 class="h3">{s.titre}</h2><p>{s.texte}</p></div>)}
+      </div>
+    </div>
+  </section>
+  <section class="section section--doux">
+    <div class="conteneur prose">
+      <h2 class="titre-section">Questions fréquentes</h2>
+      {faq.questions.map((q) => (
+        <details class="faq"><summary>{q.question}</summary><p>{q.reponse}</p></details>
+      ))}
+      <p style="margin-top:24px"><BoutonWhatsApp libelle="Poser une question sur WhatsApp" source="faq" message={`Bonjour ${site.nom}, j'ai une question sur la location :`} /></p>
+    </div>
+  </section>
+</Base>
+<style>
+  .h3 { font-size: 1.15rem; }
+  .faq { background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); margin-bottom: 10px; }
+  .faq summary { cursor: pointer; font-weight: 700; padding: 14px 16px; min-height: 48px; }
+  .faq p { padding: 0 16px 14px; margin: 0; }
+</style>

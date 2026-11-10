@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import { site } from '../lib/site';
+---
+<Base titre="Contact" description={`Contactez ${site.nom} sur WhatsApp, par téléphone ou par email. ${site.adresse}.`}>
+  <section class="section">
+    <div class="conteneur">
+      <h1 class="titre-section">Contact</h1>
+      <p class="intro">Le moyen le plus rapide : WhatsApp. Indiquez le véhicule souhaité, vos dates et le lieu de prise en charge.</p>
+      <p><BoutonWhatsApp libelle="Écrire sur WhatsApp" source="contact" /></p>
+      <div class="grille" style="margin-top:32px">
+        <div class="carte"><h2 class="h3">Téléphone</h2><p><a href={`tel:${site.telephone.replace(/\s/g, '')}`}>{site.telephone}</a></p></div>
+        <div class="carte"><h2 class="h3">Email</h2><p><a href={`mailto:${site.email}`}>{site.email}</a></p></div>
+        <div class="carte"><h2 class="h3">Horaires</h2><p>{site.horaires}</p></div>
+        <div class="carte"><h2 class="h3">Adresse</h2><p>{site.adresse}</p>
+          {site.google_maps_url && <p><a href={site.google_maps_url} target="_blank" rel="noopener">Itinéraire Google Maps</a></p>}
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+<style>.h3 { font-size: 1.15rem; }</style>

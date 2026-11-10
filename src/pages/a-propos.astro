@@ -1,0 +1,16 @@
+---
+import Base from '../layouts/Base.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import { site } from '../lib/site';
+---
+<Base titre="À propos" description={`Présentation de ${site.nom}, location de véhicules au Togo.`}>
+  <section class="section">
+    <div class="conteneur prose">
+      <h1 class="titre-section">À propos d'{site.nom}</h1>
+      <p><strong>[À rédiger avec IMAVAITA]</strong> Présentation de l'entreprise, son histoire et son équipe. Uniquement des informations et engagements vérifiés, avec photos réelles de l'agence ou de l'équipe si le client le souhaite.</p>
+      <h2>Nos engagements</h2>
+      <ul>{site.avantages.map((a) => <li><strong>{a.titre}</strong> : {a.texte}</li>)}</ul>
+      <p><BoutonWhatsApp source="a-propos" /></p>
+    </div>
+  </section>
+</Base>

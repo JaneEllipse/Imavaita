@@ -1,0 +1,128 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import IconeWhatsApp from '../../components/IconeWhatsApp.astro';
+import { site, getVehicules, formatPrix, waLink, messageVehicule, type Vehicule } from '../../lib/site';
+
+export async function getStaticPaths() {
+  const vehicules = await getVehicules();
+  return vehicules.map((v) => ({ params: { id: v.id }, props: { vehicule: v } }));
+}
+
+const { vehicule } = Astro.props as { vehicule: Vehicule };
+const v = vehicule.data;
+const { Content } = await render(vehicule);
+const caracs = [
+  ['Catégorie', v.categorie],
+  ['Marque / modèle', [v.marque, v.modele].filter(Boolean).join(' ')],
+  ['Places', v.places?.toString()],
+  ['Boîte', v.transmission],
+].filter(([, val]) => val) as [string, string][];
+const tarifs = [
+  ['Par jour', v.prix_jour],
+  ['Par semaine', v.prix_semaine],
+  ['Par mois', v.prix_mois],
+].filter(([, p]) => p) as [string, number][];
+---
+<Base titre={v.nom} description={v.resume ?? `${v.nom} en location chez ${site.nom}. Réservation sur WhatsApp.`} noindex={v.statut !== 'publie'}>
+  <section class="section">
+    <div class="conteneur fiche">
+      <p class="fil"><a href="/vehicules/">← Tous nos véhicules</a></p>
+      <div class="fiche__media">
+        {v.couverture
+          ? <Image src={v.couverture} alt={v.nom} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 640px" loading="eager" />
+          : <div class="fiche__vide">Photo à venir</div>}
+        {v.galerie.length > 0 && (
+          <div class="fiche__galerie">
+            {v.galerie.map((img, i) => <Image src={img} alt={`${v.nom}, photo ${i + 2}`} widths={[240, 400]} sizes="(max-width: 900px) 33vw, 210px" />)}
+          </div>
+        )}
+      </div>
+
+      <div class="fiche__infos">
+        <p class="fiche__badges">
+          {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
+          {v.nouveau && <span class="badge">Nouveau</span>}
+        </p>
+        <h1>{v.nom}</h1>
+        {tarifs.length > 0
+          ? <ul class="tarifs">{tarifs.map(([l, p]) => <li><span>{l}</span><strong>{formatPrix(p)}</strong></li>)}</ul>
+          : <p class="tarifs-devis"><strong>Tarif sur demande</strong></p>}
+        <p class="note">Tarifs indicatifs. Disponibilité et conditions confirmées par notre équipe sur WhatsApp.</p>
+
+        <form class="resa" data-vehicule={v.nom} data-numero={site.whatsapp.replace(/\D/g, '')}>
+          <p class="resa__titre">Demande de réservation</p>
+          <div class="resa__dates">
+            <label>Du<input type="date" name="debut" /></label>
+            <label>Au<input type="date" name="fin" /></label>
+          </div>
+          <label>Lieu de prise en charge<input type="text" name="lieu" placeholder="Ex. aéroport de Lomé" autocomplete="off" /></label>
+          <fieldset>
+            <legend>Avec chauffeur ?</legend>
+            <label class="radio"><input type="radio" name="chauffeur" value="oui" /> Oui</label>
+            <label class="radio"><input type="radio" name="chauffeur" value="non" /> Non</label>
+            <label class="radio"><input type="radio" name="chauffeur" value="à discuter" checked /> À discuter</label>
+          </fieldset>
+          <a class="btn btn--wa resa__btn" href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" data-wa={`fiche:${vehicule.id}`}>
+            <IconeWhatsApp />Réserver sur WhatsApp
+          </a>
+          <p class="note">Rien n'est enregistré sur ce site : le message s'ouvre dans WhatsApp, vous le relisez avant l'envoi.</p>
+        </form>
+
+        {caracs.length > 0 && (
+          <dl class="caracs">{caracs.map(([k, val]) => <><dt>{k}</dt><dd>{val}</dd></>)}</dl>
+        )}
+        {v.options.length > 0 && <ul class="options">{v.options.map((o) => <li>{o}</li>)}</ul>}
+        <div class="prose"><Content /></div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Complète le message WhatsApp avec les champs saisis. Sans JavaScript, le lien garde un message générique.
+  const fmt = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('fr-FR') : '…');
+  document.querySelectorAll<HTMLFormElement>('form.resa').forEach((form) => {
+    const lien = form.querySelector<HTMLAnchorElement>('.resa__btn')!;
+    const maj = () => {
+      const f = new FormData(form);
+      const msg =
+        `Bonjour IMAVAITA, je souhaite connaître la disponibilité du véhicule « ${form.dataset.vehicule} » ` +
+        `du ${fmt(String(f.get('debut') ?? ''))} au ${fmt(String(f.get('fin') ?? ''))}.\n` +
+        `Lieu de prise en charge : ${String(f.get('lieu') ?? '').trim() || '…'}\n` +
+        `Avec chauffeur : ${f.get('chauffeur') ?? 'à discuter'}`;
+      lien.href = `https://wa.me/${form.dataset.numero}?text=${encodeURIComponent(msg)}`;
+    };
+    form.addEventListener('input', maj);
+    form.addEventListener('submit', (e) => e.preventDefault());
+  });
+</script>
+
+<style>
+  .fiche { display: grid; gap: 32px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
+  .fil { grid-column: 1 / -1; margin: 0; }
+  .fiche__media :global(img) { border-radius: var(--rayon); width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .fiche__vide { aspect-ratio: 4 / 3; display: grid; place-items: center; background: var(--fond-doux); border-radius: var(--rayon); color: var(--texte-doux); }
+  .fiche__galerie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .fiche__badges { display: flex; gap: 6px; margin: 0 0 .5em; }
+  .tarifs { list-style: none; padding: 0; margin: 0 0 .5em; display: grid; gap: 6px; }
+  .tarifs li { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--bord); padding-bottom: 6px; }
+  .tarifs strong, .tarifs-devis strong { color: var(--orange-600); font-size: 1.2rem; }
+  .note { font-size: .85rem; color: var(--texte-doux); }
+  .resa { background: var(--fond-doux); border-radius: var(--rayon); padding: 18px; display: grid; gap: 12px; margin: 20px 0; }
+  .resa__titre { font-weight: 800; color: var(--marine-900); margin: 0; }
+  .resa label { display: grid; gap: 4px; font-weight: 600; font-size: .95rem; }
+  .resa input[type='date'], .resa input[type='text'] { min-height: 46px; padding: 8px 12px; border: 1px solid var(--bord); border-radius: 8px; font: inherit; background: #fff; width: 100%; }
+  .resa__dates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .resa input { min-width: 0; }
+  .resa fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .resa legend { font-weight: 600; font-size: .95rem; margin-bottom: 4px; width: 100%; }
+  .resa .radio { display: flex; align-items: center; gap: 6px; font-weight: 500; min-height: 36px; }
+  .resa__btn { width: 100%; }
+  .caracs { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; }
+  .caracs dt { color: var(--texte-doux); }
+  .caracs dd { margin: 0; font-weight: 600; }
+  .options { padding-left: 1.2em; }
+  @media (max-width: 900px) { .fiche { grid-template-columns: minmax(0, 1fr); } }
+</style>

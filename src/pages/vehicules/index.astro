@@ -1,0 +1,49 @@
+---
+import Base from '../../layouts/Base.astro';
+import CarteVehicule from '../../components/CarteVehicule.astro';
+import BoutonWhatsApp from '../../components/BoutonWhatsApp.astro';
+import { site, getVehicules } from '../../lib/site';
+
+const vehicules = await getVehicules();
+const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
+// Pas de filtres inutiles si le catalogue est restreint (brief §5).
+const avecFiltres = categories.length > 1 && vehicules.length > 6;
+---
+<Base titre="Nos véhicules" description={`Catalogue des véhicules en location chez ${site.nom} : ${categories.join(', ') || 'SUV, berlines, minibus'}. Réservation sur WhatsApp.`}>
+  <section class="section">
+    <div class="conteneur">
+      <h1 class="titre-section">Nos véhicules</h1>
+      <p class="intro">Choisissez un véhicule puis envoyez-nous vos dates sur WhatsApp. Les tarifs sont indicatifs ; la disponibilité est confirmée par notre équipe.</p>
+
+      {avecFiltres && (
+        <div class="filtres" role="group" aria-label="Filtrer par catégorie">
+          <button type="button" aria-pressed="true" data-cat="">Tous</button>
+          {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}>{c}</button>)}
+        </div>
+      )}
+
+      {vehicules.length > 0
+        ? <div class="grille" id="catalogue">{vehicules.map((v, i) => <div data-cat={v.data.categorie}><CarteVehicule vehicule={v} prioritaire={i < 2} /></div>)}</div>
+        : <p>Le catalogue est en cours de mise en ligne. <BoutonWhatsApp libelle="Demander les disponibilités" source="catalogue-vide" /></p>}
+    </div>
+  </section>
+</Base>
+
+{avecFiltres && (
+  <script>
+    const boutons = document.querySelectorAll<HTMLButtonElement>('.filtres button');
+    const cartes = document.querySelectorAll<HTMLElement>('#catalogue > [data-cat]');
+    boutons.forEach((b) => b.addEventListener('click', () => {
+      boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      cartes.forEach((c) => { c.hidden = !!b.dataset.cat && c.dataset.cat !== b.dataset.cat; });
+    }));
+  </script>
+)}
+
+<style>
+  .grille > div { display: flex; }
+  .grille > div > :global(*) { flex: 1; }
+  .filtres { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .filtres button { min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--bord); background: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  .filtres button[aria-pressed='true'] { background: var(--marine); border-color: var(--marine); color: #fff; }
+</style>

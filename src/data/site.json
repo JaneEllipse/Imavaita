@@ -1,0 +1,24 @@
+{
+  "nom": "IMAVAITA",
+  "slogan": "Location de véhicules au Togo",
+  "accroche": "Des véhicules entretenus, une réservation simple sur WhatsApp et une équipe qui vous répond.",
+  "whatsapp": "22800000000",
+  "telephone": "+228 00 00 00 00",
+  "email": "contact@exemple.tg",
+  "adresse": "Adresse à confirmer, Lomé, Togo",
+  "ville": "Lomé",
+  "zones": "Lomé et environs (à confirmer)",
+  "horaires": "Lundi au samedi, 8 h – 18 h (à confirmer)",
+  "google_maps_url": "",
+  "avantages": [
+    { "titre": "Véhicules entretenus", "texte": "À confirmer avec IMAVAITA." },
+    { "titre": "Réservation simple", "texte": "Une demande sur WhatsApp, une confirmation par notre équipe." },
+    { "titre": "Avec ou sans chauffeur", "texte": "À confirmer avec IMAVAITA." }
+  ],
+  "services": [
+    { "titre": "Location avec chauffeur", "texte": "À confirmer." },
+    { "titre": "Transferts aéroport", "texte": "À confirmer." },
+    { "titre": "Location longue durée", "texte": "À confirmer." }
+  ],
+  "temoignages": []
+}

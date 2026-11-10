@@ -1,0 +1,11 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../lib/site';
+---
+<Base titre="Mentions légales" description={`Mentions légales du site ${site.nom}.`}>
+  <section class="section"><div class="conteneur prose">
+    <h1>Mentions légales</h1>
+    <p><strong>[À compléter et faire valider]</strong> Raison sociale, forme juridique, numéro RCCM, siège, responsable de publication, hébergeur (Infomaniak Network SA, Genève, Suisse), crédits photos.</p>
+    <h2>Éditeur</h2><p>{site.nom} — {site.adresse} — {site.telephone} — {site.email}</p>
+  </div></section>
+</Base>
