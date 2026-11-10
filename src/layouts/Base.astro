@@ -182,7 +182,7 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
         :global(html:not(.js)) .nav { position: static; display: flex; box-shadow: none; }
         :global(html:not(.js)) .entete__barre { flex-wrap: wrap; }
       }
-      .pied { background: radial-gradient(1200px 400px at 85% 0%, #0a3f86 0%, transparent 60%), var(--marine-900); color: #c9d6ea; padding: 64px 0 40px; }
+      .pied { background: var(--grain-clair), var(--lignes), radial-gradient(1200px 400px at 85% 0%, #0a3f86 0%, transparent 60%), var(--marine-900); color: #c9d6ea; padding: 64px 0 40px; }
       @media (max-width: 800px) { .pied { padding-bottom: 104px; } }
       .pied a { color: #fff; text-decoration: none; }
       .pied a:hover { color: var(--orange); }

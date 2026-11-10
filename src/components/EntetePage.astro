@@ -24,8 +24,8 @@ const { titre, surtitre, intro, image, imageAlt = '', fil } = Astro.props;
 </section>
 <style>
   .ep { position: relative; overflow: hidden; isolation: isolate; color: #fff; padding: clamp(36px, 5vw, 64px) 0 clamp(40px, 6vw, 72px);
-    background: radial-gradient(700px 300px at 95% 0%, rgb(255 140 0 / .2), transparent 65%), linear-gradient(135deg, var(--marine-900), var(--marine) 70%); }
-  .ep--image { background: var(--marine-900); }
+    background: var(--grain-clair), var(--lignes), radial-gradient(700px 300px at 95% 0%, rgb(255 140 0 / .2), transparent 65%), linear-gradient(135deg, var(--marine-900), var(--marine) 70%); }
+  .ep--image { background: var(--grain-clair), var(--marine-900); }
   .ep__photo { position: absolute; z-index: -1; top: 0; right: 0; bottom: 0; width: 60%; }
   .ep__photo :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 30% 55%; }
   .ep__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--marine-900) 0%, rgb(0 27 64 / .7) 25%, transparent 65%); }

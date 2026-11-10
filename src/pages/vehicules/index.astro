@@ -14,11 +14,11 @@ const jsonld = [
   { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: vehicules.map((v, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(`/vehicules/${v.id}/`, Astro.site).href, name: v.data.nom })) },
 ];
 const avecFiltres = categories.length > 1;
-const icone = (c: string) => ({ 'Berline': 'berline', 'Citadine': 'berline', 'Pick-up': 'pickup', 'Minibus': 'minibus', 'Utilitaire': 'minibus' } as const)[c as 'Berline'] ?? 'voiture';
+const icone = (c: string) => ({ 'SUV / 4x4': 'suv', 'Berline': 'berline', 'Citadine': 'berline', 'Pick-up': 'pickup', 'Minibus': 'minibus', 'Utilitaire': 'minibus' } as const)[c as 'Berline'] ?? 'voiture';
 ---
 <Base titre="Nos véhicules" titreSeo={`Nos véhicules en location à ${site.ville}`} description={`Louez un véhicule à ${site.ville} : ${categories.join(', ')}. Avec ou sans chauffeur, disponibilité et tarif confirmés sur WhatsApp.`} image={banniere} jsonld={jsonld}>
   <EntetePage titre="Nos véhicules en location" intro={`Choisissez un véhicule, envoyez-nous vos dates sur WhatsApp : nous vous confirmons la disponibilité et le tarif. À ${site.ville} et dans tout le Togo.`} image={banniere} fil={[{ label: 'Nos véhicules' }]} />
-  <section class="section section--catalogue">
+  <section class="section section--catalogue section--pierre">
     <div class="conteneur">
       {avecFiltres && (
         <div class="onglets" role="group" aria-label="Filtrer par catégorie">

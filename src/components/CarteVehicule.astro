@@ -14,7 +14,7 @@ const href = `/vehicules/${vehicule.id}/`;
 <article class:list={['cv', { 'cv--ligne': ligne }]}>
   <a href={href} class="cv__media" tabindex="-1" aria-hidden="true">
     {v.couverture
-      ? <Image src={v.couverture} alt="" widths={[320, 480, 640]} sizes={ligne ? '(max-width: 700px) 100vw, 300px' : '(max-width: 900px) 72vw, 280px'} loading={prioritaire ? 'eager' : 'lazy'} />
+      ? <Image src={v.couverture} alt="" widths={[320, 480, 640]} sizes={ligne ? '(max-width: 700px) 100vw, 300px' : '(max-width: 900px) 72vw, 280px'} quality={65} loading={prioritaire ? 'eager' : 'lazy'} />
       : <div class="cv__vide"><Icone nom="voiture" /></div>}
     {(v.statut === 'brouillon' || v.nouveau || ligne) && (
       <span class="cv__badges">
