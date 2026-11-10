@@ -1,11 +1,16 @@
 ---
 import Base from '../layouts/Base.astro';
+import EntetePage from '../components/EntetePage.astro';
 import { site } from '../lib/site';
 ---
 <Base titre="Mentions légales" description={`Mentions légales du site ${site.nom}.`}>
+  <EntetePage titre="Mentions légales" />
   <section class="section"><div class="conteneur prose">
-    <h1>Mentions légales</h1>
-    <p><strong>[À compléter et faire valider]</strong> Raison sociale, forme juridique, numéro RCCM, siège, responsable de publication, hébergeur (Infomaniak Network SA, Genève, Suisse), crédits photos.</p>
-    <h2>Éditeur</h2><p>{site.nom} — {site.adresse} — {site.telephone} — {site.email}</p>
+    <h2>Éditeur du site</h2>
+    <p>{site.nom}{site.adresse && <>, {site.adresse}</>}, {site.ville}, Togo.{site.email && <> Contact : <a href={`mailto:${site.email}`}>{site.email}</a>.</>}</p>
+    <h2>Hébergement</h2>
+    <p>Infomaniak Network SA, rue Eugène-Marziano 25, 1227 Les Acacias (GE), Suisse.</p>
+    <h2>Propriété intellectuelle</h2>
+    <p>Les textes, logos et visuels de ce site appartiennent à {site.nom} ou sont utilisés avec autorisation. Toute reproduction sans accord préalable est interdite.</p>
   </div></section>
 </Base>

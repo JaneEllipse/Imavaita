@@ -1,24 +1,25 @@
 {
   "nom": "IMAVAITA",
   "slogan": "Location de véhicules au Togo",
-  "accroche": "Des véhicules entretenus, une réservation simple sur WhatsApp et une équipe qui vous répond.",
-  "whatsapp": "22800000000",
-  "telephone": "+228 00 00 00 00",
-  "email": "contact@exemple.tg",
-  "adresse": "Adresse à confirmer, Lomé, Togo",
+  "accroche": "Des véhicules fiables, confortables et disponibles rapidement. Réservez en quelques secondes sur WhatsApp.",
+  "whatsapp": "",
+  "telephone": "",
+  "email": "",
+  "adresse": "",
   "ville": "Lomé",
-  "zones": "Lomé et environs (à confirmer)",
-  "horaires": "Lundi au samedi, 8 h – 18 h (à confirmer)",
+  "zones": "",
+  "horaires": "",
   "google_maps_url": "",
   "avantages": [
-    { "titre": "Véhicules entretenus", "texte": "À confirmer avec IMAVAITA." },
-    { "titre": "Réservation simple", "texte": "Une demande sur WhatsApp, une confirmation par notre équipe." },
-    { "titre": "Avec ou sans chauffeur", "texte": "À confirmer avec IMAVAITA." }
+    { "titre": "Fiabilité", "texte": "Des véhicules récents et bien entretenus." },
+    { "titre": "Simplicité", "texte": "Une réservation rapide sur WhatsApp." },
+    { "titre": "Flexibilité", "texte": "Location courte ou longue durée." },
+    { "titre": "Accompagnement", "texte": "Une équipe à votre écoute." }
   ],
   "services": [
-    { "titre": "Location avec chauffeur", "texte": "À confirmer." },
-    { "titre": "Transferts aéroport", "texte": "À confirmer." },
-    { "titre": "Location longue durée", "texte": "À confirmer." }
+    { "titre": "Location avec ou sans chauffeur", "texte": "Conduisez vous-même ou laissez-vous conduire par un chauffeur qui connaît la route." },
+    { "titre": "Courte et longue durée", "texte": "Pour une journée, une semaine ou plusieurs mois : dites-nous vos dates, nous vous proposons la formule adaptée." },
+    { "titre": "Transferts et déplacements de groupe", "texte": "Aéroport, séminaires, mariages : un véhicule adapté au nombre de passagers." }
   ],
   "temoignages": []
 }

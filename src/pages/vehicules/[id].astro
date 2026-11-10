@@ -3,56 +3,70 @@ import { Image } from 'astro:assets';
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import IconeWhatsApp from '../../components/IconeWhatsApp.astro';
-import { site, getVehicules, formatPrix, waLink, messageVehicule, type Vehicule } from '../../lib/site';
+import Icone from '../../components/Icone.astro';
+import CarteVehicule from '../../components/CarteVehicule.astro';
+import { site, getVehicules, formatPrix, waLink, messageVehicule, numeroWa, type Vehicule } from '../../lib/site';
 
 export async function getStaticPaths() {
   const vehicules = await getVehicules();
-  return vehicules.map((v) => ({ params: { id: v.id }, props: { vehicule: v } }));
+  return vehicules.map((v) => ({ params: { id: v.id }, props: { vehicule: v, autres: vehicules.filter((x) => x.id !== v.id).slice(0, 3) } }));
 }
 
-const { vehicule } = Astro.props as { vehicule: Vehicule };
+const { vehicule, autres } = Astro.props as { vehicule: Vehicule; autres: Vehicule[] };
 const v = vehicule.data;
 const { Content } = await render(vehicule);
 const caracs = [
-  ['Catégorie', v.categorie],
-  ['Marque / modèle', [v.marque, v.modele].filter(Boolean).join(' ')],
-  ['Places', v.places?.toString()],
-  ['Boîte', v.transmission],
-].filter(([, val]) => val) as [string, string][];
-const tarifs = [
-  ['Par jour', v.prix_jour],
-  ['Par semaine', v.prix_semaine],
-  ['Par mois', v.prix_mois],
-].filter(([, p]) => p) as [string, number][];
+  { icone: 'voiture', label: 'Catégorie', val: v.categorie },
+  { icone: 'personnes', label: 'Places', val: v.places?.toString() },
+  { icone: 'boite', label: 'Boîte', val: v.transmission },
+  { icone: 'volant', label: 'Modèle', val: [v.marque, v.modele].filter(Boolean).join(' ') },
+].filter((c) => c.val) as { icone: 'voiture' | 'personnes' | 'boite' | 'volant'; label: string; val: string }[];
+const tarifs = [['Jour', v.prix_jour], ['Semaine', v.prix_semaine], ['Mois', v.prix_mois]].filter(([, p]) => p) as [string, number][];
+const images = [v.couverture, ...v.galerie].filter(Boolean);
 ---
-<Base titre={v.nom} description={v.resume ?? `${v.nom} en location chez ${site.nom}. Réservation sur WhatsApp.`} noindex={v.statut !== 'publie'}>
-  <section class="section">
+<Base titre={v.nom} description={v.resume ?? `${v.nom} en location chez ${site.nom}. Réservation sur WhatsApp.`} noindex={v.statut !== 'publie'} vehicule={v.nom}>
+  <section class="fiche-haut">
+    <div class="conteneur">
+      <nav class="fil" aria-label="Fil d'Ariane"><a href="/">Accueil</a><span>›</span><a href="/vehicules/">Nos véhicules</a><span>›</span><span aria-current="page">{v.nom}</span></nav>
+    </div>
+  </section>
+  <section class="section fiche-section">
     <div class="conteneur fiche">
-      <p class="fil"><a href="/vehicules/">← Tous nos véhicules</a></p>
-      <div class="fiche__media">
-        {v.couverture
-          ? <Image src={v.couverture} alt={v.nom} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 640px" loading="eager" />
-          : <div class="fiche__vide">Photo à venir</div>}
-        {v.galerie.length > 0 && (
+      <div class="fiche__gauche">
+        <div class="fiche__media">
+          {v.couverture
+            ? <Image src={v.couverture} alt={v.nom} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 640px" loading="eager" fetchpriority="high" />
+            : <div class="fiche__vide"><Icone nom="voiture" /></div>}
+          <span class="fiche__badges">
+            {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
+            {v.nouveau && <span class="badge">Nouveau</span>}
+          </span>
+        </div>
+        {images.length > 1 && (
           <div class="fiche__galerie">
             {v.galerie.map((img, i) => <Image src={img} alt={`${v.nom}, photo ${i + 2}`} widths={[240, 400]} sizes="(max-width: 900px) 33vw, 210px" />)}
           </div>
         )}
+        <div class="fiche__texte">
+          <h2>Le véhicule</h2>
+          <ul class="caracs">
+            {caracs.map((c) => <li><span class="pastille"><Icone nom={c.icone} /></span><span><small>{c.label}</small><strong>{c.val}</strong></span></li>)}
+          </ul>
+          {v.options.length > 0 && <ul class="options">{v.options.map((o) => <li><Icone nom="check" />{o}</li>)}</ul>}
+          <div class="prose"><Content /></div>
+        </div>
       </div>
 
-      <div class="fiche__infos">
-        <p class="fiche__badges">
-          {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
-          {v.nouveau && <span class="badge">Nouveau</span>}
-        </p>
+      <aside class="resa">
+        <span class="surtitre">{v.categorie}</span>
         <h1>{v.nom}</h1>
+        {v.resume && <p class="resa__resume">{v.resume}</p>}
         {tarifs.length > 0
-          ? <ul class="tarifs">{tarifs.map(([l, p]) => <li><span>{l}</span><strong>{formatPrix(p)}</strong></li>)}</ul>
-          : <p class="tarifs-devis"><strong>Tarif sur demande</strong></p>}
-        <p class="note">Tarifs indicatifs. Disponibilité et conditions confirmées par notre équipe sur WhatsApp.</p>
+          ? <ul class="tarifs">{tarifs.map(([l, p]) => <li><small>{l}</small><strong>{formatPrix(p)}</strong></li>)}</ul>
+          : <p class="tarifs-devis"><small>Tarif</small><strong>Sur demande</strong><span>selon la durée et les options</span></p>}
 
-        <form class="resa" data-vehicule={v.nom} data-numero={site.whatsapp.replace(/\D/g, '')}>
-          <p class="resa__titre">Demande de réservation</p>
+        <form class="resa__form" data-vehicule={v.nom} data-numero={numeroWa}>
+          <p class="resa__titre">Votre demande</p>
           <div class="resa__dates">
             <label>Du<input type="date" name="debut" /></label>
             <label>Au<input type="date" name="fin" /></label>
@@ -60,30 +74,35 @@ const tarifs = [
           <label>Lieu de prise en charge<input type="text" name="lieu" placeholder="Ex. aéroport de Lomé" autocomplete="off" /></label>
           <fieldset>
             <legend>Avec chauffeur ?</legend>
-            <label class="radio"><input type="radio" name="chauffeur" value="oui" /> Oui</label>
-            <label class="radio"><input type="radio" name="chauffeur" value="non" /> Non</label>
-            <label class="radio"><input type="radio" name="chauffeur" value="à discuter" checked /> À discuter</label>
+            <div class="segments">
+              <label><input type="radio" name="chauffeur" value="oui" /><span>Oui</span></label>
+              <label><input type="radio" name="chauffeur" value="non" /><span>Non</span></label>
+              <label><input type="radio" name="chauffeur" value="à discuter" checked /><span>À voir</span></label>
+            </div>
           </fieldset>
           <a class="btn btn--wa resa__btn" href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" data-wa={`fiche:${vehicule.id}`}>
             <IconeWhatsApp />Réserver sur WhatsApp
           </a>
-          <p class="note">Rien n'est enregistré sur ce site : le message s'ouvre dans WhatsApp, vous le relisez avant l'envoi.</p>
+          <p class="note">Le message s'ouvre dans WhatsApp avec ces informations : vous le relisez avant de l'envoyer. Rien n'est enregistré sur ce site.</p>
         </form>
-
-        {caracs.length > 0 && (
-          <dl class="caracs">{caracs.map(([k, val]) => <><dt>{k}</dt><dd>{val}</dd></>)}</dl>
-        )}
-        {v.options.length > 0 && <ul class="options">{v.options.map((o) => <li>{o}</li>)}</ul>}
-        <div class="prose"><Content /></div>
-      </div>
+      </aside>
     </div>
   </section>
+
+  {autres.length > 0 && (
+    <section class="section section--doux">
+      <div class="conteneur">
+        <h2 class="titre-section">Autres véhicules</h2>
+        <div class="grille autres">{autres.map((a) => <div class="revele"><CarteVehicule vehicule={a} /></div>)}</div>
+      </div>
+    </section>
+  )}
 </Base>
 
 <script>
-  // Complète le message WhatsApp avec les champs saisis. Sans JavaScript, le lien garde un message générique.
+  // Complète le message WhatsApp avec les champs saisis. Sans JavaScript, le lien garde un message à compléter.
   const fmt = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('fr-FR') : '…');
-  document.querySelectorAll<HTMLFormElement>('form.resa').forEach((form) => {
+  document.querySelectorAll<HTMLFormElement>('form.resa__form').forEach((form) => {
     const lien = form.querySelector<HTMLAnchorElement>('.resa__btn')!;
     const maj = () => {
       const f = new FormData(form);
@@ -100,29 +119,59 @@ const tarifs = [
 </script>
 
 <style>
-  .fiche { display: grid; gap: 32px; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
-  .fil { grid-column: 1 / -1; margin: 0; }
-  .fiche__media :global(img) { border-radius: var(--rayon); width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
-  .fiche__vide { aspect-ratio: 4 / 3; display: grid; place-items: center; background: var(--fond-doux); border-radius: var(--rayon); color: var(--texte-doux); }
-  .fiche__galerie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
-  .fiche__badges { display: flex; gap: 6px; margin: 0 0 .5em; }
-  .tarifs { list-style: none; padding: 0; margin: 0 0 .5em; display: grid; gap: 6px; }
-  .tarifs li { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--bord); padding-bottom: 6px; }
-  .tarifs strong, .tarifs-devis strong { color: var(--orange-600); font-size: 1.2rem; }
-  .note { font-size: .85rem; color: var(--texte-doux); }
-  .resa { background: var(--fond-doux); border-radius: var(--rayon); padding: 18px; display: grid; gap: 12px; margin: 20px 0; }
-  .resa__titre { font-weight: 800; color: var(--marine-900); margin: 0; }
-  .resa label { display: grid; gap: 4px; font-weight: 600; font-size: .95rem; }
-  .resa input[type='date'], .resa input[type='text'] { min-height: 46px; padding: 8px 12px; border: 1px solid var(--bord); border-radius: 8px; font: inherit; background: #fff; width: 100%; }
+  .fiche-haut { background: linear-gradient(180deg, var(--fond-doux), #fff); padding-top: 20px; }
+  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: .9rem; color: var(--texte-doux); }
+  .fil a { color: var(--texte-doux); text-decoration: none; }
+  .fil a:hover { color: var(--marine); }
+  .fiche-section { padding-top: 24px; }
+  .fiche { display: grid; gap: 40px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
+  .fiche__media { position: relative; border-radius: 24px; overflow: hidden; aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 100%, #d5deea 0%, #f4f7fb 55%, #fff 100%); box-shadow: var(--ombre-forte); }
+  .fiche__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .fiche__vide { display: grid; place-items: center; height: 100%; color: #b8c3d3; }
+  .fiche__vide :global(svg) { width: 96px; height: 96px; }
+  .fiche__badges { position: absolute; top: 16px; left: 16px; display: flex; gap: 6px; }
+  .fiche__galerie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
+  .fiche__galerie :global(img) { border-radius: 14px; aspect-ratio: 4 / 3; object-fit: cover; }
+  .fiche__texte { margin-top: 36px; }
+  .fiche__texte h2 { font-size: 1.5rem; }
+  .caracs { list-style: none; padding: 0; margin: 0 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .caracs li { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--bord); border-radius: 14px; background: #fff; }
+  .caracs .pastille { margin: 0; width: 44px; height: 44px; flex: none; }
+  .caracs .pastille :global(svg) { width: 24px; height: 24px; }
+  .caracs small { display: block; color: var(--texte-doux); font-size: .8rem; }
+  .caracs strong { font-family: var(--titre); color: var(--marine-900); }
+  .options { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .options li { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: #e9fbf0; color: var(--wa-fonce); font-weight: 600; font-size: .9rem; }
+  .options :global(svg) { width: 16px; height: 16px; }
+
+  .resa { position: sticky; top: 96px; background: #fff; border: 1px solid var(--bord); border-radius: 24px; padding: 28px; box-shadow: var(--ombre-forte); }
+  .resa h1 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); margin-bottom: .25em; }
+  .resa__resume { color: var(--texte-doux); }
+  .tarifs { list-style: none; padding: 0; margin: 0 0 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+  .tarifs li, .tarifs-devis { display: flex; flex-direction: column; padding: 12px 14px; border-radius: 14px; background: var(--orange-50); }
+  .tarifs small, .tarifs-devis small { color: var(--texte-doux); font-size: .8rem; }
+  .tarifs strong, .tarifs-devis strong { font-family: var(--titre); color: var(--orange-600); font-size: 1.3rem; }
+  .tarifs-devis span { font-size: .85rem; color: var(--texte-doux); }
+  .resa__form { display: grid; gap: 14px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--bord); }
+  .resa__titre { font-family: var(--titre); font-weight: 700; color: var(--marine-900); margin: 0; }
+  .resa__form label { display: grid; gap: 6px; font-weight: 600; font-size: .92rem; }
+  .resa__form input[type='date'], .resa__form input[type='text'] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--bord); border-radius: 12px; font: inherit; background: var(--fond-doux); width: 100%; min-width: 0; transition: border-color .15s, background .15s; }
+  .resa__form input:focus { border-color: var(--marine); background: #fff; outline: none; box-shadow: 0 0 0 3px rgb(0 48 110 / .12); }
   .resa__dates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
-  .resa input { min-width: 0; }
-  .resa fieldset { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; }
-  .resa legend { font-weight: 600; font-size: .95rem; margin-bottom: 4px; width: 100%; }
-  .resa .radio { display: flex; align-items: center; gap: 6px; font-weight: 500; min-height: 36px; }
-  .resa__btn { width: 100%; }
-  .caracs { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; }
-  .caracs dt { color: var(--texte-doux); }
-  .caracs dd { margin: 0; font-weight: 600; }
-  .options { padding-left: 1.2em; }
-  @media (max-width: 900px) { .fiche { grid-template-columns: minmax(0, 1fr); } }
+  .resa__form fieldset { border: 0; padding: 0; margin: 0; }
+  .resa__form legend { font-weight: 600; font-size: .92rem; margin-bottom: 6px; }
+  .segments { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--fond-doux); border-radius: 12px; padding: 4px; gap: 4px; }
+  .segments label { display: block; }
+  .segments input { position: absolute; opacity: 0; pointer-events: none; }
+  .segments span { display: grid; place-items: center; min-height: 42px; border-radius: 9px; cursor: pointer; font-weight: 600; color: var(--texte-doux); transition: background .15s, color .15s; }
+  .segments input:checked + span { background: #fff; color: var(--marine); box-shadow: var(--ombre); }
+  .segments input:focus-visible + span { outline: 3px solid var(--orange); }
+  .resa__btn { width: 100%; font-size: 1.05rem; min-height: 56px; }
+  .note { font-size: .82rem; color: var(--texte-doux); margin: 0; }
+  .autres { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+  @media (max-width: 900px) {
+    .fiche { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .fiche__gauche { display: contents; }
+    .fiche__media { order: 1; } .fiche__galerie { order: 2; margin-top: -14px; } .resa { order: 3; position: static; padding: 22px; } .fiche__texte { order: 4; margin-top: 8px; }
+  }
 </style>

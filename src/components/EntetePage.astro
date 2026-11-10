@@ -1,0 +1,21 @@
+---
+interface Props { titre: string; surtitre?: string; intro?: string }
+const { titre, surtitre, intro } = Astro.props;
+---
+<section class="ep">
+  <div class="conteneur ep__contenu">
+    {surtitre && <span class="surtitre ep__sur">{surtitre}</span>}
+    <h1>{titre}</h1>
+    {intro && <p>{intro}</p>}
+    <slot />
+  </div>
+</section>
+<style>
+  .ep { position: relative; overflow: hidden; color: #fff; padding: clamp(40px, 6vw, 72px) 0 clamp(48px, 7vw, 84px);
+    background: radial-gradient(700px 300px at 95% 0%, rgb(255 140 0 / .25), transparent 65%), linear-gradient(135deg, var(--marine-900), var(--marine) 60%, #0b4fa3); }
+  .ep::after { content: ''; position: absolute; left: 0; right: 0; bottom: -1px; height: 36px; background: #fff; clip-path: ellipse(60% 100% at 50% 100%); }
+  .ep__contenu { position: relative; z-index: 1; }
+  .ep__sur { color: #ffb347; }
+  .ep h1 { color: #fff; font-size: clamp(1.9rem, 4.5vw, 3rem); }
+  .ep p { color: #dbe6f5; max-width: 60ch; font-size: 1.08rem; margin: 0; }
+</style>

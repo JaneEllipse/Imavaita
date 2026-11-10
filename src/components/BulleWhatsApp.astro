@@ -1,0 +1,100 @@
+---
+import IconeWhatsApp from './IconeWhatsApp.astro';
+import Icone from './Icone.astro';
+import { site, waLink, messageGeneral, messageVehicule, getVehicules } from '../lib/site';
+
+interface Props { vehicule?: string }
+const { vehicule } = Astro.props;
+const vehicules = (await getVehicules()).slice(0, 6);
+const choix = vehicule
+  ? [{ libelle: `Réserver : ${vehicule}`, message: messageVehicule(vehicule), source: 'bulle:fiche' }]
+  : vehicules.map((v) => ({ libelle: v.data.nom, message: messageVehicule(v.data.nom), source: `bulle:${v.id}` }));
+---
+<div class="bulle" data-bulle>
+  <div class="bulle__panneau" id="bulle-panneau" role="dialog" aria-modal="false" aria-labelledby="bulle-titre" hidden>
+    <div class="bulle__entete">
+      <span class="bulle__avatar" aria-hidden="true">I<span></span></span>
+      <div>
+        <p class="bulle__nom" id="bulle-titre">{site.nom}</p>
+        <p class="bulle__statut">Location de véhicules · {site.ville}</p>
+      </div>
+      <button type="button" class="bulle__fermer" data-bulle-fermer aria-label="Fermer"><Icone nom="croix" /></button>
+    </div>
+    <div class="bulle__corps">
+      <p class="bulle__message">Bonjour 👋<br />{vehicule ? `Ce véhicule vous intéresse ? Envoyez-nous vos dates, nous vous confirmons la disponibilité.` : 'Quel véhicule souhaitez-vous louer ? Choisissez ci-dessous, nous vous répondons sur WhatsApp.'}</p>
+      <div class="bulle__choix">
+        {choix.map((c) => (
+          <a href={waLink(c.message)} target="_blank" rel="noopener" data-wa={c.source}>{c.libelle}<Icone nom="fleche" /></a>
+        ))}
+      </div>
+    </div>
+    <a class="btn btn--wa bulle__go" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="bulle:general">
+      <IconeWhatsApp />Démarrer la discussion
+    </a>
+  </div>
+
+  <p class="bulle__teaser" data-bulle-teaser hidden>Besoin d'un véhicule ? <strong>Écrivez-nous</strong></p>
+
+  <a class="bulle__bouton" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="bulle:bouton" data-bulle-ouvrir aria-controls="bulle-panneau" aria-expanded="false" aria-label="Discuter avec nous sur WhatsApp">
+    <IconeWhatsApp />
+  </a>
+</div>
+
+<script>
+  // Ouvre la bulle au lieu de quitter la page. Sans JavaScript, le bouton reste un lien WhatsApp direct.
+  const racine = document.querySelector<HTMLElement>('[data-bulle]');
+  if (racine) {
+    const panneau = racine.querySelector<HTMLElement>('#bulle-panneau')!;
+    const bouton = racine.querySelector<HTMLAnchorElement>('[data-bulle-ouvrir]')!;
+    const teaser = racine.querySelector<HTMLElement>('[data-bulle-teaser]')!;
+    const basculer = (ouvrir: boolean) => {
+      panneau.hidden = !ouvrir;
+      racine.classList.toggle('ouverte', ouvrir);
+      bouton.setAttribute('aria-expanded', String(ouvrir));
+      teaser.hidden = true;
+      if (ouvrir) panneau.querySelector<HTMLElement>('.bulle__choix a, .bulle__go')?.focus({ preventScroll: true });
+    };
+    bouton.addEventListener('click', (e) => { e.preventDefault(); e.stopImmediatePropagation(); basculer(panneau.hidden); });
+    racine.querySelector('[data-bulle-fermer]')!.addEventListener('click', () => { basculer(false); bouton.focus(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panneau.hidden) { basculer(false); bouton.focus(); } });
+    document.addEventListener('click', (e) => { if (!panneau.hidden && !racine.contains(e.target as Node)) basculer(false); });
+    // Petit message d'accroche, une seule fois par visite
+    let vu = false;
+    try { vu = sessionStorage.getItem('bulle-teaser') === '1'; } catch {}
+    if (!vu) setTimeout(() => {
+      if (panneau.hidden) { teaser.hidden = false; try { sessionStorage.setItem('bulle-teaser', '1'); } catch {} }
+    }, 6000);
+    teaser.addEventListener('click', () => basculer(true));
+  }
+</script>
+
+<style>
+  .bulle { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+  .bulle__bouton { position: relative; display: grid; place-items: center; width: 62px; height: 62px; border-radius: 50%; background: var(--wa); color: #fff; box-shadow: 0 8px 24px rgb(0 0 0 / .25); transition: transform .2s ease; }
+  .bulle__bouton:hover { transform: scale(1.07); }
+  .bulle__bouton :global(svg) { width: 34px; height: 34px; }
+  .bulle__bouton::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--wa); animation: pouls 2.4s ease-out infinite; }
+  .ouverte .bulle__bouton::after { display: none; }
+  @keyframes pouls { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(1.6); opacity: 0; } }
+
+  .bulle__teaser { margin: 0; background: #fff; color: var(--texte); padding: 10px 14px; border-radius: 14px 14px 4px 14px; box-shadow: var(--ombre-forte); font-size: .92rem; cursor: pointer; animation: entree .35s ease; }
+  .bulle__teaser strong { color: var(--wa-fonce); }
+
+  .bulle__panneau { width: min(360px, calc(100vw - 36px)); background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgb(0 27 64 / .3); animation: entree .25s ease; transform-origin: bottom right; }
+  @keyframes entree { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+  .bulle__entete { display: flex; align-items: center; gap: 12px; padding: 16px 16px 16px 18px; background: linear-gradient(135deg, var(--wa-fonce), #075e54); color: #fff; }
+  .bulle__avatar { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--marine); font-family: var(--titre); font-weight: 800; font-size: 1.3rem; flex: none; border: 2px solid #fff; }
+  .bulle__avatar span { position: absolute; top: 7px; right: 9px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+  .bulle__nom { margin: 0; font-family: var(--titre); font-weight: 700; }
+  .bulle__statut { margin: 0; font-size: .82rem; opacity: .85; }
+  .bulle__fermer { margin-left: auto; display: grid; place-items: center; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgb(255 255 255 / .12); color: #fff; cursor: pointer; }
+  .bulle__fermer :global(svg) { width: 20px; height: 20px; }
+  .bulle__corps { padding: 18px; background: #efeae2 radial-gradient(rgb(0 0 0 / .04) 1px, transparent 1px) 0 0 / 14px 14px; max-height: min(52vh, 380px); overflow-y: auto; }
+  .bulle__message { position: relative; background: #fff; padding: 10px 14px; border-radius: 4px 14px 14px 14px; box-shadow: 0 1px 1px rgb(0 0 0 / .08); font-size: .95rem; max-width: 92%; }
+  .bulle__choix { display: grid; gap: 8px; }
+  .bulle__choix a { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 46px; padding: 10px 14px; border-radius: 12px; background: #fff; border: 1px solid #d7f5e3; color: var(--wa-fonce); font-weight: 600; text-decoration: none; transition: background .15s, transform .15s; }
+  .bulle__choix a:hover { background: #e9fbf0; transform: translateX(3px); }
+  .bulle__choix :global(svg) { width: 18px; height: 18px; flex: none; }
+  .bulle__go { margin: 14px 18px 18px; width: calc(100% - 36px); }
+  @media (max-width: 600px) { .bulle { right: 14px; bottom: 14px; } .bulle__bouton { width: 58px; height: 58px; } }
+</style>

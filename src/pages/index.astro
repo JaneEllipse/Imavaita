@@ -1,63 +1,98 @@
 ---
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CarteVehicule from '../components/CarteVehicule.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import Icone from '../components/Icone.astro';
+import banniere from '../assets/maquette/banniere-suv-lome.jpg';
 import { site, getVehicules } from '../lib/site';
 
 const vehicules = await getVehicules();
 // Règle anti-surcharge : 4 fiches maximum sur l'accueil, « à la une » d'abord.
 const une = [...vehicules].sort((a, b) => Number(b.data.a_la_une) - Number(a.data.a_la_une)).slice(0, 4);
+const icones = ['bouclier', 'chrono', 'carte', 'casque'] as const;
 
 const jsonld = {
   '@context': 'https://schema.org',
   '@type': 'AutoRental',
   name: site.nom,
   url: Astro.site?.toString(),
-  telephone: site.telephone,
-  email: site.email,
-  address: { '@type': 'PostalAddress', streetAddress: site.adresse, addressLocality: site.ville, addressCountry: 'TG' },
-  areaServed: site.zones,
+  ...(site.telephone ? { telephone: site.telephone } : {}),
+  ...(site.email ? { email: site.email } : {}),
+  address: { '@type': 'PostalAddress', ...(site.adresse ? { streetAddress: site.adresse } : {}), addressLocality: site.ville, addressCountry: 'TG' },
   ...(site.google_maps_url ? { hasMap: site.google_maps_url } : {}),
 };
 ---
 <Base titre={site.nom} description={`${site.slogan}. ${site.accroche}`} jsonld={jsonld}>
   <section class="hero">
-    <div class="conteneur hero__contenu">
-      <h1>{site.slogan}</h1>
-      <p class="hero__accroche">{site.accroche}</p>
-      <div class="hero__actions">
-        <BoutonWhatsApp variante="orange" source="hero" />
-        <a href="/vehicules/" class="btn hero__secondaire">Voir nos véhicules</a>
+    <div class="conteneur hero__grille">
+      <div class="hero__texte">
+        <span class="surtitre hero__surtitre">Location de véhicules · {site.ville}</span>
+        <h1>{site.slogan}</h1>
+        <p class="hero__accroche">{site.accroche}</p>
+        <ul class="hero__atouts">
+          <li><Icone nom="voiture" />Véhicules entretenus</li>
+          <li><Icone nom="calendrier" />Réservation simple</li>
+          <li><Icone nom="casque" />Équipe à l'écoute</li>
+        </ul>
+        <div class="hero__actions">
+          <BoutonWhatsApp variante="orange" source="hero" />
+          <a href="/vehicules/" class="btn btn--clair">Voir nos véhicules<Icone nom="fleche" /></a>
+        </div>
+      </div>
+      <div class="hero__visuel">
+        <div class="hero__cadre">
+          <Image src={banniere} alt="SUV sur une avenue de Lomé, au pied du monument de l'Indépendance" widths={[400, 600, 752]} sizes="(max-width: 900px) 92vw, 560px" loading="eager" fetchpriority="high" />
+        </div>
+        <p class="hero__puce hero__puce--1"><span class="hero__point"></span>Demande en 1 message sur WhatsApp</p>
+        <p class="hero__puce hero__puce--2"><Icone nom="volant" />Avec ou sans chauffeur</p>
       </div>
     </div>
+    <svg class="hero__vague" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60c240 40 480 40 720 10s480-50 720-10v30H0z" fill="#fff"/></svg>
   </section>
 
   <section class="section">
     <div class="conteneur">
-      <h2 class="titre-section">Nos véhicules</h2>
+      <div class="entete-section revele">
+        <div>
+          <span class="surtitre">Notre flotte</span>
+          <h2 class="titre-section">Nos véhicules en location</h2>
+        </div>
+        <a href="/vehicules/" class="btn btn--contour lien-tous">Voir tous nos véhicules<Icone nom="fleche" /></a>
+      </div>
       {une.length > 0
-        ? <div class="grille">{une.map((v, i) => <CarteVehicule vehicule={v} prioritaire={i === 0} />)}</div>
+        ? <div class="grille grille--vehicules">{une.map((v, i) => <div class="revele" style={`transition-delay:${i * 90}ms`}><CarteVehicule vehicule={v} prioritaire={i === 0} /></div>)}</div>
         : <p class="intro">Notre catalogue est en cours de mise en ligne. Écrivez-nous sur WhatsApp pour connaître les véhicules disponibles.</p>}
-      <p class="centre"><a href="/vehicules/" class="btn btn--contour">Voir tous nos véhicules</a></p>
     </div>
   </section>
 
   <section class="section section--doux">
     <div class="conteneur">
-      <h2 class="titre-section">Pourquoi choisir {site.nom} ?</h2>
-      <div class="grille">
-        {site.avantages.map((a) => <div class="carte"><h3>{a.titre}</h3><p>{a.texte}</p></div>)}
+      <div class="revele">
+        <span class="surtitre">Nos engagements</span>
+        <h2 class="titre-section">Pourquoi choisir {site.nom} ?</h2>
+      </div>
+      <div class="grille grille--atouts">
+        {site.avantages.map((a, i) => (
+          <div class="carte revele" style={`transition-delay:${i * 90}ms`}>
+            <span class="pastille"><Icone nom={icones[i % icones.length]} /></span>
+            <h3>{a.titre}</h3><p>{a.texte}</p>
+          </div>
+        ))}
       </div>
     </div>
   </section>
 
   <section class="section">
     <div class="conteneur">
-      <h2 class="titre-section">Réserver en 3 étapes</h2>
+      <div class="revele titre-section--centre">
+        <span class="surtitre">Simple et rapide</span>
+        <h2 class="titre-section titre-section--centre">Réservez en 3 étapes</h2>
+      </div>
       <ol class="etapes">
-        <li><strong>Choisissez</strong> un véhicule dans notre catalogue.</li>
-        <li><strong>Écrivez-nous sur WhatsApp</strong> avec vos dates et le lieu de prise en charge.</li>
-        <li><strong>Recevez la confirmation</strong> de notre équipe avec les modalités.</li>
+        <li class="revele"><span class="etapes__num">1</span><Icone nom="voiture" /><strong>Choisissez votre véhicule</strong><p>Parcourez notre catalogue et ouvrez la fiche qui vous intéresse.</p></li>
+        <li class="revele" style="transition-delay:120ms"><span class="etapes__num">2</span><Icone nom="message" /><strong>Écrivez-nous sur WhatsApp</strong><p>Le message est prérempli : ajoutez vos dates et le lieu de prise en charge.</p></li>
+        <li class="revele" style="transition-delay:240ms"><span class="etapes__num">3</span><Icone nom="check" /><strong>Recevez la confirmation</strong><p>Notre équipe vous confirme la disponibilité, le tarif et les modalités.</p></li>
       </ol>
     </div>
   </section>
@@ -74,26 +109,66 @@ const jsonld = {
   )}
 
   <section class="bandeau">
-    <div class="conteneur">
-      <h2>Besoin d'un véhicule ?</h2>
-      <p>Écrivez-nous sur WhatsApp, notre équipe vous répond rapidement.</p>
+    <div class="conteneur bandeau__contenu revele">
+      <div>
+        <h2>Besoin d'un véhicule ?</h2>
+        <p>Écrivez-nous maintenant sur WhatsApp et recevez une réponse de notre équipe.</p>
+      </div>
       <BoutonWhatsApp source="bandeau" />
     </div>
   </section>
 </Base>
 
 <style>
-  /* Bannière sans photo lourde : à remplacer par une photo réelle validée (WebP, ~150 Ko max). */
-  .hero { background: linear-gradient(135deg, var(--marine-900), var(--marine) 60%, #0b4a96); color: #fff; padding-block: clamp(48px, 10vw, 110px); }
-  .hero h1 { color: #fff; max-width: 14ch; }
-  .hero__accroche { font-size: clamp(1.05rem, 2.5vw, 1.25rem); max-width: 42ch; opacity: .95; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
-  .hero__secondaire { color: #fff; border-color: rgb(255 255 255 / .6); }
-  .hero__secondaire:hover { background: rgb(255 255 255 / .1); }
-  .centre { text-align: center; margin-top: 28px; }
-  .etapes { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); padding: 0; list-style: none; counter-reset: e; }
-  .etapes li { counter-increment: e; background: var(--fond-doux); border-radius: var(--rayon); padding: 20px; }
-  .etapes li::before { content: counter(e); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--orange); color: #fff; font-weight: 800; margin-bottom: 10px; }
-  .bandeau { background: var(--marine); color: #fff; padding-block: 48px; text-align: center; }
-  .bandeau h2 { color: #fff; }
+  .hero { position: relative; overflow: hidden; color: #fff; padding: clamp(40px, 7vw, 88px) 0 clamp(90px, 10vw, 140px);
+    background:
+      radial-gradient(900px 500px at 90% 10%, rgb(255 140 0 / .22), transparent 60%),
+      radial-gradient(700px 500px at 0% 100%, rgb(10 63 134 / .9), transparent 70%),
+      linear-gradient(135deg, var(--marine-900) 0%, var(--marine) 55%, #0b4fa3 100%); }
+  .hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgb(255 255 255 / .04) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .04) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(180deg, #000, transparent 85%); pointer-events: none; }
+  .hero__grille { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
+  .hero__surtitre { color: #ffb347; }
+  .hero h1 { color: #fff; max-width: 13ch; text-shadow: 0 4px 24px rgb(0 0 0 / .2); }
+  .hero__accroche { font-size: clamp(1.05rem, 2.2vw, 1.25rem); max-width: 40ch; color: #dbe6f5; }
+  .hero__atouts { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; margin: 22px 0 30px; }
+  .hero__atouts li { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .95rem; }
+  .hero__atouts :global(svg) { width: 26px; height: 26px; color: #ffb347; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 14px; }
+  .hero__visuel { position: relative; }
+  .hero__cadre { border-radius: 28px; overflow: hidden; box-shadow: 0 30px 70px rgb(0 0 0 / .45); transform: perspective(1200px) rotateY(-6deg) rotateX(2deg); border: 4px solid rgb(255 255 255 / .15); animation: flotte 7s ease-in-out infinite; }
+  .hero__cadre :global(img) { width: 100%; aspect-ratio: 376 / 324; object-fit: cover; }
+  @keyframes flotte { 0%, 100% { transform: perspective(1200px) rotateY(-6deg) rotateX(2deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(-6deg) rotateX(2deg) translateY(-10px); } }
+  .hero__puce { position: absolute; display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 12px 16px; border-radius: 14px; background: #fff; color: var(--marine-900); font-weight: 600; font-size: .9rem; box-shadow: 0 16px 36px rgb(0 0 0 / .25); }
+  .hero__puce :global(svg) { width: 22px; height: 22px; color: var(--orange-600); }
+  .hero__puce--1 { left: -28px; bottom: 34px; }
+  .hero__puce--2 { right: -14px; top: 26px; }
+  .hero__point { width: 10px; height: 10px; border-radius: 50%; background: var(--wa); box-shadow: 0 0 0 4px rgb(37 211 102 / .25); }
+  .hero__vague { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 70px; }
+  @media (max-width: 900px) {
+    .hero__grille { grid-template-columns: 1fr; }
+    .hero__cadre { transform: none; animation: none; border-radius: 20px; }
+    .hero__puce--1 { left: 10px; bottom: -18px; }
+    .hero__puce--2 { left: 10px; right: auto; top: -16px; }
+    /* Accueil mobile : véhicules en bande défilante, comme sur la maquette */
+    .grille--vehicules { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; margin: 0 -16px; padding: 4px 16px 24px; scrollbar-width: none; }
+    .grille--vehicules > div { flex: 0 0 78%; scroll-snap-align: start; }
+    .grille--atouts { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grille--atouts .carte { padding: 18px; }
+  }
+  .grille--vehicules { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+  .grille--atouts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); margin-top: 8px; }
+  .etapes { position: relative; display: grid; gap: 24px; grid-template-columns: repeat(3, 1fr); padding: 0; margin: 40px 0 0; list-style: none; }
+  .etapes::before { content: ''; position: absolute; top: 34px; left: 16%; right: 16%; border-top: 2px dashed #ffc580; }
+  .etapes li { position: relative; text-align: center; padding: 0 12px; }
+  .etapes li > :global(svg) { display: block; margin: 0 auto 14px; width: 68px; height: 68px; padding: 18px; border-radius: 50%; background: #fff; color: var(--marine); box-shadow: var(--ombre-forte); position: relative; }
+  .etapes__num { position: absolute; top: -6px; left: calc(50% + 18px); z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--orange); color: #fff; font-family: var(--titre); font-weight: 700; font-size: .85rem; }
+  .etapes strong { display: block; font-family: var(--titre); color: var(--marine-900); font-size: 1.1rem; margin-bottom: 6px; }
+  .etapes p { color: var(--texte-doux); }
+  @media (max-width: 760px) { .etapes { grid-template-columns: 1fr; } .etapes::before { display: none; } }
+  .bandeau { position: relative; overflow: hidden; padding-block: clamp(48px, 7vw, 80px); color: #fff;
+    background: radial-gradient(600px 300px at 100% 0%, rgb(255 140 0 / .35), transparent 70%), linear-gradient(120deg, var(--marine-900), var(--marine-700)); }
+  .bandeau::after { content: ''; position: absolute; left: -10%; right: -10%; bottom: 26px; height: 6px; background: repeating-linear-gradient(90deg, rgb(255 255 255 / .25) 0 60px, transparent 60px 110px); transform: rotate(-2deg); }
+  .bandeau__contenu { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
+  .bandeau h2 { color: #fff; margin-bottom: .3em; }
+  .bandeau p { color: #dbe6f5; margin: 0; }
 </style>

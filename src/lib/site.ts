@@ -16,8 +16,10 @@ const fcfa = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
 export const formatPrix = (n: number) => `${fcfa.format(n).replace(/ | /g, ' ')} FCFA`;
 
 /** Lien WhatsApp avec message prérempli (fonctionne sans JavaScript). */
+export const numeroWa = site.whatsapp.replace(/\D/g, '');
 export function waLink(message?: string): string {
-  const base = `https://wa.me/${site.whatsapp.replace(/\D/g, '')}`;
+  // Sans numéro configuré, wa.me laisse le visiteur choisir le destinataire : renseigner le numéro dans l'admin.
+  const base = `https://wa.me/${numeroWa}`;
   return message ? `${base}?text=${encodeURIComponent(message)}` : base;
 }
 
