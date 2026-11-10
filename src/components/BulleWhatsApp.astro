@@ -65,6 +65,16 @@ const choix = vehicule
       if (panneau.hidden) { teaser.hidden = false; try { sessionStorage.setItem('bulle-teaser', '1'); } catch {} }
     }, 6000);
     teaser.addEventListener('click', () => basculer(true));
+    // Le bouton flottant s'efface quand un bouton WhatsApp de la page est déjà visible (évite le doublon)
+    const cibles = document.querySelectorAll('[data-masque-bulle]');
+    if (cibles.length && 'IntersectionObserver' in window) {
+      const visibles = new Set<Element>();
+      const io = new IntersectionObserver((entrees) => {
+        entrees.forEach((en) => (en.isIntersecting ? visibles.add(en.target) : visibles.delete(en.target)));
+        racine.classList.toggle('discrete', visibles.size > 0 && panneau.hidden);
+      }, { threshold: 0.3 });
+      cibles.forEach((c) => io.observe(c));
+    }
   }
 </script>
 
@@ -72,6 +82,8 @@ const choix = vehicule
   .bulle { position: fixed; right: 18px; bottom: 18px; z-index: 50; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
   .bulle__bouton { position: relative; display: grid; place-items: center; width: 62px; height: 62px; border-radius: 50%; background: var(--wa); color: #fff; box-shadow: 0 8px 24px rgb(0 0 0 / .25); transition: transform .2s ease; }
   .bulle__bouton:hover { transform: scale(1.07); }
+  .bulle { transition: opacity .25s ease, transform .25s ease; }
+  .bulle.discrete { opacity: 0; transform: translateY(20px); pointer-events: none; }
   .bulle__bouton :global(svg) { width: 34px; height: 34px; }
   .bulle__bouton::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--wa); animation: pouls 2.4s ease-out infinite; }
   .ouverte .bulle__bouton::after { display: none; }

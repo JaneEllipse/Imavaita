@@ -11,8 +11,8 @@ backend:
     update: 'Mise à jour du véhicule « {{slug}} »'
     delete: 'Suppression du véhicule « {{slug}} »'
 
-site_url: https://www.imavaita.com # À remplacer par le domaine définitif
-display_url: https://www.imavaita.com
+site_url: https://imavaita.com # À remplacer par le domaine définitif
+display_url: https://imavaita.com
 media_folder: src/assets/vehicules
 public_folder: ../../assets/vehicules
 

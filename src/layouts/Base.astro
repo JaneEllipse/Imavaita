@@ -156,13 +156,14 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
         .nav ul { flex-direction: column; }
         .nav li a { padding: 14px 8px; border-bottom: 1px solid var(--bord); font-size: 1.05rem; }
         .nav li a::after { display: none; }
-        .nav li a[aria-current='page'] { color: var(--orange-600); }
+        .nav li a[aria-current='page'] { color: var(--orange-texte); }
         /* Sans JavaScript, le menu reste visible */
         :global(html:not(.js)) .entete__menu { display: none; }
         :global(html:not(.js)) .nav { position: static; display: flex; box-shadow: none; }
         :global(html:not(.js)) .entete__barre { flex-wrap: wrap; }
       }
-      .pied { background: radial-gradient(1200px 400px at 85% 0%, #0a3f86 0%, transparent 60%), var(--marine-900); color: #c9d6ea; padding: 64px 0 110px; }
+      .pied { background: radial-gradient(1200px 400px at 85% 0%, #0a3f86 0%, transparent 60%), var(--marine-900); color: #c9d6ea; padding: 48px 0 32px; }
+      @media (max-width: 600px) { .pied { padding-bottom: 96px; } }
       .pied a { color: #fff; text-decoration: none; }
       .pied a:hover { color: var(--orange); }
       .pied__grille { display: grid; gap: 36px; grid-template-columns: 1.4fr 1fr 1.2fr; }
@@ -173,7 +174,7 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
       .pied__liens { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
       .pied__contact a, .pied__contact span { display: inline-flex; align-items: center; gap: 10px; }
       .pied__contact :global(svg) { width: 20px; height: 20px; color: var(--orange); flex: none; }
-      .pied__legal { display: flex; flex-wrap: wrap; gap: 8px 22px; border-top: 1px solid rgb(255 255 255 / .12); margin-top: 40px; padding-top: 20px; font-size: .9rem; }
+      .pied__legal { display: flex; flex-wrap: wrap; gap: 8px 22px; border-top: 1px solid rgb(255 255 255 / .12); margin-top: 32px; padding-top: 18px; font-size: .9rem; }
     </style>
   </body>
 </html>
