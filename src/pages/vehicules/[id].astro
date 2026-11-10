@@ -208,7 +208,7 @@ const message = (debut = 'JJ/MM/AAAA', fin = 'JJ/MM/AAAA', lieu = site.ville, ch
   .options :global(svg) { width: 22px; height: 22px; padding: 3px; border-radius: 50%; border: 2px solid var(--orange); color: var(--orange-600); }
 
   /* En-tête de la fiche */
-  .fiche__cat { display: inline-block; padding: 4px 12px; border-radius: 8px; background: var(--orange-50); color: var(--orange-600); font-family: var(--titre); font-weight: 600; font-size: .85rem; }
+  .fiche__cat { display: inline-block; padding: 4px 12px; border-radius: 8px; background: var(--orange-50); color: var(--orange-texte); font-family: var(--titre); font-weight: 600; font-size: .85rem; }
   .fiche__entete h1 { font-size: clamp(1.8rem, 3.4vw, 2.4rem); margin: 10px 0 .3em; }
   .fiche__resume { color: var(--texte-doux); font-size: 1.02rem; }
   .tuiles { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
@@ -222,11 +222,11 @@ const message = (debut = 'JJ/MM/AAAA', fin = 'JJ/MM/AAAA', lieu = site.ville, ch
   .resa__tete h2 { margin: 0; font-size: 1.3rem; }
   .resa__corps { padding: 20px 24px 24px; }
   .tarif-devis { margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; background: var(--orange-50); color: var(--texte-doux); }
-  .tarif-devis strong { font-family: var(--titre); color: var(--orange-600); font-size: 1.2rem; }
+  .tarif-devis strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.2rem; }
   .tarifs { list-style: none; padding: 0; margin: 0 0 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
   .tarifs li { display: grid; padding: 10px 14px; border-radius: 12px; background: var(--orange-50); }
   .tarifs small { color: var(--texte-doux); font-size: .8rem; }
-  .tarifs strong { font-family: var(--titre); color: var(--orange-600); font-size: 1.15rem; }
+  .tarifs strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.15rem; }
   .resa__form { display: grid; gap: 14px; }
   .resa__form label, .resa__form legend { display: grid; gap: 6px; font-weight: 600; font-size: .9rem; color: var(--marine-900); }
   .resa__form input[type='date'], .resa__form input[type='text'] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--bord); border-radius: 10px; font: inherit; font-weight: 400; color: var(--texte); background: #fff; width: 100%; min-width: 0; transition: border-color .15s, box-shadow .15s; }

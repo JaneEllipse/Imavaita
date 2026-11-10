@@ -55,7 +55,7 @@ const href = `/vehicules/${vehicule.id}/`;
   .cv__vide :global(svg) { width: 64px; height: 64px; }
   .cv__badges { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; }
   .cv__corps { display: flex; flex-direction: column; flex: 1; padding: 16px 18px 18px; }
-  .cv__cat { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-600); margin-bottom: .2em; }
+  .cv__cat { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-texte); margin-bottom: .2em; }
   .cv h3 { font-size: 1.2rem; margin-bottom: .25em; }
   .cv h3 a { text-decoration: none; color: inherit; }
   .cv h3 a:hover { color: var(--marine-700); }
@@ -65,11 +65,25 @@ const href = `/vehicules/${vehicule.id}/`;
   .cv__caracs :global(svg) { width: 15px; height: 15px; }
   .cv__pied { margin-top: auto; display: grid; gap: 12px; }
   .cv__prix { margin: 0; font-size: .9rem; color: var(--texte-doux); }
-  .cv__prix strong { font-family: var(--titre); font-weight: 700; color: var(--orange-600); font-size: 1.05rem; }
+  .cv__prix strong { font-family: var(--titre); font-weight: 700; color: var(--orange-texte); font-size: 1.05rem; }
   .cv__actions { display: flex; gap: 8px; }
   .cv__voir { flex: 1; min-height: 44px; padding: .45em 1em; font-size: .92rem; }
   .cv__wa { min-height: 44px; width: 44px; padding: 0; }
 
+  /* Catalogue mobile : cartes compactes (photo à gauche) pour parcourir sans défilement interminable */
+  @media (max-width: 699px) {
+    .cv--ligne { flex-direction: row; border-radius: 16px; }
+    .cv--ligne .cv__media { flex: 0 0 38%; aspect-ratio: auto; min-height: 100%; }
+    .cv--ligne .cv__badges { display: none; }
+    .cv--ligne .cv__corps { padding: 12px 14px; min-width: 0; }
+    .cv--ligne h3 { font-size: 1.05rem; }
+    .cv--ligne .cv__resume { display: none; }
+    .cv--ligne .cv__caracs { margin-bottom: 8px; }
+    .cv--ligne .cv__pied { gap: 8px; }
+    .cv--ligne .cv__voir { min-height: 44px; padding: .4em .8em; font-size: .88rem; }
+    .cv--ligne .cv__voir { white-space: nowrap; }
+    .cv--ligne .cv__voir :global(svg) { display: none; }
+  }
   /* Catalogue : carte horizontale sur grand écran */
   @media (min-width: 700px) {
     .cv--ligne { flex-direction: row; }
