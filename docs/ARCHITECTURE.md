@@ -56,6 +56,7 @@ Le site est un dossier de fichiers statiques (`dist/`). L'action GitHub `.github
    - `INFOMANIAK_USER` : l'utilisateur SSH
    - `INFOMANIAK_PATH` : le chemin du dossier du site (ex. `sites/imavaita.com`)
    - `INFOMANIAK_SSH_KEY` : le contenu de la clé **privée** `deploy_imavaita`
+   - *ou*, à la place de la clé : `INFOMANIAK_PASSWORD` : le mot de passe de l'utilisateur SSH (prioritaire s'il est présent ; plus simple, mais à changer si quelqu'un quitte le projet).
 5. *Actions* → « Build et déploiement » → *Run workflow* pour le premier envoi.
 6. Domaine : mettre le domaine définitif dans `astro.config.mjs` (`site`) et `public/admin/config.yml` (`site_url`), et activer le certificat SSL (Let's Encrypt) dans le Manager.
 

@@ -48,15 +48,23 @@ jobs:
         if: steps.cfg.outputs.ok == 'true'
         env:
           SSH_KEY: ${{ secrets.INFOMANIAK_SSH_KEY }}
+          SSHPASS: ${{ secrets.INFOMANIAK_PASSWORD }}
         run: |
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          # Retire les fins de ligne Windows et les espaces parasites copiés avec les secrets
-          printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
           HOST=$(printf '%s' "$HOST" | tr -d ' \r\n'); USER=$(printf '%s' "$USER" | tr -d ' \r\n')
-          ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null || {
-            echo "::error::INFOMANIAK_SSH_KEY illisible : coller tout le fichier de clé privée (imavaita_deploy, sans .pub), lignes BEGIN et END comprises."
-            exit 1
-          }
           ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          rsync -rlvz --delete --exclude '.well-known/' \
-            -e "ssh -i ~/.ssh/id_deploy" dist/ "$USER@$HOST:$DEST/"
+          if [ -n "$SSHPASS" ]; then
+            # Connexion par mot de passe SSH (secret INFOMANIAK_PASSWORD), prioritaire si présent
+            sudo apt-get install -y -qq sshpass > /dev/null
+            RSH="sshpass -e ssh -o PubkeyAuthentication=no"
+          else
+            # Connexion par clé SSH (secret INFOMANIAK_SSH_KEY), fins de ligne Windows retirées
+            printf '%s\n' "$SSH_KEY" | tr -d '\r' > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+            ssh-keygen -y -f ~/.ssh/id_deploy > /dev/null || {
+              echo "::error::INFOMANIAK_SSH_KEY illisible : coller tout le fichier de clé privée (imavaita_deploy, sans .pub), lignes BEGIN et END comprises."
+              exit 1
+            }
+            echo "Empreinte de la clé utilisée : $(ssh-keygen -lf ~/.ssh/id_deploy)"
+            RSH="ssh -i $HOME/.ssh/id_deploy -o IdentitiesOnly=yes"
+          fi
+          rsync -rlvz --delete --exclude '.well-known/' -e "$RSH" dist/ "$USER@$HOST:$DEST/"
