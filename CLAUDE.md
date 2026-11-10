@@ -12,7 +12,7 @@ Hors périmètre V1 : paiement en ligne, calendrier de disponibilités, espace c
 - Catalogue : collection de contenu `src/content/vehicules/*.md` (schéma dans `src/content.config.ts`).
 - Coordonnées, avantages, services, avis : `src/data/site.json` ; FAQ : `src/data/faq.json`.
 - Admin client : Sveltia CMS sur `/admin/` (`public/admin/config.yml`). **Tout champ ajouté au schéma doit l'être aussi dans `config.yml`**, et inversement.
-- Hébergement visé : Cloudflare Pages (build `npm run build`, sortie `dist/`).
+- Hébergement : Infomaniak (Apache, `public/.htaccess`). L'action GitHub `build.yml` construit puis envoie `dist/` par rsync/SSH à chaque push sur `main`, y compris les enregistrements de l'admin.
 
 ## Règles impératives
 1. **Ne jamais inventer de données client** : prix, avis, notes Google, engagements, coordonnées, véhicules. Les valeurs non confirmées restent marquées « à confirmer ». Les maquettes du brief sont des exemples fictifs.

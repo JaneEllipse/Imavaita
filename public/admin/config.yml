@@ -1,19 +1,18 @@
 # Interface d'administration IMAVAITA (Sveltia CMS, compatible Decap CMS).
-# Chaque enregistrement crée un commit sur GitHub, et Cloudflare Pages republie le site (~1 min).
+# Chaque enregistrement crée un commit sur GitHub ; l'action « Build et déploiement » republie le site sur Infomaniak (~2 min).
+# Connexion : bouton « Sign In Using Access Token » (jeton GitHub personnel, voir docs/GUIDE_ADMIN.md).
 # Garder ces champs alignés avec src/content.config.ts.
 backend:
   name: github
   repo: JaneEllipse/Imavaita
   branch: main
-  base_url: https://sveltia-cms-auth.EXEMPLE.workers.dev # À remplacer après déploiement du worker d'authentification
   commit_messages:
     create: 'Ajout du véhicule « {{slug}} »'
     update: 'Mise à jour du véhicule « {{slug}} »'
     delete: 'Suppression du véhicule « {{slug}} »'
 
-locale: fr
-site_url: https://imavaita.pages.dev
-display_url: https://imavaita.pages.dev
+site_url: https://www.imavaita.com # À remplacer par le domaine définitif
+display_url: https://www.imavaita.com
 media_folder: src/assets/vehicules
 public_folder: ../../assets/vehicules
 
