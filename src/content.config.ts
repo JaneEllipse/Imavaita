@@ -15,6 +15,7 @@ const vehicules = defineCollection({
       categorie: z.enum(['SUV / 4x4', 'Berline', 'Citadine', 'Pick-up', 'Minibus', 'Utilitaire', 'Autre']),
       places: z.number().int().positive().optional(),
       transmission: z.enum(['Manuelle', 'Automatique']).optional(),
+      carburant: z.enum(['Essence', 'Diesel', 'Hybride', 'Électrique']).optional(),
       couverture: image().optional(),
       galerie: z.array(image()).max(3).default([]),
       // Tarifs en FCFA. Vide = « Sur devis ». N'afficher que des prix validés par IMAVAITA.

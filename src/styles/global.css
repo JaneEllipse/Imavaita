@@ -59,6 +59,8 @@ p { margin: 0 0 1em; }
 .btn--wa:hover { background: var(--wa-fonce); box-shadow: 0 10px 24px rgb(37 211 102 / .45); }
 .btn--orange { background: linear-gradient(135deg, #ff9d1f, var(--orange-600)); color: #fff; box-shadow: 0 8px 22px rgb(255 140 0 / .4); }
 .btn--orange:hover { box-shadow: 0 12px 28px rgb(255 140 0 / .5); }
+.btn--marine { background: var(--marine); color: #fff; }
+.btn--marine:hover { background: var(--marine-700); }
 .btn--contour { border-color: var(--marine); color: var(--marine); background: #fff; }
 .btn--contour:hover { background: var(--marine); color: #fff; }
 .btn--clair { border-color: rgb(255 255 255 / .7); color: #fff; background: rgb(255 255 255 / .08); backdrop-filter: blur(4px); }

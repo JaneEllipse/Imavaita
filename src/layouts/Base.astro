@@ -8,7 +8,7 @@ import logo from '../assets/logo-imavaita.png';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
 import BulleWhatsApp from '../components/BulleWhatsApp.astro';
 import Icone from '../components/Icone.astro';
-import { site, waLink, messageGeneral } from '../lib/site';
+import { site, waLink, messageGeneral, carte, adresseComplete } from '../lib/site';
 
 interface Props { titre: string; description: string; jsonld?: Record<string, unknown>; noindex?: boolean; vehicule?: string }
 const { titre, description, jsonld, noindex = false, vehicule } = Astro.props;
@@ -74,21 +74,23 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
       <div class="conteneur pied__grille">
         <div class="pied__marque">
           <Image src={logo} alt={site.nom} width={170} densities={[1, 2]} />
-          <p>{site.slogan}. Réservation simple et rapide sur WhatsApp.</p>
+          <p>{site.slogan}. Des véhicules fiables et confortables à {site.ville} et partout dans le pays. Réservation simple sur WhatsApp.</p>
         </div>
         <div>
           <p class="pied__titre">Navigation</p>
           <ul class="pied__liens">{nav.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
         </div>
         <div>
-          <p class="pied__titre">Nous contacter</p>
+          <p class="pied__titre">Contact</p>
           <ul class="pied__liens pied__contact">
-            <li><a href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="pied"><IconeWhatsApp />WhatsApp</a></li>
+            <li><a href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="pied"><IconeWhatsApp />Réserver sur WhatsApp</a></li>
             {site.telephone && <li><a href={`tel:${site.telephone.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone}</a></li>}
             {site.email && <li><a href={`mailto:${site.email}`}><Icone nom="mail" />{site.email}</a></li>}
-            {site.adresse && <li><span><Icone nom="carte" />{site.adresse}</span></li>}
             {site.horaires && <li><span><Icone nom="horloge" />{site.horaires}</span></li>}
-            {site.google_maps_url && <li><a href={site.google_maps_url} target="_blank" rel="noopener"><Icone nom="carte" />Voir sur Google Maps</a></li>}
+            <li class="pied__adresse">
+              <Icone nom="carte" />
+              <span>{adresseComplete}{carte.lien && <a href={carte.lien} target="_blank" rel="noopener" class="pied__maps">Nous trouver sur Google Maps</a>}</span>
+            </li>
           </ul>
         </div>
       </div>
@@ -162,7 +164,8 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
         :global(html:not(.js)) .nav { position: static; display: flex; box-shadow: none; }
         :global(html:not(.js)) .entete__barre { flex-wrap: wrap; }
       }
-      .pied { background: radial-gradient(1200px 400px at 85% 0%, #0a3f86 0%, transparent 60%), var(--marine-900); color: #c9d6ea; padding: 64px 0 110px; }
+      .pied { background: radial-gradient(1200px 400px at 85% 0%, #0a3f86 0%, transparent 60%), var(--marine-900); color: #c9d6ea; padding: 64px 0 40px; }
+      @media (max-width: 800px) { .pied { padding-bottom: 104px; } }
       .pied a { color: #fff; text-decoration: none; }
       .pied a:hover { color: var(--orange); }
       .pied__grille { display: grid; gap: 36px; grid-template-columns: 1.4fr 1fr 1.2fr; }
@@ -171,7 +174,10 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
       .pied__marque p { margin-top: 16px; max-width: 34ch; }
       .pied__titre { font-family: var(--titre); font-weight: 600; color: #fff; margin-bottom: 12px; }
       .pied__liens { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-      .pied__contact a, .pied__contact span { display: inline-flex; align-items: center; gap: 10px; }
+      .pied__contact > li > a, .pied__contact > li > span { display: inline-flex; align-items: center; gap: 10px; }
+      .pied__adresse { display: flex; gap: 10px; align-items: flex-start; }
+      .pied__adresse > span { display: grid !important; gap: 2px; }
+      .pied__maps { color: var(--orange) !important; font-weight: 600; text-decoration: underline !important; text-underline-offset: 3px; }
       .pied__contact :global(svg) { width: 20px; height: 20px; color: var(--orange); flex: none; }
       .pied__legal { display: flex; flex-wrap: wrap; gap: 8px 22px; border-top: 1px solid rgb(255 255 255 / .12); margin-top: 40px; padding-top: 20px; font-size: .9rem; }
     </style>

@@ -5,63 +5,77 @@ import { formatPrix, waLink, messageVehicule } from '../lib/site';
 import Icone from './Icone.astro';
 import IconeWhatsApp from './IconeWhatsApp.astro';
 
-interface Props { vehicule: Vehicule; prioritaire?: boolean }
-const { vehicule, prioritaire = false } = Astro.props;
+/** `ligne` : carte horizontale du catalogue (image à gauche sur grand écran). */
+interface Props { vehicule: Vehicule; prioritaire?: boolean; ligne?: boolean }
+const { vehicule, prioritaire = false, ligne = false } = Astro.props;
 const v = vehicule.data;
 const href = `/vehicules/${vehicule.id}/`;
 ---
-<article class="cv">
+<article class:list={['cv', { 'cv--ligne': ligne }]}>
   <a href={href} class="cv__media" tabindex="-1" aria-hidden="true">
     {v.couverture
-      ? <Image src={v.couverture} alt="" widths={[320, 480, 640]} sizes="(max-width: 600px) 100vw, 300px" loading={prioritaire ? 'eager' : 'lazy'} />
+      ? <Image src={v.couverture} alt="" widths={[320, 480, 640]} sizes={ligne ? '(max-width: 700px) 100vw, 300px' : '(max-width: 900px) 72vw, 280px'} loading={prioritaire ? 'eager' : 'lazy'} />
       : <div class="cv__vide"><Icone nom="voiture" /></div>}
-    <span class="cv__badges">
-      {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
-      {v.nouveau && <span class="badge">Nouveau</span>}
-    </span>
+    {(v.statut === 'brouillon' || v.nouveau || ligne) && (
+      <span class="cv__badges">
+        {ligne && <span class="badge">{v.categorie}</span>}
+        {v.nouveau && <span class="badge badge--marine">Nouveau</span>}
+        {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
+      </span>
+    )}
   </a>
   <div class="cv__corps">
-    <p class="cv__cat">{v.categorie}</p>
+    {!ligne && <p class="cv__cat">{v.categorie}</p>}
     <h3><a href={href}>{v.nom}</a></h3>
     {v.resume && <p class="cv__resume">{v.resume}</p>}
     <ul class="cv__caracs">
       {v.places && <li><Icone nom="personnes" />{v.places} places</li>}
       {v.transmission && <li><Icone nom="boite" />{v.transmission}</li>}
-      {v.options.includes('Climatisation') && <li>❄ Clim</li>}
+      {v.options.includes('Climatisation') && <li><Icone nom="flocon" />Clim</li>}
     </ul>
     <div class="cv__pied">
       <p class="cv__prix">
-        {v.prix_jour ? <><span>À partir de</span><strong>{formatPrix(v.prix_jour)}</strong><span>/ jour</span></> : <><span>Tarif</span><strong>sur demande</strong></>}
+        {v.prix_jour ? <>À partir de <strong>{formatPrix(v.prix_jour)}</strong> / jour</> : <>Tarif : <strong>Sur demande</strong></>}
       </p>
       <div class="cv__actions">
-        <a href={href} class="btn btn--contour cv__voir">Voir le véhicule</a>
-        <a href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" class="btn btn--wa cv__wa" data-wa={`carte:${vehicule.id}`} aria-label={`Réserver ${v.nom} sur WhatsApp`}><IconeWhatsApp /></a>
+        <a href={href} class="btn btn--marine cv__voir">Voir le véhicule<Icone nom="fleche" /></a>
+        {ligne && <a href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" class="btn btn--wa cv__wa" data-wa={`carte:${vehicule.id}`} aria-label={`Réserver ${v.nom} sur WhatsApp`}><IconeWhatsApp /></a>}
       </div>
     </div>
   </div>
 </article>
 
 <style>
-  .cv { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--bord); border-radius: 20px; overflow: hidden; box-shadow: var(--ombre); transition: transform .3s ease, box-shadow .3s ease; height: 100%; }
-  .cv:hover { transform: translateY(-6px); box-shadow: var(--ombre-forte); }
-  .cv__media { position: relative; display: block; aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 100%, #dfe6f0 0%, #f7f9fc 55%, #fff 100%); overflow: hidden; }
+  .cv { display: flex; flex-direction: column; height: 100%; background: #fff; border: 1px solid var(--bord); border-radius: 18px; overflow: hidden; box-shadow: 0 1px 2px rgb(0 27 64 / .05), 0 6px 18px rgb(0 27 64 / .06); transition: transform .3s ease, box-shadow .3s ease; }
+  .cv:hover { transform: translateY(-4px); box-shadow: var(--ombre-forte); }
+  .cv__media { position: relative; display: block; aspect-ratio: 4 / 3; background: var(--fond-doux); overflow: hidden; }
   .cv__media :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
-  .cv:hover .cv__media :global(img) { transform: scale(1.06); }
+  .cv:hover .cv__media :global(img) { transform: scale(1.04); }
   .cv__vide { display: grid; place-items: center; height: 100%; color: #b8c3d3; }
-  .cv__vide :global(svg) { width: 72px; height: 72px; }
-  .cv__badges { position: absolute; top: 14px; left: 14px; display: flex; gap: 6px; }
-  .cv__corps { display: flex; flex-direction: column; flex: 1; padding: 18px 20px 20px; }
-  .cv__cat { font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-600); margin-bottom: .3em; }
-  .cv h3 { font-size: 1.25rem; margin-bottom: .35em; }
+  .cv__vide :global(svg) { width: 64px; height: 64px; }
+  .cv__badges { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; }
+  .cv__corps { display: flex; flex-direction: column; flex: 1; padding: 16px 18px 18px; }
+  .cv__cat { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--orange-600); margin-bottom: .2em; }
+  .cv h3 { font-size: 1.2rem; margin-bottom: .25em; }
   .cv h3 a { text-decoration: none; color: inherit; }
-  .cv__resume { font-size: .94rem; color: var(--texte-doux); margin-bottom: .8em; }
-  .cv__caracs { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 16px; }
-  .cv__caracs li { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 600; color: var(--marine); background: var(--fond-doux); padding: 5px 10px; border-radius: 999px; }
-  .cv__caracs :global(svg) { width: 16px; height: 16px; }
-  .cv__pied { margin-top: auto; display: grid; gap: 12px; padding-top: 14px; border-top: 1px dashed var(--bord); }
-  .cv__prix { margin: 0; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 6px; line-height: 1.3; font-size: .85rem; color: var(--texte-doux); }
-  .cv__prix strong { font-family: var(--titre); color: var(--orange-600); font-size: 1.15rem; }
+  .cv h3 a:hover { color: var(--marine-700); }
+  .cv__resume { font-size: .9rem; line-height: 1.5; color: var(--texte-doux); margin-bottom: .8em; }
+  .cv__caracs { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 14px; }
+  .cv__caracs li { display: inline-flex; align-items: center; gap: 5px; font-size: .78rem; font-weight: 600; color: var(--marine); background: var(--fond-doux); padding: 4px 10px; border-radius: 999px; }
+  .cv__caracs :global(svg) { width: 15px; height: 15px; }
+  .cv__pied { margin-top: auto; display: grid; gap: 12px; }
+  .cv__prix { margin: 0; font-size: .9rem; color: var(--texte-doux); }
+  .cv__prix strong { font-family: var(--titre); font-weight: 700; color: var(--orange-600); font-size: 1.05rem; }
   .cv__actions { display: flex; gap: 8px; }
-  .cv__voir { flex: 1; min-height: 46px; padding: .5em 1.1em; }
-  .cv__wa { min-height: 46px; width: 46px; padding: 0; }
+  .cv__voir { flex: 1; min-height: 44px; padding: .45em 1em; font-size: .92rem; }
+  .cv__wa { min-height: 44px; width: 44px; padding: 0; }
+
+  /* Catalogue : carte horizontale sur grand écran */
+  @media (min-width: 700px) {
+    .cv--ligne { flex-direction: row; }
+    .cv--ligne .cv__media { flex: 0 0 46%; aspect-ratio: 4 / 3; align-self: stretch; height: auto; }
+    .cv--ligne .cv__corps { padding: 20px 22px; }
+    .cv--ligne h3 { font-size: 1.3rem; }
+    .cv--ligne .cv__prix strong { font-size: 1.2rem; }
+  }
 </style>

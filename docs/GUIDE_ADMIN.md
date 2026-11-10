@@ -25,3 +25,10 @@ Ouvrir le véhicule, modifier, enregistrer. Pour le retirer sans le perdre : sta
 
 ## Coordonnées, horaires, avis, FAQ
 Menu **Informations du site**. Le numéro WhatsApp s'écrit avec l'indicatif, sans « + » ni espaces (ex. `22890000000`). N'ajouter que des avis réels dont l'auteur a donné son accord.
+
+## Carte de l'agence (page Contact et pied de page)
+Dans **Réglages du site** :
+- **Adresse** : affichée en pied de page et sur la page Contact.
+- **Coordonnées GPS de l'agence** : dans Google Maps, clic droit sur l'entrée exacte de l'agence, puis clic sur les chiffres pour les copier (ex. `6.13…, 1.22…`). La carte interactive et le bouton « Itinéraire » apparaissent alors sur la page Contact. Sans GPS, l'adresse est utilisée.
+- **Lien Google Maps** : lien « Partager » de la fiche Google de l'agence, utilisé pour « Nous trouver sur Google Maps ».
+Tant que ces champs sont vides, aucune carte ni lien n'est affiché.

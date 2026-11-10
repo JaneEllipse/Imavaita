@@ -3,28 +3,31 @@ import Base from '../../layouts/Base.astro';
 import CarteVehicule from '../../components/CarteVehicule.astro';
 import BoutonWhatsApp from '../../components/BoutonWhatsApp.astro';
 import EntetePage from '../../components/EntetePage.astro';
+import Icone from '../../components/Icone.astro';
+import banniere from '../../assets/maquette/banniere-catalogue.jpg';
 import { site, getVehicules } from '../../lib/site';
 
 const vehicules = await getVehicules();
 const categories = [...new Set(vehicules.map((v) => v.data.categorie))];
-// Pas de filtres inutiles si le catalogue est restreint (brief §5).
-const avecFiltres = categories.length > 1 && vehicules.length > 3;
+const avecFiltres = categories.length > 1;
+const icone = (c: string) => ({ 'Berline': 'berline', 'Citadine': 'berline', 'Pick-up': 'pickup', 'Minibus': 'minibus', 'Utilitaire': 'minibus' } as const)[c as 'Berline'] ?? 'voiture';
 ---
 <Base titre="Nos véhicules" description={`Catalogue des véhicules en location chez ${site.nom} : ${categories.join(', ')}. Réservation sur WhatsApp.`}>
-  <EntetePage surtitre="Notre flotte" titre="Nos véhicules" intro="Choisissez un véhicule puis envoyez-nous vos dates sur WhatsApp. La disponibilité et le tarif vous sont confirmés par notre équipe." />
+  <EntetePage titre="Nos véhicules en location" intro={`Choisissez un véhicule, envoyez-nous vos dates sur WhatsApp : nous vous confirmons la disponibilité et le tarif. À ${site.ville} et dans tout le Togo.`} image={banniere} fil={[{ label: 'Nos véhicules' }]} />
   <section class="section section--catalogue">
     <div class="conteneur">
       {avecFiltres && (
-        <div class="filtres" role="group" aria-label="Filtrer par catégorie">
-          <button type="button" aria-pressed="true" data-cat="">Tous</button>
-          {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}>{c}</button>)}
+        <div class="onglets" role="group" aria-label="Filtrer par catégorie">
+          <button type="button" aria-pressed="true" data-cat=""><Icone nom="grille" />Tous les véhicules</button>
+          {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}><Icone nom={icone(c)} />{c}</button>)}
         </div>
       )}
       {vehicules.length > 0
-        ? <div class="grille" id="catalogue">{vehicules.map((v, i) => <div data-cat={v.data.categorie} class="revele" style={`transition-delay:${(i % 4) * 80}ms`}><CarteVehicule vehicule={v} prioritaire={i < 2} /></div>)}</div>
+        ? <div class="liste" id="catalogue">{vehicules.map((v, i) => <div data-cat={v.data.categorie} class="revele" style={`transition-delay:${(i % 2) * 80}ms`}><CarteVehicule vehicule={v} prioritaire={i < 2} ligne /></div>)}</div>
         : <p>Le catalogue est en cours de mise en ligne. <BoutonWhatsApp libelle="Demander les disponibilités" source="catalogue-vide" /></p>}
-      <div class="aide carte revele">
-        <div><h2>Vous ne trouvez pas le véhicule idéal ?</h2><p>Dites-nous ce dont vous avez besoin : nombre de passagers, dates, usage. Nous vous proposons une solution.</p></div>
+      <div class="aide revele">
+        <span class="aide__icone"><Icone nom="voiture" /></span>
+        <div><h2>Vous ne trouvez pas le véhicule idéal ?</h2><p>Dites-nous le nombre de passagers, vos dates et l'usage : nous vous proposons une solution.</p></div>
         <BoutonWhatsApp libelle="Décrire mon besoin" source="catalogue-aide" message={`Bonjour ${site.nom}, je cherche un véhicule pour :\nNombre de passagers : …\nDates : du … au …\nUsage : …`} />
       </div>
     </div>
@@ -33,7 +36,7 @@ const avecFiltres = categories.length > 1 && vehicules.length > 3;
 
 {avecFiltres && (
   <script>
-    const boutons = document.querySelectorAll<HTMLButtonElement>('.filtres button');
+    const boutons = document.querySelectorAll<HTMLButtonElement>('.onglets button');
     const cartes = document.querySelectorAll<HTMLElement>('#catalogue > [data-cat]');
     boutons.forEach((b) => b.addEventListener('click', () => {
       boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
@@ -43,12 +46,21 @@ const avecFiltres = categories.length > 1 && vehicules.length > 3;
 )}
 
 <style>
-  .section--catalogue { padding-top: 32px; }
-  .grille { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
-  .filtres { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
-  .filtres button { min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1px solid var(--bord); background: #fff; font: inherit; font-weight: 600; cursor: pointer; box-shadow: var(--ombre); transition: background .2s, color .2s; }
-  .filtres button[aria-pressed='true'] { background: var(--marine); border-color: var(--marine); color: #fff; }
-  .aide { margin-top: 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; background: linear-gradient(120deg, var(--orange-50), #fff); border-color: #ffd9a8; }
-  .aide h2 { font-size: 1.35rem; margin-bottom: .3em; }
-  .aide p { margin: 0; color: var(--texte-doux); }
+  .section--catalogue { padding-top: 28px; }
+  .onglets { display: flex; gap: 4px; margin: 0 0 28px; border-bottom: 1px solid var(--bord); overflow-x: auto; scrollbar-width: none; }
+  .onglets button { position: relative; display: inline-flex; align-items: center; gap: 10px; flex: none; min-height: 52px; padding: 0 18px; border: 0; background: none; font: inherit; font-weight: 600; color: var(--texte-doux); cursor: pointer; white-space: nowrap; }
+  .onglets button::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px; border-radius: 2px; background: var(--orange); transform: scaleX(0); transition: transform .2s ease; }
+  .onglets button:hover { color: var(--marine); }
+  .onglets button[aria-pressed='true'] { color: var(--marine-900); }
+  .onglets button[aria-pressed='true']::after { transform: scaleX(1); }
+  .onglets :global(svg) { width: 24px; height: 24px; }
+  :global(html:not(.js)) .onglets { display: none; }
+  .liste { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); }
+  @media (max-width: 699px) { .liste { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); } }
+  .aide { margin-top: 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 22px 26px; border-radius: 18px; background: var(--fond-doux); border: 1px solid var(--bord); }
+  .aide > div { flex: 1 1 280px; }
+  .aide__icone { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: #fff; color: var(--orange-600); box-shadow: var(--ombre); }
+  .aide__icone :global(svg) { width: 28px; height: 28px; }
+  .aide h2 { font-size: 1.2rem; margin-bottom: .2em; }
+  .aide p { margin: 0; color: var(--texte-doux); font-size: .95rem; }
 </style>
