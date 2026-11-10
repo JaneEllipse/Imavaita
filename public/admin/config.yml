@@ -1,0 +1,82 @@
+# Interface d'administration IMAVAITA (Sveltia CMS, compatible Decap CMS).
+# Chaque enregistrement crée un commit sur GitHub, et Cloudflare Pages republie le site (~1 min).
+# Garder ces champs alignés avec src/content.config.ts.
+backend:
+  name: github
+  repo: JaneEllipse/Imavaita
+  branch: main
+  base_url: https://sveltia-cms-auth.EXEMPLE.workers.dev # À remplacer après déploiement du worker d'authentification
+  commit_messages:
+    create: 'Ajout du véhicule « {{slug}} »'
+    update: 'Mise à jour du véhicule « {{slug}} »'
+    delete: 'Suppression du véhicule « {{slug}} »'
+
+locale: fr
+site_url: https://imavaita.pages.dev
+display_url: https://imavaita.pages.dev
+media_folder: src/assets/vehicules
+public_folder: ../../assets/vehicules
+
+media_libraries:
+  default:
+    config:
+      transformations:
+        raster_image: { format: webp, quality: 80, width: 1600, height: 1600 }
+
+collections:
+  - name: vehicules
+    label: Véhicules
+    label_singular: Véhicule
+    folder: src/content/vehicules
+    create: true
+    slug: '{{nom}}'
+    summary: '{{nom}} — {{statut}}'
+    sortable_fields: [ordre, nom, statut]
+    view_groups:
+      - { label: Statut, field: statut }
+    fields:
+      - { name: nom, label: Nom commercial, widget: string }
+      - { name: statut, label: Statut, widget: select, default: brouillon, hint: '« Publié » = visible sur le site. « Masqué » = gardé mais invisible (véhicule indisponible).', options: [{ label: Brouillon, value: brouillon }, { label: Publié, value: publie }, { label: Masqué, value: masque }] }
+      - { name: categorie, label: Catégorie, widget: select, options: ['SUV / 4x4', 'Berline', 'Citadine', 'Pick-up', 'Minibus', 'Utilitaire', 'Autre'] }
+      - { name: marque, label: Marque, widget: string, required: false }
+      - { name: modele, label: Modèle, widget: string, required: false }
+      - { name: places, label: Nombre de places, widget: number, value_type: int, required: false }
+      - { name: transmission, label: Boîte de vitesses, widget: select, required: false, options: [Manuelle, Automatique] }
+      - { name: couverture, label: Photo principale, widget: image, required: false, hint: 'Photo réelle, au format paysage.' }
+      - { name: galerie, label: Photos secondaires (3 max), widget: list, required: false, max: 3, field: { name: image, label: Photo, widget: image } }
+      - { name: prix_jour, label: Prix par jour (FCFA), widget: number, value_type: int, required: false, hint: 'Laisser vide pour afficher « Tarif sur demande ».' }
+      - { name: prix_semaine, label: Prix par semaine (FCFA), widget: number, value_type: int, required: false }
+      - { name: prix_mois, label: Prix par mois (FCFA), widget: number, value_type: int, required: false }
+      - { name: options, label: Options et équipements, widget: list, required: false, hint: 'Ex. Climatisation, Avec chauffeur, Livraison' }
+      - { name: nouveau, label: Badge « Nouveau », widget: boolean, default: false }
+      - { name: a_la_une, label: À la une (accueil), widget: boolean, default: false, hint: "L'accueil affiche 4 véhicules maximum." }
+      - { name: ordre, label: Ordre d'affichage, widget: number, value_type: int, default: 100, hint: 'Plus petit = affiché en premier.' }
+      - { name: resume, label: Résumé (carte), widget: string, required: false, hint: '160 caractères maximum.', pattern: ['^.{0,160}$', '160 caractères maximum'] }
+      - { name: body, label: Description, widget: markdown, required: false, buttons: [bold, italic, bulleted-list], editor_components: [] }
+
+  - name: reglages
+    label: Informations du site
+    files:
+      - name: site
+        label: Coordonnées et textes
+        file: src/data/site.json
+        fields:
+          - { name: nom, label: Nom, widget: string }
+          - { name: slogan, label: Titre de l'accueil, widget: string }
+          - { name: accroche, label: Texte d'accroche, widget: text }
+          - { name: whatsapp, label: Numéro WhatsApp (format international sans +), widget: string, hint: 'Ex. 22890000000', pattern: ['^[0-9]{8,15}$', 'Chiffres uniquement, avec indicatif pays'] }
+          - { name: telephone, label: Téléphone affiché, widget: string }
+          - { name: email, label: Email, widget: string }
+          - { name: adresse, label: Adresse, widget: string }
+          - { name: ville, label: Ville, widget: string }
+          - { name: zones, label: Zones desservies, widget: string }
+          - { name: horaires, label: Horaires, widget: string }
+          - { name: google_maps_url, label: Lien Google Maps, widget: string, required: false }
+          - { name: avantages, label: Avantages (accueil), widget: list, max: 4, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: string }] }
+          - { name: services, label: Services, widget: list, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: text }] }
+          - { name: temoignages, label: Avis clients (réels et autorisés), widget: list, required: false, fields: [{ name: auteur, label: Auteur, widget: string }, { name: texte, label: Avis, widget: text }] }
+      - name: faq
+        label: Questions fréquentes
+        file: src/data/faq.json
+        fields:
+          - { name: questions, label: Questions, widget: list, fields: [{ name: question, label: Question, widget: string }, { name: reponse, label: Réponse, widget: text }] }

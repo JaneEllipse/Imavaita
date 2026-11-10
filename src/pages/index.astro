@@ -1,0 +1,99 @@
+---
+import Base from '../layouts/Base.astro';
+import CarteVehicule from '../components/CarteVehicule.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import { site, getVehicules } from '../lib/site';
+
+const vehicules = await getVehicules();
+// Règle anti-surcharge : 4 fiches maximum sur l'accueil, « à la une » d'abord.
+const une = [...vehicules].sort((a, b) => Number(b.data.a_la_une) - Number(a.data.a_la_une)).slice(0, 4);
+
+const jsonld = {
+  '@context': 'https://schema.org',
+  '@type': 'AutoRental',
+  name: site.nom,
+  url: Astro.site?.toString(),
+  telephone: site.telephone,
+  email: site.email,
+  address: { '@type': 'PostalAddress', streetAddress: site.adresse, addressLocality: site.ville, addressCountry: 'TG' },
+  areaServed: site.zones,
+  ...(site.google_maps_url ? { hasMap: site.google_maps_url } : {}),
+};
+---
+<Base titre={site.nom} description={`${site.slogan}. ${site.accroche}`} jsonld={jsonld}>
+  <section class="hero">
+    <div class="conteneur hero__contenu">
+      <h1>{site.slogan}</h1>
+      <p class="hero__accroche">{site.accroche}</p>
+      <div class="hero__actions">
+        <BoutonWhatsApp variante="orange" source="hero" />
+        <a href="/vehicules/" class="btn hero__secondaire">Voir nos véhicules</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="conteneur">
+      <h2 class="titre-section">Nos véhicules</h2>
+      {une.length > 0
+        ? <div class="grille">{une.map((v, i) => <CarteVehicule vehicule={v} prioritaire={i === 0} />)}</div>
+        : <p class="intro">Notre catalogue est en cours de mise en ligne. Écrivez-nous sur WhatsApp pour connaître les véhicules disponibles.</p>}
+      <p class="centre"><a href="/vehicules/" class="btn btn--contour">Voir tous nos véhicules</a></p>
+    </div>
+  </section>
+
+  <section class="section section--doux">
+    <div class="conteneur">
+      <h2 class="titre-section">Pourquoi choisir {site.nom} ?</h2>
+      <div class="grille">
+        {site.avantages.map((a) => <div class="carte"><h3>{a.titre}</h3><p>{a.texte}</p></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="conteneur">
+      <h2 class="titre-section">Réserver en 3 étapes</h2>
+      <ol class="etapes">
+        <li><strong>Choisissez</strong> un véhicule dans notre catalogue.</li>
+        <li><strong>Écrivez-nous sur WhatsApp</strong> avec vos dates et le lieu de prise en charge.</li>
+        <li><strong>Recevez la confirmation</strong> de notre équipe avec les modalités.</li>
+      </ol>
+    </div>
+  </section>
+
+  {site.temoignages.length > 0 && (
+    <section class="section section--doux">
+      <div class="conteneur">
+        <h2 class="titre-section">Ils nous ont fait confiance</h2>
+        <div class="grille">
+          {site.temoignages.map((t: { auteur: string; texte: string }) => <blockquote class="carte"><p>« {t.texte} »</p><footer>— {t.auteur}</footer></blockquote>)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="bandeau">
+    <div class="conteneur">
+      <h2>Besoin d'un véhicule ?</h2>
+      <p>Écrivez-nous sur WhatsApp, notre équipe vous répond rapidement.</p>
+      <BoutonWhatsApp source="bandeau" />
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Bannière sans photo lourde : à remplacer par une photo réelle validée (WebP, ~150 Ko max). */
+  .hero { background: linear-gradient(135deg, var(--marine-900), var(--marine) 60%, #0b4a96); color: #fff; padding-block: clamp(48px, 10vw, 110px); }
+  .hero h1 { color: #fff; max-width: 14ch; }
+  .hero__accroche { font-size: clamp(1.05rem, 2.5vw, 1.25rem); max-width: 42ch; opacity: .95; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+  .hero__secondaire { color: #fff; border-color: rgb(255 255 255 / .6); }
+  .hero__secondaire:hover { background: rgb(255 255 255 / .1); }
+  .centre { text-align: center; margin-top: 28px; }
+  .etapes { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); padding: 0; list-style: none; counter-reset: e; }
+  .etapes li { counter-increment: e; background: var(--fond-doux); border-radius: var(--rayon); padding: 20px; }
+  .etapes li::before { content: counter(e); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--orange); color: #fff; font-weight: 800; margin-bottom: 10px; }
+  .bandeau { background: var(--marine); color: #fff; padding-block: 48px; text-align: center; }
+  .bandeau h2 { color: #fff; }
+</style>

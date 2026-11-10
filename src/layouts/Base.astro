@@ -1,0 +1,141 @@
+---
+import '../styles/global.css';
+import { Image } from 'astro:assets';
+import logo from '../assets/logo-imavaita.png';
+import IconeWhatsApp from '../components/IconeWhatsApp.astro';
+import { site, waLink, messageGeneral } from '../lib/site';
+
+interface Props { titre: string; description: string; jsonld?: Record<string, unknown>; noindex?: boolean }
+const { titre, description, jsonld, noindex = false } = Astro.props;
+const titreComplet = titre === site.nom ? `${site.nom} – ${site.slogan}` : `${titre} | ${site.nom}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const chemin = Astro.url.pathname;
+
+const nav = [
+  { href: '/', label: 'Accueil' },
+  { href: '/vehicules/', label: 'Nos véhicules' },
+  { href: '/tarifs-services/', label: 'Tarifs et services' },
+  { href: '/a-propos/', label: 'À propos' },
+  { href: '/contact/', label: 'Contact' },
+];
+const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWith(href));
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titreComplet}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#00306e" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_TG" />
+    <meta property="og:site_name" content={site.nom} />
+    <meta property="og:title" content={titreComplet} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
+  </head>
+  <body>
+    <a class="sr-only" href="#contenu">Aller au contenu</a>
+    <header class="entete">
+      <div class="conteneur entete__barre">
+        <a href="/" class="entete__logo" aria-label={`${site.nom}, accueil`}>
+          <Image src={logo} alt={site.nom} width={180} densities={[1, 2]} loading="eager" />
+        </a>
+        <nav aria-label="Navigation principale" class="nav">
+          <ul>
+            {nav.map((l) => (
+              <li><a href={l.href} aria-current={actif(l.href) ? 'page' : undefined}>{l.label}</a></li>
+            ))}
+          </ul>
+        </nav>
+        <a class="btn btn--wa entete__cta" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="entete">
+          <IconeWhatsApp />Réserver
+        </a>
+      </div>
+    </header>
+
+    <main id="contenu"><slot /></main>
+
+    <footer class="pied">
+      <div class="conteneur pied__grille">
+        <div>
+          <p class="pied__nom">{site.nom}</p>
+          <p>{site.slogan}<br />{site.zones}</p>
+        </div>
+        <div>
+          <p class="pied__titre">Contact</p>
+          <p>
+            <a href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="pied">WhatsApp</a><br />
+            <a href={`tel:${site.telephone.replace(/\s/g, '')}`}>{site.telephone}</a><br />
+            <a href={`mailto:${site.email}`}>{site.email}</a>
+          </p>
+        </div>
+        <div>
+          <p class="pied__titre">Adresse et horaires</p>
+          <p>{site.adresse}<br />{site.horaires}</p>
+          {site.google_maps_url && <p><a href={site.google_maps_url} target="_blank" rel="noopener">Voir sur Google Maps</a></p>}
+        </div>
+      </div>
+      <div class="conteneur pied__legal">
+        <span>© {new Date().getFullYear()} {site.nom}</span>
+        <a href="/mentions-legales/">Mentions légales</a>
+        <a href="/confidentialite/">Confidentialité</a>
+      </div>
+    </footer>
+
+    <a class="wa-flottant" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="flottant" aria-label="Nous écrire sur WhatsApp">
+      <IconeWhatsApp /><span>WhatsApp</span>
+    </a>
+
+    <script>
+      // Mesure des clics WhatsApp : n'envoie rien tant qu'aucun outil de statistiques
+      // n'a été validé et chargé (voir docs/ARCHITECTURE.md, « Mesure »).
+      document.addEventListener('click', (e) => {
+        const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-wa]');
+        if (!a) return;
+        const w = window as unknown as { plausible?: (ev: string, o?: object) => void };
+        w.plausible?.('WhatsApp', { props: { source: a.dataset.wa } });
+      });
+    </script>
+
+    <style>
+      .entete { background: #fff; border-bottom: 1px solid var(--bord); position: sticky; top: 0; z-index: 20; }
+      .entete__barre { display: flex; align-items: center; gap: 16px; min-height: 68px; flex-wrap: wrap; }
+      .entete__logo img { width: 150px; height: auto; }
+      .nav { margin-left: auto; }
+      .nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+      .nav a { display: block; padding: 10px 12px; text-decoration: none; color: var(--texte); font-weight: 600; border-radius: 8px; white-space: nowrap; }
+      .nav a:hover { background: var(--fond-doux); }
+      .nav a[aria-current='page'] { color: var(--marine); box-shadow: inset 0 -3px 0 var(--orange); border-radius: 0; }
+      .entete__cta { min-height: 42px; padding: .5em 1em; }
+      @media (max-width: 860px) {
+        .entete__barre { padding-top: 10px; gap: 6px; }
+        .entete__logo img { width: 130px; }
+        .entete__cta { margin-left: auto; }
+        /* Mobile : menu toujours visible, en bande défilante, sans menu caché ni JavaScript. */
+        .nav { order: 3; width: 100%; margin: 0; overflow-x: auto; scrollbar-width: none; }
+        .nav ul { gap: 0; }
+        .nav a { padding: 10px; font-size: .95rem; }
+      }
+      .pied { background: var(--marine-900); color: #dbe4f0; margin-top: 0; padding: 40px 0 96px; }
+      .pied a { color: #fff; }
+      .pied__grille { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .pied__nom { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: .3em; }
+      .pied__titre { font-weight: 700; color: var(--orange); margin-bottom: .3em; }
+      .pied__legal { display: flex; flex-wrap: wrap; gap: 8px 20px; border-top: 1px solid rgb(255 255 255 / .15); margin-top: 24px; padding-top: 16px; font-size: .9rem; }
+      .wa-flottant {
+        position: fixed; right: 16px; bottom: 16px; z-index: 30; display: flex; align-items: center; gap: 8px;
+        background: var(--wa); color: #fff; text-decoration: none; font-weight: 700; border-radius: 999px;
+        padding: 12px 18px 12px 14px; box-shadow: 0 4px 14px rgb(0 0 0 / .25);
+      }
+      .wa-flottant :global(svg) { width: 26px; height: 26px; flex: none; }
+      .wa-flottant:hover { background: var(--wa-600); }
+      @media (max-width: 600px) { .wa-flottant { padding: 14px; } .wa-flottant span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+    </style>
+  </body>
+</html>

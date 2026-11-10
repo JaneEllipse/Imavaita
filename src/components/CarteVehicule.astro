@@ -1,0 +1,46 @@
+---
+import { Image } from 'astro:assets';
+import type { Vehicule } from '../lib/site';
+import { formatPrix } from '../lib/site';
+
+interface Props { vehicule: Vehicule; prioritaire?: boolean }
+const { vehicule, prioritaire = false } = Astro.props;
+const v = vehicule.data;
+const href = `/vehicules/${vehicule.id}/`;
+---
+<article class="cv">
+  <a href={href} class="cv__media" tabindex="-1" aria-hidden="true">
+    {v.couverture
+      ? <Image src={v.couverture} alt="" widths={[320, 480, 640]} sizes="(max-width: 600px) 100vw, 320px" loading={prioritaire ? 'eager' : 'lazy'} />
+      : <div class="cv__vide">Photo à venir</div>}
+    <span class="cv__badges">
+      {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
+      {v.nouveau && <span class="badge">Nouveau</span>}
+    </span>
+  </a>
+  <div class="cv__corps">
+    <p class="cv__cat">{v.categorie}{v.places && ` · ${v.places} places`}</p>
+    <h3><a href={href}>{v.nom}</a></h3>
+    {v.resume && <p class="cv__resume">{v.resume}</p>}
+    <p class="cv__prix">
+      {v.prix_jour ? <>À partir de <strong>{formatPrix(v.prix_jour)}</strong> / jour</> : <strong>Tarif sur demande</strong>}
+    </p>
+    <a href={href} class="btn btn--contour cv__btn">Voir / Réserver</a>
+  </div>
+</article>
+
+<style>
+  .cv { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); overflow: hidden; box-shadow: var(--ombre); }
+  .cv__media { position: relative; display: block; aspect-ratio: 4 / 3; background: var(--fond-doux); }
+  .cv__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .cv__vide { display: grid; place-items: center; height: 100%; color: var(--texte-doux); font-size: .9rem; }
+  .cv__badges { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
+  .cv__corps { display: flex; flex-direction: column; flex: 1; padding: 16px; }
+  .cv__cat { font-size: .85rem; color: var(--texte-doux); margin-bottom: .2em; }
+  .cv h3 { margin-bottom: .3em; }
+  .cv h3 a { text-decoration: none; color: inherit; }
+  .cv__resume { font-size: .95rem; color: var(--texte-doux); }
+  .cv__prix { margin-top: auto; }
+  .cv__prix strong { color: var(--orange-600); font-size: 1.15rem; }
+  .cv__btn { width: 100%; }
+</style>

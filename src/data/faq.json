@@ -1,0 +1,8 @@
+{
+  "questions": [
+    { "question": "Comment réserver un véhicule ?", "reponse": "Choisissez un véhicule puis cliquez sur « Réserver sur WhatsApp ». Indiquez vos dates et le lieu de prise en charge : notre équipe vous confirme la disponibilité et les modalités." },
+    { "question": "Quels documents faut-il fournir ?", "reponse": "À confirmer avec IMAVAITA (pièce d'identité, permis de conduire…)." },
+    { "question": "Une caution est-elle demandée ?", "reponse": "À confirmer avec IMAVAITA." },
+    { "question": "Le carburant et le kilométrage sont-ils inclus ?", "reponse": "À confirmer avec IMAVAITA." }
+  ]
+}
