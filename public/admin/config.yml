@@ -41,6 +41,7 @@ collections:
       - { name: modele, label: Modèle, widget: string, required: false }
       - { name: places, label: Nombre de places, widget: number, value_type: int, required: false }
       - { name: transmission, label: Boîte de vitesses, widget: select, required: false, options: [Manuelle, Automatique] }
+      - { name: carburant, label: Carburant, widget: select, required: false, options: [Essence, Diesel, Hybride, Électrique] }
       - { name: couverture, label: Photo principale, widget: image, required: false, hint: 'Photo réelle, au format paysage.' }
       - { name: galerie, label: Photos secondaires (3 max), widget: list, required: false, max: 3, field: { name: image, label: Photo, widget: image } }
       - { name: prix_jour, label: Prix par jour (FCFA), widget: number, value_type: int, required: false, hint: 'Laisser vide pour afficher « Tarif sur demande ».' }
@@ -70,7 +71,8 @@ collections:
           - { name: ville, label: Ville, widget: string }
           - { name: zones, label: Zones desservies, widget: string }
           - { name: horaires, label: Horaires, widget: string }
-          - { name: google_maps_url, label: Lien Google Maps, widget: string, required: false }
+          - { name: google_maps_url, label: Lien Google Maps (fiche de l'agence), widget: string, required: false, hint: "Bouton Partager de la fiche Google Maps de l'agence. Utilisé pour « Nous trouver sur Google Maps »." }
+          - { name: gps, label: Coordonnées GPS de l'agence, widget: string, required: false, hint: "Ex. 6.1319, 1.2228 (clic droit sur le point exact dans Google Maps, puis copier les chiffres). Affiche la carte et le bouton Itinéraire sur la page Contact. Vide : l'adresse est utilisée." }
           - { name: avantages, label: Avantages (accueil), widget: list, max: 4, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: string }] }
           - { name: services, label: Services, widget: list, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: text }] }
           - { name: temoignages, label: Avis clients (réels et autorisés), widget: list, required: false, fields: [{ name: auteur, label: Auteur, widget: string }, { name: texte, label: Avis, widget: text }] }

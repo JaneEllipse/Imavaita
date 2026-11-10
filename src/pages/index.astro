@@ -4,8 +4,9 @@ import Base from '../layouts/Base.astro';
 import CarteVehicule from '../components/CarteVehicule.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import Icone from '../components/Icone.astro';
-import banniere from '../assets/maquette/banniere-suv-lome.jpg';
-import { site, getVehicules } from '../lib/site';
+import photoHero from '../assets/maquette/hero-lome.jpg';
+import monument from '../assets/maquette/monument-lome.jpg';
+import { site, getVehicules, adresseComplete } from '../lib/site';
 
 const vehicules = await getVehicules();
 // Règle anti-surcharge : 4 fiches maximum sur l'accueil, « à la une » d'abord.
@@ -25,30 +26,25 @@ const jsonld = {
 ---
 <Base titre={site.nom} description={`${site.slogan}. ${site.accroche}`} jsonld={jsonld}>
   <section class="hero">
+    <div class="hero__photo">
+      <Image src={photoHero} alt="SUV sur une avenue de Lomé, au pied du monument de l'Indépendance" widths={[480, 760, 1042]} sizes="(max-width: 900px) 100vw, 62vw" loading="eager" fetchpriority="high" />
+    </div>
     <div class="conteneur hero__grille">
       <div class="hero__texte">
-        <span class="surtitre hero__surtitre">Location de véhicules · {site.ville}</span>
-        <h1>{site.slogan}</h1>
+        <span class="surtitre hero__surtitre">{site.slogan}</span>
+        <h1>Location de véhicules à {site.ville}</h1>
         <p class="hero__accroche">{site.accroche}</p>
         <ul class="hero__atouts">
-          <li><Icone nom="voiture" />Véhicules entretenus</li>
-          <li><Icone nom="calendrier" />Réservation simple</li>
-          <li><Icone nom="casque" />Équipe à l'écoute</li>
+          <li><Icone nom="voiture" /><span><strong>Véhicules</strong> bien entretenus</span></li>
+          <li><Icone nom="bouclier" /><span><strong>Réservation</strong> simple et rapide</span></li>
+          <li><Icone nom="casque" /><span><strong>Équipe locale</strong> à votre écoute</span></li>
         </ul>
-        <div class="hero__actions">
-          <BoutonWhatsApp variante="orange" source="hero" />
-          <a href="/vehicules/" class="btn btn--clair">Voir nos véhicules<Icone nom="fleche" /></a>
-        </div>
       </div>
-      <div class="hero__visuel">
-        <div class="hero__cadre">
-          <Image src={banniere} alt="SUV sur une avenue de Lomé, au pied du monument de l'Indépendance" widths={[400, 600, 752]} sizes="(max-width: 900px) 92vw, 560px" loading="eager" fetchpriority="high" />
-        </div>
-        <p class="hero__puce hero__puce--1"><span class="hero__point"></span>Demande en 1 message sur WhatsApp</p>
-        <p class="hero__puce hero__puce--2"><Icone nom="volant" />Avec ou sans chauffeur</p>
+      <div class="hero__actions" data-masque-bulle>
+        <BoutonWhatsApp source="hero" />
+        <a href="/vehicules/" class="btn btn--clair">Voir nos véhicules<Icone nom="fleche" /></a>
       </div>
     </div>
-    <svg class="hero__vague" viewBox="0 0 1440 90" preserveAspectRatio="none" aria-hidden="true"><path d="M0 60c240 40 480 40 720 10s480-50 720-10v30H0z" fill="#fff"/></svg>
   </section>
 
   <section class="section">
@@ -58,41 +54,41 @@ const jsonld = {
           <span class="surtitre">Notre flotte</span>
           <h2 class="titre-section">Nos véhicules en location</h2>
         </div>
-        <a href="/vehicules/" class="btn btn--contour lien-tous">Voir tous nos véhicules<Icone nom="fleche" /></a>
+        <a href="/vehicules/" class="btn btn--contour btn--petit lien-tous">Voir tous nos véhicules<Icone nom="fleche" /></a>
       </div>
       {une.length > 0
-        ? <div class="grille grille--vehicules">{une.map((v, i) => <div class="revele" style={`transition-delay:${i * 90}ms`}><CarteVehicule vehicule={v} prioritaire={i === 0} /></div>)}</div>
+        ? <div class="grille grille--vehicules">{une.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVehicule vehicule={v} /></div>)}</div>
         : <p class="intro">Notre catalogue est en cours de mise en ligne. Écrivez-nous sur WhatsApp pour connaître les véhicules disponibles.</p>}
     </div>
   </section>
 
-  <section class="section section--doux">
+  <section class="section section--doux section--serree">
     <div class="conteneur">
       <div class="revele">
-        <span class="surtitre">Nos engagements</span>
-        <h2 class="titre-section">Pourquoi choisir {site.nom} ?</h2>
+        <span class="surtitre">Pourquoi nous choisir ?</span>
+        <h2 class="titre-section">Les avantages {site.nom}</h2>
       </div>
       <div class="grille grille--atouts">
         {site.avantages.map((a, i) => (
-          <div class="carte revele" style={`transition-delay:${i * 90}ms`}>
+          <div class="atout revele" style={`transition-delay:${i * 80}ms`}>
             <span class="pastille"><Icone nom={icones[i % icones.length]} /></span>
-            <h3>{a.titre}</h3><p>{a.texte}</p>
+            <div><h3>{a.titre}</h3><p>{a.texte}</p></div>
           </div>
         ))}
       </div>
     </div>
   </section>
 
-  <section class="section">
+  <section class="section section--serree">
     <div class="conteneur">
       <div class="revele titre-section--centre">
         <span class="surtitre">Simple et rapide</span>
         <h2 class="titre-section titre-section--centre">Réservez en 3 étapes</h2>
       </div>
       <ol class="etapes">
-        <li class="revele"><span class="etapes__num">1</span><Icone nom="voiture" /><strong>Choisissez votre véhicule</strong><p>Parcourez notre catalogue et ouvrez la fiche qui vous intéresse.</p></li>
-        <li class="revele" style="transition-delay:120ms"><span class="etapes__num">2</span><Icone nom="message" /><strong>Écrivez-nous sur WhatsApp</strong><p>Le message est prérempli : ajoutez vos dates et le lieu de prise en charge.</p></li>
-        <li class="revele" style="transition-delay:240ms"><span class="etapes__num">3</span><Icone nom="check" /><strong>Recevez la confirmation</strong><p>Notre équipe vous confirme la disponibilité, le tarif et les modalités.</p></li>
+        <li class="revele"><span class="etapes__num">1</span><Icone nom="voiture" /><strong>Choisissez votre véhicule</strong><p>Parcourez le catalogue et ouvrez la fiche qui vous intéresse.</p></li>
+        <li class="revele" style="transition-delay:100ms"><span class="etapes__num">2</span><Icone nom="message" /><strong>Écrivez-nous sur WhatsApp</strong><p>Le message est prérempli : ajoutez vos dates et le lieu de prise en charge.</p></li>
+        <li class="revele" style="transition-delay:200ms"><span class="etapes__num">3</span><Icone nom="check" /><strong>Recevez la confirmation</strong><p>Notre équipe vous confirme la disponibilité, le tarif et les modalités.</p></li>
       </ol>
     </div>
   </section>
@@ -108,67 +104,100 @@ const jsonld = {
     </section>
   )}
 
-  <section class="bandeau" data-masque-bulle>
-    <div class="conteneur bandeau__contenu revele">
-      <div>
-        <h2>Besoin d'un véhicule ?</h2>
-        <p>Écrivez-nous maintenant sur WhatsApp et recevez une réponse de notre équipe.</p>
+  <section class="conteneur appel-zone">
+    <div class="appel revele" data-masque-bulle>
+      <div class="appel__texte">
+        <h2>Prêt à louer un véhicule au Togo ?</h2>
+        <p>Écrivez-nous pour vérifier la disponibilité, obtenir un tarif et réserver en quelques minutes.</p>
+        <div class="appel__actions">
+          <BoutonWhatsApp source="bandeau" />
+          {site.telephone && <a class="appel__info" href={`tel:${site.telephone.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone}</a>}
+          <span class="appel__info"><Icone nom="carte" />{adresseComplete}</span>
+        </div>
       </div>
-      <BoutonWhatsApp source="bandeau" />
+      <div class="appel__photo">
+        <Image src={monument} alt="" widths={[360, 704]} sizes="(max-width: 800px) 100vw, 420px" loading="lazy" />
+      </div>
     </div>
   </section>
 </Base>
 
 <style>
-  .hero { position: relative; overflow: hidden; color: #fff; padding: clamp(40px, 7vw, 88px) 0 clamp(90px, 10vw, 140px);
+  /* Héros : la photo occupe la droite et se fond dans le marine (maquette du 10/11). */
+  .hero { position: relative; overflow: hidden; isolation: isolate; color: #fff; background: var(--marine-900); padding: clamp(48px, 7vw, 96px) 0 clamp(48px, 6vw, 80px); min-height: min(560px, 78vh); display: flex; align-items: center; }
+  .hero__photo { position: absolute; z-index: -1; top: 0; right: 0; bottom: 0; width: 64%; }
+  .hero__photo :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 60% 60%; }
+  .hero__photo::after { content: ''; position: absolute; inset: 0;
     background:
-      radial-gradient(900px 500px at 90% 10%, rgb(255 140 0 / .22), transparent 60%),
-      radial-gradient(700px 500px at 0% 100%, rgb(10 63 134 / .9), transparent 70%),
-      linear-gradient(135deg, var(--marine-900) 0%, var(--marine) 55%, #0b4fa3 100%); }
-  .hero::before { content: ''; position: absolute; inset: 0; background-image: linear-gradient(rgb(255 255 255 / .04) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / .04) 1px, transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(180deg, #000, transparent 85%); pointer-events: none; }
-  .hero__grille { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: clamp(32px, 5vw, 64px); align-items: center; }
-  .hero__surtitre { color: #ffb347; }
-  .hero h1 { color: #fff; max-width: 16ch; text-shadow: 0 4px 24px rgb(0 0 0 / .2); }
-  .hero__accroche { font-size: clamp(1.05rem, 2.2vw, 1.25rem); max-width: 40ch; color: #dbe6f5; }
-  .hero__atouts { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; margin: 22px 0 30px; }
-  .hero__atouts li { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .95rem; }
-  .hero__atouts :global(svg) { width: 26px; height: 26px; color: #ffb347; }
-  .hero__actions { display: flex; flex-wrap: wrap; gap: 14px; }
-  .hero__visuel { position: relative; }
-  .hero__cadre { border-radius: 28px; overflow: hidden; box-shadow: 0 30px 70px rgb(0 0 0 / .45); transform: perspective(1200px) rotateY(-6deg) rotateX(2deg); border: 4px solid rgb(255 255 255 / .15); animation: flotte 7s ease-in-out infinite; }
-  .hero__cadre :global(img) { width: 100%; aspect-ratio: 376 / 324; object-fit: cover; }
-  @keyframes flotte { 0%, 100% { transform: perspective(1200px) rotateY(-6deg) rotateX(2deg) translateY(0); } 50% { transform: perspective(1200px) rotateY(-6deg) rotateX(2deg) translateY(-10px); } }
-  .hero__puce { position: absolute; display: inline-flex; align-items: center; gap: 10px; margin: 0; padding: 12px 16px; border-radius: 14px; background: #fff; color: var(--marine-900); font-weight: 600; font-size: .9rem; box-shadow: 0 16px 36px rgb(0 0 0 / .25); }
-  .hero__puce :global(svg) { width: 22px; height: 22px; color: var(--orange-600); }
-  .hero__puce--1 { left: -28px; bottom: 34px; }
-  .hero__puce--2 { right: -14px; top: 26px; }
-  .hero__point { width: 10px; height: 10px; border-radius: 50%; background: var(--wa); box-shadow: 0 0 0 4px rgb(37 211 102 / .25); }
-  .hero__vague { position: absolute; left: 0; right: 0; bottom: -1px; width: 100%; height: 70px; }
+      linear-gradient(90deg, var(--marine-900) 0%, rgb(0 27 64 / .85) 18%, rgb(0 27 64 / .25) 48%, transparent 70%),
+      linear-gradient(0deg, rgb(0 27 64 / .55) 0%, transparent 30%); }
+  .hero::before { content: ''; position: absolute; z-index: -2; inset: 0; background: radial-gradient(60% 80% at 0% 100%, #0a3f86 0%, transparent 70%); }
+  .hero__grille { display: grid; gap: 28px; }
+  .hero__texte { max-width: 540px; }
+  .hero__surtitre { color: #ffb347; display: inline-flex; align-items: center; gap: 12px; }
+  .hero__surtitre::after { content: ''; width: 40px; height: 2px; background: var(--orange); }
+  .hero h1 { color: #fff; font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 16ch; }
+  .hero__accroche { font-size: clamp(1rem, 1.6vw, 1.15rem); max-width: 42ch; color: #d5e1f2; }
+  .hero__atouts { display: flex; flex-wrap: wrap; gap: 14px 26px; list-style: none; padding: 0; margin: 26px 0 0; }
+  .hero__atouts li { display: flex; align-items: center; gap: 10px; font-size: .84rem; line-height: 1.3; color: #d5e1f2; max-width: 150px; }
+  .hero__atouts strong { display: block; color: #fff; font-weight: 600; }
+  .hero__atouts :global(svg) { width: 28px; height: 28px; color: var(--orange); flex: none; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
   @media (max-width: 900px) {
-    .hero__grille { grid-template-columns: 1fr; }
-    .hero__cadre { transform: none; animation: none; border-radius: 20px; }
-    .hero__puce--1 { left: 10px; bottom: -18px; }
-    .hero__puce--2 { left: 10px; right: auto; top: -16px; }
-    /* Accueil mobile : véhicules en bande défilante, comme sur la maquette */
-    .grille--vehicules { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; margin: 0 -16px; padding: 4px 16px 24px; scrollbar-width: none; }
-    .grille--vehicules > div { flex: 0 0 78%; scroll-snap-align: start; }
-    .grille--atouts { grid-template-columns: 1fr 1fr; gap: 12px; }
-    .grille--atouts .carte { padding: 18px; }
+    /* Mobile : texte, puis la photo fondue en haut et en bas, puis les boutons */
+    .hero { min-height: 0; padding: 36px 0 28px; align-items: stretch; }
+    .hero__photo { position: relative; z-index: 0; order: 2; width: auto; height: 250px; margin-top: 4px; }
+    .hero__photo::after { background: linear-gradient(180deg, var(--marine-900) 0%, transparent 28%, transparent 62%, var(--marine-900) 100%); }
+    .hero__texte { order: 1; }
+    .hero__actions { order: 3; flex-direction: column; margin-top: -8px; position: relative; }
+    .hero__actions .btn { width: 100%; }
+    .hero__atouts { display: none; }
   }
-  .grille--vehicules { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
-  .grille--atouts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); margin-top: 8px; }
-  .etapes { position: relative; display: grid; gap: 24px; grid-template-columns: repeat(3, 1fr); padding: 0; margin: 40px 0 0; list-style: none; }
-  .etapes::before { content: ''; position: absolute; top: 34px; left: 16%; right: 16%; border-top: 2px dashed #ffc580; }
+  .hero > .conteneur { position: relative; }
+  @media (max-width: 900px) { .hero { display: flex; flex-direction: column; } .hero > .conteneur { display: contents; } .hero__texte, .hero__actions { width: min(100% - 32px, var(--largeur)); margin-inline: auto; } }
+
+  .btn--petit { min-height: 44px; padding: .45em 1.1em; font-size: .92rem; }
+  .grille--vehicules { grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 20px; }
+  .section--serree { padding-block: clamp(48px, 6vw, 72px); }
+  .grille--atouts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin-top: 8px; }
+  .atout { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); padding: 20px; box-shadow: 0 1px 2px rgb(0 27 64 / .05); }
+  .atout .pastille { width: 44px; height: 44px; border-radius: 12px; margin: 0; flex: none; }
+  .atout .pastille :global(.ico) { width: 24px; height: 24px; }
+  .atout h3 { font-size: 1.05rem; margin-bottom: .2em; }
+  .atout p { margin: 0; font-size: .92rem; color: var(--texte-doux); }
+  @media (max-width: 900px) {
+    /* Accueil mobile : véhicules en bande défilante */
+    .grille--vehicules { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; margin: 0 -16px; padding: 4px 16px 20px; scrollbar-width: none; }
+    .grille--vehicules > div { flex: 0 0 72%; scroll-snap-align: start; }
+    .grille--atouts { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .atout { flex-direction: column; gap: 10px; padding: 16px; }
+  }
+  .etapes { position: relative; display: grid; gap: 24px; grid-template-columns: repeat(3, 1fr); padding: 0; margin: 36px 0 0; list-style: none; }
+  .etapes::before { content: ''; position: absolute; top: 30px; left: 18%; right: 18%; border-top: 2px dashed #ffc580; }
   .etapes li { position: relative; text-align: center; padding: 0 12px; }
-  .etapes li > :global(svg) { display: block; margin: 0 auto 14px; width: 68px; height: 68px; padding: 18px; border-radius: 50%; background: #fff; color: var(--marine); box-shadow: var(--ombre-forte); position: relative; }
-  .etapes__num { position: absolute; top: -6px; left: calc(50% + 18px); z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--orange); color: #fff; font-family: var(--titre); font-weight: 700; font-size: .85rem; }
-  .etapes strong { display: block; font-family: var(--titre); color: var(--marine-900); font-size: 1.1rem; margin-bottom: 6px; }
-  .etapes p { color: var(--texte-doux); }
+  .etapes li > :global(svg) { display: block; margin: 0 auto 12px; width: 60px; height: 60px; padding: 16px; border-radius: 50%; background: #fff; color: var(--marine); box-shadow: var(--ombre); position: relative; }
+  .etapes__num { position: absolute; top: -6px; left: calc(50% + 14px); z-index: 1; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--orange); color: #fff; font-family: var(--titre); font-weight: 700; font-size: .8rem; }
+  .etapes strong { display: block; font-family: var(--titre); color: var(--marine-900); font-size: 1.05rem; margin-bottom: 4px; }
+  .etapes p { color: var(--texte-doux); font-size: .95rem; margin: 0 auto; max-width: 30ch; }
   @media (max-width: 760px) { .etapes { grid-template-columns: 1fr; } .etapes::before { display: none; } }
-  .bandeau { position: relative; overflow: hidden; padding-block: clamp(48px, 7vw, 80px); color: #fff;
-    background: radial-gradient(600px 300px at 100% 0%, rgb(255 140 0 / .35), transparent 70%), linear-gradient(120deg, var(--marine-900), var(--marine-700)); }
-  .bandeau::after { content: ''; position: absolute; left: -10%; right: -10%; bottom: 26px; height: 6px; background: repeating-linear-gradient(90deg, rgb(255 255 255 / .25) 0 60px, transparent 60px 110px); transform: rotate(-2deg); }
-  .bandeau__contenu { position: relative; z-index: 1; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; }
-  .bandeau h2 { color: #fff; margin-bottom: .3em; }
-  .bandeau p { color: #dbe6f5; margin: 0; }
+
+  /* Appel final : marine à gauche, monument à droite, séparés par un biais orange */
+  .appel-zone { padding-bottom: clamp(48px, 6vw, 80px); }
+  .appel { position: relative; display: grid; grid-template-columns: 1.2fr 1fr; overflow: hidden; border-radius: 24px; background: linear-gradient(120deg, var(--marine-900), var(--marine)); color: #fff; box-shadow: var(--ombre-forte); }
+  .appel__texte { position: relative; z-index: 1; padding: clamp(28px, 4vw, 48px); }
+  .appel h2 { color: #fff; font-size: clamp(1.5rem, 3vw, 2rem); max-width: 16ch; }
+  .appel p { color: #d5e1f2; max-width: 46ch; }
+  .appel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 22px; }
+  .appel__info { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 600; font-size: .95rem; text-decoration: none; }
+  .appel__info :global(svg) { width: 20px; height: 20px; color: var(--orange); }
+  .appel__photo { position: relative; clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%); }
+  .appel__photo::before { content: ''; position: absolute; z-index: 1; inset: 0 auto 0 0; width: 14%; background: linear-gradient(to top right, transparent calc(50% - 3px), var(--orange) calc(50% - 3px), var(--orange) calc(50% + 3px), transparent calc(50% + 3px)); }
+  .appel__photo :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 800px) {
+    .appel { grid-template-columns: 1fr; }
+    .appel__photo { order: -1; height: 150px; clip-path: none; }
+    .appel__photo::before { inset: auto 0 0 0; width: auto; height: 40px; background: linear-gradient(0deg, var(--marine-900), transparent); }
+    .appel__actions .btn { width: 100%; }
+  }
 </style>

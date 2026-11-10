@@ -3,6 +3,9 @@ nom: SUV 4x4
 categorie: SUV / 4x4
 places: 7
 couverture: ../../assets/vehicules/suv-4x4.jpg
+galerie:
+  - ../../assets/vehicules/suv-4x4-2.jpg
+  - ../../assets/maquette/hero-lome.jpg
 options: [Climatisation, Avec ou sans chauffeur, Longs trajets]
 statut: publie
 a_la_une: true

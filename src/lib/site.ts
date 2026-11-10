@@ -28,3 +28,18 @@ export const messageVehicule = (nom: string) =>
   `Dates : du … au …\nLieu de prise en charge : …\nAvec chauffeur : oui / non`;
 
 export const messageGeneral = `Bonjour ${site.nom}, je souhaite louer un véhicule.\nDates : du … au …\nLieu de prise en charge : …`;
+
+/**
+ * Emplacement de l'agence sur Google Maps : coordonnées GPS en priorité (point exact),
+ * sinon l'adresse saisie dans l'admin. Rien n'est affiché si les deux sont vides.
+ */
+const lieu = site.gps.trim() || (site.adresse.trim() ? `${site.adresse.trim()}, ${site.ville}, Togo` : '');
+const q = encodeURIComponent(lieu);
+export const carte = {
+  /** Carte intégrée (sans clé d'API) */
+  embed: lieu ? `https://maps.google.com/maps?q=${q}&z=16&hl=fr&output=embed` : '',
+  itineraire: lieu ? `https://www.google.com/maps/dir/?api=1&destination=${q}` : site.google_maps_url,
+  lien: site.google_maps_url || (lieu ? `https://www.google.com/maps/search/?api=1&query=${q}` : ''),
+};
+/** Adresse lisible : « rue…, Lomé, Togo » (la ville seule si l'adresse n'est pas encore saisie). */
+export const adresseComplete = [site.adresse.trim(), site.ville, 'Togo'].filter(Boolean).join(', ');

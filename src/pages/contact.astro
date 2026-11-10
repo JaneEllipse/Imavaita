@@ -4,38 +4,76 @@ import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
-import { site } from '../lib/site';
+import monument from '../assets/maquette/monument-lome.jpg';
+import { site, carte, adresseComplete } from '../lib/site';
 const infos = [
   site.telephone && { icone: 'telephone', titre: 'Téléphone', html: `<a href="tel:${site.telephone.replace(/\s/g, '')}">${site.telephone}</a>` },
   site.email && { icone: 'mail', titre: 'Email', html: `<a href="mailto:${site.email}">${site.email}</a>` },
   site.horaires && { icone: 'horloge', titre: 'Horaires', html: site.horaires },
-  site.adresse && { icone: 'carte', titre: 'Adresse', html: site.adresse + (site.google_maps_url ? `<br><a href="${site.google_maps_url}" target="_blank" rel="noopener">Itinéraire Google Maps</a>` : '') },
-].filter(Boolean) as { icone: 'telephone' | 'mail' | 'horloge' | 'carte'; titre: string; html: string }[];
+].filter(Boolean) as { icone: 'telephone' | 'mail' | 'horloge'; titre: string; html: string }[];
 ---
-<Base titre="Contact" description={`Contactez ${site.nom} sur WhatsApp pour louer un véhicule au Togo.`}>
-  <EntetePage surtitre="Contact" titre="Parlons de votre location" intro="Le plus rapide : WhatsApp. Indiquez le véhicule souhaité, vos dates et le lieu de prise en charge." />
+<Base titre="Contact" description={`Contactez ${site.nom} sur WhatsApp pour louer un véhicule au Togo. Agence à ${site.ville}.`}>
+  <EntetePage titre="Contact" intro="Le plus rapide : WhatsApp. Indiquez le véhicule souhaité, vos dates et le lieu de prise en charge." image={monument} fil={[{ label: 'Contact' }]} />
   <section class="section">
-    <div class="conteneur">
-      <div class="contact-wa revele" data-masque-bulle>
-        <span class="contact-wa__icone"><IconeWhatsApp /></span>
-        <div><h2>Écrivez-nous sur WhatsApp</h2><p>Un message suffit : notre équipe vous répond avec la disponibilité et le tarif.</p></div>
-        <BoutonWhatsApp libelle="Démarrer la discussion" source="contact" />
+    <div class="conteneur contact">
+      <div class="contact__infos">
+        <div class="contact-wa revele" data-masque-bulle>
+          <span class="contact-wa__icone"><IconeWhatsApp /></span>
+          <div><h2>Écrivez-nous sur WhatsApp</h2><p>Un message suffit : notre équipe vous répond avec la disponibilité et le tarif.</p></div>
+          <BoutonWhatsApp libelle="Démarrer la discussion" source="contact" />
+        </div>
+        <ul class="infos">
+          <li class="revele">
+            <span class="pastille"><Icone nom="carte" /></span>
+            <div>
+              <h2>Notre agence</h2>
+              <p>{adresseComplete}</p>
+              {carte.lien && <a href={carte.lien} target="_blank" rel="noopener">Nous trouver sur Google Maps</a>}
+            </div>
+          </li>
+          {infos.map((i) => <li class="revele"><span class="pastille"><Icone nom={i.icone} /></span><div><h2>{i.titre}</h2><p set:html={i.html} /></div></li>)}
+        </ul>
       </div>
-      {infos.length > 0 && (
-        <div class="grille infos">
-          {infos.map((i) => <div class="carte revele"><span class="pastille"><Icone nom={i.icone} /></span><h2 class="h3">{i.titre}</h2><p set:html={i.html} /></div>)}
+
+      {carte.embed && (
+        <div class="plan revele">
+          <iframe src={carte.embed} title={`Plan d'accès à l'agence ${site.nom}`} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+          <div class="plan__barre">
+            <p><Icone nom="carte" /><span><strong>{site.nom}</strong>{adresseComplete}</span></p>
+            <a class="btn btn--orange plan__btn" href={carte.itineraire} target="_blank" rel="noopener">Itinéraire<Icone nom="fleche" /></a>
+          </div>
         </div>
       )}
     </div>
   </section>
 </Base>
 <style>
-  .h3 { font-size: 1.15rem; }
-  .contact-wa { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; padding: 32px; border-radius: 24px; background: linear-gradient(120deg, #e9fbf0, #fff); border: 1px solid #c9f0d8; box-shadow: var(--ombre); }
-  .contact-wa > div { flex: 1 1 280px; }
-  .contact-wa h2 { font-size: 1.5rem; margin-bottom: .3em; }
-  .contact-wa p { margin: 0; color: var(--texte-doux); }
-  .contact-wa__icone { display: grid; place-items: center; width: 72px; height: 72px; border-radius: 50%; background: var(--wa); color: #fff; box-shadow: 0 10px 24px rgb(37 211 102 / .35); }
-  .contact-wa__icone :global(svg) { width: 40px; height: 40px; }
-  .infos { margin-top: 32px; }
+  .contact { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; }
+  .contact:not(:has(.plan)) { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+  .contact-wa { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; padding: 26px; border-radius: 20px; background: linear-gradient(120deg, #e9fbf0, #fff); border: 1px solid #c9f0d8; }
+  .contact-wa > div { flex: 1 1 240px; }
+  .contact-wa h2 { font-size: 1.3rem; margin-bottom: .25em; }
+  .contact-wa p { margin: 0; color: var(--texte-doux); font-size: .95rem; }
+  .contact-wa__icone { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; background: var(--wa); color: #fff; box-shadow: 0 8px 20px rgb(37 211 102 / .3); }
+  .contact-wa__icone :global(svg) { width: 34px; height: 34px; }
+  .contact-wa :global(.btn) { width: 100%; }
+  .infos { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 12px; }
+  .infos li { display: flex; gap: 16px; align-items: flex-start; padding: 18px 20px; border: 1px solid var(--bord); border-radius: 16px; background: #fff; }
+  .infos .pastille { width: 44px; height: 44px; margin: 0; flex: none; }
+  .infos .pastille :global(svg) { width: 24px; height: 24px; }
+  .infos h2 { font-size: 1.05rem; margin-bottom: .15em; }
+  .infos p { margin: 0; color: var(--texte-doux); }
+  .infos a { font-weight: 600; }
+  .plan { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid var(--bord); box-shadow: var(--ombre-forte); background: var(--fond-doux); }
+  .plan iframe { display: block; width: 100%; height: 440px; border: 0; }
+  .plan__barre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 16px 18px; background: #fff; border-top: 1px solid var(--bord); }
+  .plan__barre p { display: flex; gap: 10px; margin: 0; font-size: .92rem; color: var(--texte-doux); }
+  .plan__barre p :global(svg) { width: 22px; height: 22px; color: var(--orange-600); flex: none; }
+  .plan__barre strong { display: block; color: var(--marine-900); font-family: var(--titre); }
+  .plan__btn { min-height: 46px; padding: .45em 1.3em; }
+  @media (max-width: 900px) {
+    .contact { grid-template-columns: minmax(0, 1fr); }
+    .plan iframe { height: 320px; }
+    .plan__btn { width: 100%; }
+  }
 </style>

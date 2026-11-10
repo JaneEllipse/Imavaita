@@ -4,174 +4,273 @@ import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import IconeWhatsApp from '../../components/IconeWhatsApp.astro';
 import Icone from '../../components/Icone.astro';
-import CarteVehicule from '../../components/CarteVehicule.astro';
-import { site, getVehicules, formatPrix, waLink, messageVehicule, numeroWa, type Vehicule } from '../../lib/site';
+import { site, getVehicules, formatPrix, waLink, numeroWa, type Vehicule } from '../../lib/site';
 
 export async function getStaticPaths() {
   const vehicules = await getVehicules();
-  return vehicules.map((v) => ({ params: { id: v.id }, props: { vehicule: v, autres: vehicules.filter((x) => x.id !== v.id).slice(0, 3) } }));
+  return vehicules.map((v) => ({ params: { id: v.id }, props: { vehicule: v } }));
 }
 
-const { vehicule, autres } = Astro.props as { vehicule: Vehicule; autres: Vehicule[] };
+const { vehicule } = Astro.props as { vehicule: Vehicule };
 const v = vehicule.data;
 const { Content } = await render(vehicule);
+type Ico = 'personnes' | 'boite' | 'flocon' | 'carburant' | 'volant';
 const caracs = [
-  { icone: 'voiture', label: 'Catégorie', val: v.categorie },
-  { icone: 'personnes', label: 'Places', val: v.places?.toString() },
-  { icone: 'boite', label: 'Boîte', val: v.transmission },
-  { icone: 'volant', label: 'Modèle', val: [v.marque, v.modele].filter(Boolean).join(' ') },
-].filter((c) => c.val) as { icone: 'voiture' | 'personnes' | 'boite' | 'volant'; label: string; val: string }[];
+  v.places && { icone: 'personnes', val: `${v.places} places` },
+  v.transmission && { icone: 'boite', val: v.transmission },
+  v.options.includes('Climatisation') && { icone: 'flocon', val: 'Climatisation' },
+  v.carburant && { icone: 'carburant', val: v.carburant },
+  (v.marque || v.modele) && { icone: 'volant', val: [v.marque, v.modele].filter(Boolean).join(' ') },
+].filter(Boolean).slice(0, 4) as { icone: Ico; val: string }[];
+const options = v.options.filter((o) => o !== 'Climatisation');
 const tarifs = [['Jour', v.prix_jour], ['Semaine', v.prix_semaine], ['Mois', v.prix_mois]].filter(([, p]) => p) as [string, number][];
-const images = [v.couverture, ...v.galerie].filter(Boolean);
+const images = [v.couverture, ...v.galerie].filter((i) => !!i) as NonNullable<typeof v.couverture>[];
+
+// Message prérempli (sans JavaScript) ; le script ci-dessous le complète avec les champs saisis.
+const message = (debut = 'JJ/MM/AAAA', fin = 'JJ/MM/AAAA', lieu = site.ville, chauffeur = 'à préciser') =>
+  `Bonjour ${site.nom}, je souhaite réserver le véhicule « ${v.nom} » du ${debut} au ${fin}.\n` +
+  `Lieu de prise en charge : ${lieu}\nAvec chauffeur : ${chauffeur}`;
 ---
 <Base titre={v.nom} description={v.resume ?? `${v.nom} en location chez ${site.nom}. Réservation sur WhatsApp.`} noindex={v.statut !== 'publie'} vehicule={v.nom}>
-  <section class="fiche-haut">
-    <div class="conteneur">
-      <nav class="fil" aria-label="Fil d'Ariane"><a href="/">Accueil</a><span>›</span><a href="/vehicules/">Nos véhicules</a><span>›</span><span aria-current="page">{v.nom}</span></nav>
-    </div>
-  </section>
   <section class="section fiche-section">
-    <div class="conteneur fiche">
-      <div class="fiche__gauche">
-        <div class="fiche__media">
-          {v.couverture
-            ? <Image src={v.couverture} alt={v.nom} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 640px" loading="eager" fetchpriority="high" />
-            : <div class="fiche__vide"><Icone nom="voiture" /></div>}
-          <span class="fiche__badges">
-            {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
-            {v.nouveau && <span class="badge">Nouveau</span>}
-          </span>
-        </div>
-        {images.length > 1 && (
-          <div class="fiche__galerie">
-            {v.galerie.map((img, i) => <Image src={img} alt={`${v.nom}, photo ${i + 2}`} widths={[240, 400]} sizes="(max-width: 900px) 33vw, 210px" />)}
+    <div class="conteneur">
+      <nav class="fil" aria-label="Fil d'Ariane">
+        <a href="/"><Icone nom="maison" />Accueil</a><span aria-hidden="true">›</span>
+        <a href="/vehicules/">Nos véhicules</a><span aria-hidden="true">›</span>
+        <span aria-current="page">{v.nom}</span>
+      </nav>
+      <div class="fiche">
+        <div class="fiche__gauche">
+          <div class="galerie" data-galerie>
+            <div class="galerie__vue" tabindex="0" aria-label={`Photos du véhicule ${v.nom}`}>
+              {images.length > 0
+                ? images.map((img, i) => <Image src={img} alt={i === 0 ? v.nom : `${v.nom}, photo ${i + 1}`} widths={[480, 800, 1100]} sizes="(max-width: 900px) 100vw, 620px" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} />)
+                : <div class="galerie__vide"><Icone nom="voiture" /></div>}
+            </div>
+            {images.length > 1 && (
+              <>
+                <button type="button" class="galerie__fleche galerie__fleche--prec" data-dir="-1" aria-label="Photo précédente"><Icone nom="chevron" /></button>
+                <button type="button" class="galerie__fleche galerie__fleche--suiv" data-dir="1" aria-label="Photo suivante"><Icone nom="chevron" /></button>
+                <span class="galerie__compteur" aria-hidden="true"><span data-n>1</span>/{images.length}</span>
+              </>
+            )}
+            <span class="galerie__badges">
+              {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
+              {v.nouveau && <span class="badge">Nouveau</span>}
+            </span>
           </div>
-        )}
-        <div class="fiche__texte">
-          <h2>Le véhicule</h2>
-          <ul class="caracs">
-            {caracs.map((c) => <li><span class="pastille"><Icone nom={c.icone} /></span><span><small>{c.label}</small><strong>{c.val}</strong></span></li>)}
-          </ul>
-          {v.options.length > 0 && <ul class="options">{v.options.map((o) => <li><Icone nom="check" />{o}</li>)}</ul>}
-          <div class="prose"><Content /></div>
+          {images.length > 1 && (
+            <div class="vignettes">
+              {images.map((img, i) => <button type="button" data-i={i} aria-label={`Voir la photo ${i + 1}`} aria-current={i === 0 ? 'true' : undefined}><Image src={img} alt="" widths={[160, 240]} sizes="120px" loading="lazy" /></button>)}
+            </div>
+          )}
+          <div class="apropos">
+            <h2>À propos de ce véhicule</h2>
+            <div class="prose"><Content /></div>
+            {options.length > 0 && <ul class="options">{options.map((o) => <li><Icone nom="check" />{o}</li>)}</ul>}
+          </div>
         </div>
+
+        <div class="fiche__entete">
+          <span class="fiche__cat">{v.categorie}</span>
+          <h1>{v.nom}</h1>
+          {v.resume && <p class="fiche__resume">{v.resume}</p>}
+          {caracs.length > 0 && <ul class="tuiles">{caracs.map((c) => <li><Icone nom={c.icone} />{c.val}</li>)}</ul>}
+        </div>
+
+        <aside class="resa" aria-labelledby="resa-titre">
+          <div class="resa__tete">
+            <Icone nom="calendrier" />
+            <h2 id="resa-titre">Réserver ce véhicule</h2>
+          </div>
+          <div class="resa__corps">
+            {tarifs.length > 0
+              ? <ul class="tarifs">{tarifs.map(([l, p]) => <li><small>{l}</small><strong>{formatPrix(p)}</strong></li>)}</ul>
+              : <p class="tarif-devis">Tarif : <strong>Sur demande</strong></p>}
+            <form class="resa__form" data-numero={numeroWa}>
+              <div class="resa__dates">
+                <label>Date de début<input type="date" name="debut" /></label>
+                <label>Date de fin<input type="date" name="fin" /></label>
+              </div>
+              <label>Lieu de prise en charge
+                <span class="champ-ico"><Icone nom="carte" /><input type="text" name="lieu" value={site.ville} autocomplete="off" /></span>
+              </label>
+              <fieldset>
+                <legend>Avec chauffeur ?</legend>
+                <div class="choix">
+                  <label><input type="radio" name="chauffeur" value="oui" /><span>Oui</span></label>
+                  <label><input type="radio" name="chauffeur" value="non" /><span>Non</span></label>
+                </div>
+              </fieldset>
+              <a class="btn btn--wa resa__btn" href={waLink(message())} target="_blank" rel="noopener" data-wa={`fiche:${vehicule.id}`} data-masque-bulle>
+                <IconeWhatsApp />Réserver sur WhatsApp
+              </a>
+              <div class="apercu">
+                <IconeWhatsApp />
+                <p><strong>Message qui sera envoyé :</strong> <span data-apercu>« {message()} »</span></p>
+              </div>
+              <p class="note">Vous relisez le message dans WhatsApp avant de l'envoyer. Notre équipe vous confirme la disponibilité et le tarif. Rien n'est enregistré sur ce site.</p>
+            </form>
+          </div>
+        </aside>
       </div>
 
-      <aside class="resa">
-        <span class="surtitre">{v.categorie}</span>
-        <h1>{v.nom}</h1>
-        {v.resume && <p class="resa__resume">{v.resume}</p>}
-        {tarifs.length > 0
-          ? <ul class="tarifs">{tarifs.map(([l, p]) => <li><small>{l}</small><strong>{formatPrix(p)}</strong></li>)}</ul>
-          : <p class="tarifs-devis"><small>Tarif</small><strong>Sur demande</strong><span>selon la durée et les options</span></p>}
-
-        <form class="resa__form" data-vehicule={v.nom} data-numero={numeroWa}>
-          <p class="resa__titre">Votre demande</p>
-          <div class="resa__dates">
-            <label>Du<input type="date" name="debut" /></label>
-            <label>Au<input type="date" name="fin" /></label>
-          </div>
-          <label>Lieu de prise en charge<input type="text" name="lieu" placeholder="Ex. aéroport de Lomé" autocomplete="off" /></label>
-          <fieldset>
-            <legend>Avec chauffeur ?</legend>
-            <div class="segments">
-              <label><input type="radio" name="chauffeur" value="oui" /><span>Oui</span></label>
-              <label><input type="radio" name="chauffeur" value="non" /><span>Non</span></label>
-              <label><input type="radio" name="chauffeur" value="à discuter" checked /><span>À voir</span></label>
-            </div>
-          </fieldset>
-          <a data-masque-bulle class="btn btn--wa resa__btn" href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" data-wa={`fiche:${vehicule.id}`}>
-            <IconeWhatsApp />Réserver sur WhatsApp
-          </a>
-          <p class="note">Le message s'ouvre dans WhatsApp avec ces informations : vous le relisez avant de l'envoyer. Rien n'est enregistré sur ce site.</p>
-        </form>
-      </aside>
+      <div class="autre">
+        <span class="autre__ico"><Icone nom="voiture" /></span>
+        <p><strong>Besoin d'un autre véhicule ?</strong> <span>Découvrez notre flotte complète.</span></p>
+        <a href="/vehicules/" class="btn btn--contour autre__btn">Voir tous nos véhicules<Icone nom="fleche" /></a>
+      </div>
     </div>
   </section>
-
-  {autres.length > 0 && (
-    <section class="section section--doux">
-      <div class="conteneur">
-        <h2 class="titre-section">Autres véhicules</h2>
-        <div class="grille autres">{autres.map((a) => <div class="revele"><CarteVehicule vehicule={a} /></div>)}</div>
-      </div>
-    </section>
-  )}
 </Base>
 
 <script>
-  // Complète le message WhatsApp avec les champs saisis. Sans JavaScript, le lien garde un message à compléter.
-  const fmt = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('fr-FR') : '…');
+  // Galerie : défilement natif (glisser au doigt), flèches et vignettes en complément.
+  document.querySelectorAll<HTMLElement>('[data-galerie]').forEach((g) => {
+    const vue = g.querySelector<HTMLElement>('.galerie__vue')!;
+    const vignettes = g.parentElement!.querySelectorAll<HTMLButtonElement>('.vignettes button');
+    const n = g.querySelector('[data-n]');
+    const total = vue.children.length;
+    const aller = (i: number) => vue.scrollTo({ left: ((i + total) % total) * vue.clientWidth, behavior: 'smooth' });
+    const courant = () => Math.round(vue.scrollLeft / vue.clientWidth);
+    g.querySelectorAll<HTMLButtonElement>('[data-dir]').forEach((b) => b.addEventListener('click', () => aller(courant() + Number(b.dataset.dir))));
+    vignettes.forEach((b) => b.addEventListener('click', () => aller(Number(b.dataset.i))));
+    vue.addEventListener('scroll', () => {
+      const i = courant();
+      if (n) n.textContent = String(i + 1);
+      vignettes.forEach((b, j) => (j === i ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current')));
+    }, { passive: true });
+  });
+
+  // Réservation : complète le message WhatsApp et son aperçu avec les champs saisis.
+  const date = (d: string) => (d ? new Date(d + 'T00:00').toLocaleDateString('fr-FR') : 'JJ/MM/AAAA');
   document.querySelectorAll<HTMLFormElement>('form.resa__form').forEach((form) => {
     const lien = form.querySelector<HTMLAnchorElement>('.resa__btn')!;
+    const apercu = form.querySelector<HTMLElement>('[data-apercu]')!;
+    const modele = new URL(lien.href).searchParams.get('text') ?? '';
     const maj = () => {
       const f = new FormData(form);
-      const msg =
-        `Bonjour IMAVAITA, je souhaite connaître la disponibilité du véhicule « ${form.dataset.vehicule} » ` +
-        `du ${fmt(String(f.get('debut') ?? ''))} au ${fmt(String(f.get('fin') ?? ''))}.\n` +
-        `Lieu de prise en charge : ${String(f.get('lieu') ?? '').trim() || '…'}\n` +
-        `Avec chauffeur : ${f.get('chauffeur') ?? 'à discuter'}`;
+      const lieu = String(f.get('lieu') ?? '').trim() || '…';
+      const msg = modele
+        .replace(/du JJ\/MM\/AAAA au JJ\/MM\/AAAA/, `du ${date(String(f.get('debut') ?? ''))} au ${date(String(f.get('fin') ?? ''))}`)
+        .replace(/(Lieu de prise en charge : ).*/, `$1${lieu}`)
+        .replace(/(Avec chauffeur : ).*/, `$1${f.get('chauffeur') ?? 'à préciser'}`);
       lien.href = `https://wa.me/${form.dataset.numero}?text=${encodeURIComponent(msg)}`;
+      apercu.textContent = `« ${msg} »`;
     };
     form.addEventListener('input', maj);
+    form.addEventListener('change', maj);
     form.addEventListener('submit', (e) => e.preventDefault());
   });
 </script>
 
 <style>
-  .fiche-haut { background: linear-gradient(180deg, var(--fond-doux), #fff); padding-top: 20px; }
-  .fil { display: flex; flex-wrap: wrap; gap: 8px; font-size: .9rem; color: var(--texte-doux); }
-  .fil a { color: var(--texte-doux); text-decoration: none; }
+  .fiche-section { padding-top: 20px; }
+  .fil { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: .88rem; color: var(--texte-doux); margin-bottom: 20px; }
+  .fil a { display: inline-flex; align-items: center; gap: 6px; color: var(--texte-doux); text-decoration: none; }
   .fil a:hover { color: var(--marine); }
-  .fiche-section { padding-top: 24px; }
-  .fiche { display: grid; gap: 40px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: start; }
-  .fiche__media { position: relative; border-radius: 24px; overflow: hidden; aspect-ratio: 4 / 3; background: radial-gradient(120% 90% at 50% 100%, #d5deea 0%, #f4f7fb 55%, #fff 100%); box-shadow: var(--ombre-forte); }
-  .fiche__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
-  .fiche__vide { display: grid; place-items: center; height: 100%; color: #b8c3d3; }
-  .fiche__vide :global(svg) { width: 96px; height: 96px; }
-  .fiche__badges { position: absolute; top: 16px; left: 16px; display: flex; gap: 6px; }
-  .fiche__galerie { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 10px; }
-  .fiche__galerie :global(img) { border-radius: 14px; aspect-ratio: 4 / 3; object-fit: cover; }
-  .fiche__texte { margin-top: 36px; }
-  .fiche__texte h2 { font-size: 1.5rem; }
-  .caracs { list-style: none; padding: 0; margin: 0 0 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-  .caracs li { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--bord); border-radius: 14px; background: #fff; }
-  .caracs .pastille { margin: 0; width: 44px; height: 44px; flex: none; }
-  .caracs .pastille :global(svg) { width: 24px; height: 24px; }
-  .caracs small { display: block; color: var(--texte-doux); font-size: .8rem; }
-  .caracs strong { font-family: var(--titre); color: var(--marine-900); }
-  .options { list-style: none; padding: 0; margin: 0 0 20px; display: flex; flex-wrap: wrap; gap: 8px; }
-  .options li { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; background: #e9fbf0; color: var(--wa-fonce); font-weight: 600; font-size: .9rem; }
-  .options :global(svg) { width: 16px; height: 16px; }
+  .fil :global(svg) { width: 16px; height: 16px; }
+  .fil [aria-current] { color: var(--marine-900); font-weight: 600; }
 
-  .resa { position: sticky; top: 96px; background: #fff; border: 1px solid var(--bord); border-radius: 24px; padding: 28px; box-shadow: var(--ombre-forte); }
-  .resa h1 { font-size: clamp(1.8rem, 3.5vw, 2.4rem); margin-bottom: .25em; }
-  .resa__resume { color: var(--texte-doux); }
-  .tarifs { list-style: none; padding: 0; margin: 0 0 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
-  .tarifs li, .tarifs-devis { display: flex; flex-direction: column; padding: 12px 14px; border-radius: 14px; background: var(--orange-50); }
-  .tarifs small, .tarifs-devis small { color: var(--texte-doux); font-size: .8rem; }
-  .tarifs strong, .tarifs-devis strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.3rem; }
-  .tarifs-devis span { font-size: .85rem; color: var(--texte-doux); }
-  .resa__form { display: grid; gap: 14px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--bord); }
-  .resa__titre { font-family: var(--titre); font-weight: 700; color: var(--marine-900); margin: 0; }
-  .resa__form label { display: grid; gap: 6px; font-weight: 600; font-size: .92rem; }
-  .resa__form input[type='date'], .resa__form input[type='text'] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--bord); border-radius: 12px; font: inherit; background: var(--fond-doux); width: 100%; min-width: 0; transition: border-color .15s, background .15s; }
-  .resa__form input:focus { border-color: var(--marine); background: #fff; outline: none; box-shadow: 0 0 0 3px rgb(0 48 110 / .12); }
-  .resa__dates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .fiche { display: grid; gap: 20px 44px; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); grid-template-areas: 'gauche entete' 'gauche resa'; align-items: start; }
+  .fiche__gauche { grid-area: gauche; }
+  .fiche__entete { grid-area: entete; }
+  .resa { grid-area: resa; }
+
+  /* Galerie */
+  .galerie { position: relative; border-radius: 20px; overflow: hidden; background: var(--fond-doux); box-shadow: var(--ombre); }
+  .galerie__vue { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; aspect-ratio: 4 / 3; }
+  .galerie__vue::-webkit-scrollbar { display: none; }
+  .galerie__vue > :global(*) { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
+  .galerie__vide { display: grid; place-items: center; color: #b8c3d3; }
+  .galerie__vide :global(svg) { width: 96px; height: 96px; }
+  .galerie__fleche { position: absolute; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(255 255 255 / .92); color: var(--marine-900); box-shadow: var(--ombre); cursor: pointer; transition: background .15s; }
+  .galerie__fleche:hover { background: #fff; }
+  .galerie__fleche :global(svg) { width: 22px; height: 22px; }
+  .galerie__fleche--prec { left: 14px; }
+  .galerie__fleche--suiv { right: 14px; }
+  .galerie__fleche--suiv :global(svg) { transform: scaleX(-1); }
+  :global(html:not(.js)) .galerie__fleche { display: none; }
+  .galerie__compteur { position: absolute; right: 14px; bottom: 14px; padding: 3px 10px; border-radius: 8px; background: rgb(0 27 64 / .6); color: #fff; font-size: .85rem; font-weight: 600; }
+  .galerie__badges { position: absolute; top: 14px; left: 14px; display: flex; gap: 6px; }
+  .vignettes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
+  .vignettes button { padding: 0; border: 2px solid transparent; border-radius: 12px; overflow: hidden; background: none; cursor: pointer; opacity: .75; transition: opacity .15s, border-color .15s; }
+  .vignettes button:hover { opacity: 1; }
+  .vignettes button[aria-current] { border-color: var(--orange); opacity: 1; }
+  .vignettes :global(img) { aspect-ratio: 4 / 3; width: 100%; object-fit: cover; }
+
+  .apropos { margin-top: 32px; }
+  .apropos h2 { font-size: 1.35rem; }
+  .apropos h2::after { content: ''; display: block; width: 48px; height: 3px; border-radius: 2px; background: var(--orange); margin-top: 8px; }
+  .apropos .prose { color: var(--texte-doux); }
+  .options { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-wrap: wrap; gap: 10px 22px; }
+  .options li { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: var(--marine-900); font-size: .95rem; }
+  .options :global(svg) { width: 22px; height: 22px; padding: 3px; border-radius: 50%; border: 2px solid var(--orange); color: var(--orange-600); }
+
+  /* En-tête de la fiche */
+  .fiche__cat { display: inline-block; padding: 4px 12px; border-radius: 8px; background: var(--orange-50); color: var(--orange-texte); font-family: var(--titre); font-weight: 600; font-size: .85rem; }
+  .fiche__entete h1 { font-size: clamp(1.8rem, 3.4vw, 2.4rem); margin: 10px 0 .3em; }
+  .fiche__resume { color: var(--texte-doux); font-size: 1.02rem; }
+  .tuiles { list-style: none; padding: 0; margin: 18px 0 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 10px; }
+  .tuiles li { display: grid; justify-items: center; gap: 6px; padding: 14px 8px; border: 1px solid var(--bord); border-radius: 14px; background: #fff; font-size: .88rem; font-weight: 600; color: var(--marine-900); text-align: center; }
+  .tuiles :global(svg) { width: 28px; height: 28px; color: var(--marine); }
+
+  /* Carte de réservation */
+  .resa { position: sticky; top: 92px; border: 1px solid var(--bord); border-radius: 20px; background: #fff; box-shadow: var(--ombre-forte); overflow: hidden; }
+  .resa__tete { display: flex; align-items: center; gap: 12px; padding: 18px 24px; background: var(--fond-doux); border-bottom: 1px solid var(--bord); }
+  .resa__tete :global(svg) { width: 30px; height: 30px; color: var(--marine); }
+  .resa__tete h2 { margin: 0; font-size: 1.3rem; }
+  .resa__corps { padding: 20px 24px 24px; }
+  .tarif-devis { margin: 0 0 16px; padding: 12px 16px; border-radius: 12px; background: var(--orange-50); color: var(--texte-doux); }
+  .tarif-devis strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.2rem; }
+  .tarifs { list-style: none; padding: 0; margin: 0 0 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 8px; }
+  .tarifs li { display: grid; padding: 10px 14px; border-radius: 12px; background: var(--orange-50); }
+  .tarifs small { color: var(--texte-doux); font-size: .8rem; }
+  .tarifs strong { font-family: var(--titre); color: var(--orange-texte); font-size: 1.15rem; }
+  .resa__form { display: grid; gap: 14px; }
+  .resa__form label, .resa__form legend { display: grid; gap: 6px; font-weight: 600; font-size: .9rem; color: var(--marine-900); }
+  .resa__form input[type='date'], .resa__form input[type='text'] { min-height: 48px; padding: 8px 14px; border: 1px solid var(--bord); border-radius: 10px; font: inherit; font-weight: 400; color: var(--texte); background: #fff; width: 100%; min-width: 0; transition: border-color .15s, box-shadow .15s; }
+  .resa__form input:focus { border-color: var(--marine); outline: none; box-shadow: 0 0 0 3px rgb(0 48 110 / .12); }
+  .resa__dates { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .champ-ico { position: relative; display: block; }
+  .champ-ico :global(svg) { position: absolute; left: 12px; top: 50%; translate: 0 -50%; width: 20px; height: 20px; color: var(--texte-doux); pointer-events: none; }
+  .champ-ico input { padding-left: 40px !important; }
   .resa__form fieldset { border: 0; padding: 0; margin: 0; }
-  .resa__form legend { font-weight: 600; font-size: .92rem; margin-bottom: 6px; }
-  .segments { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--fond-doux); border-radius: 12px; padding: 4px; gap: 4px; }
-  .segments label { display: block; }
-  .segments input { position: absolute; opacity: 0; pointer-events: none; }
-  .segments span { display: grid; place-items: center; min-height: 42px; border-radius: 9px; cursor: pointer; font-weight: 600; color: var(--texte-doux); transition: background .15s, color .15s; }
-  .segments input:checked + span { background: #fff; color: var(--marine); box-shadow: var(--ombre); }
-  .segments input:focus-visible + span { outline: 3px solid var(--orange); }
-  .resa__btn { width: 100%; font-size: 1.05rem; min-height: 56px; }
-  .note { font-size: .82rem; color: var(--texte-doux); margin: 0; }
-  .autres { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+  .resa__form legend { margin-bottom: 6px; }
+  .choix { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .choix label { display: block; }
+  .choix input { position: absolute; opacity: 0; pointer-events: none; }
+  .choix span { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px; border: 1px solid var(--bord); border-radius: 10px; font-weight: 500; cursor: pointer; transition: background .15s, border-color .15s; }
+  .choix span::before { content: ''; width: 18px; height: 18px; border-radius: 50%; border: 2px solid #b8c3d3; flex: none; transition: border .15s, background .15s; }
+  .choix input:checked + span { border-color: var(--orange); background: var(--orange-50); }
+  .choix input:checked + span::before { border: 5px solid var(--orange); background: #fff; }
+  .choix input:focus-visible + span { outline: 3px solid var(--marine); outline-offset: 2px; }
+  .resa__btn { width: 100%; min-height: 54px; font-size: 1.05rem; margin-top: 4px; }
+  .apercu { display: flex; gap: 12px; padding: 12px 14px; border: 1px solid var(--bord); border-radius: 12px; background: var(--fond-doux); }
+  .apercu > :global(svg) { width: 22px; height: 22px; color: var(--wa-600); flex: none; margin-top: 2px; }
+  .apercu p { margin: 0; font-size: .85rem; line-height: 1.5; color: var(--texte-doux); white-space: pre-line; }
+  .apercu strong { color: var(--marine-900); }
+  .note { font-size: .8rem; color: var(--texte-doux); margin: 0; }
+
+  .autre { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 40px; padding: 18px 24px; border: 1px solid var(--bord); border-radius: 16px; background: var(--fond-doux); }
+  .autre__ico { display: grid; place-items: center; padding-right: 20px; border-right: 1px solid var(--bord); color: var(--orange-600); }
+  .autre__ico :global(svg) { width: 32px; height: 32px; }
+  .autre p { flex: 1 1 260px; margin: 0; color: var(--texte-doux); }
+  .autre strong { font-family: var(--titre); color: var(--marine-900); font-size: 1.15rem; margin-right: 8px; }
+  .autre__btn { min-height: 46px; padding: .45em 1.2em; font-size: .95rem; }
+
   @media (max-width: 900px) {
-    .fiche { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .fiche { grid-template-columns: minmax(0, 1fr); grid-template-areas: none; gap: 20px; }
     .fiche__gauche { display: contents; }
-    .fiche__media { order: 1; } .fiche__galerie { order: 2; margin-top: -14px; } .resa { order: 3; position: static; padding: 22px; } .fiche__texte { order: 4; margin-top: 8px; }
+    .galerie, .vignettes { order: 1; }
+    .vignettes { margin-top: -10px; grid-template-columns: repeat(4, 1fr); }
+    .fiche__entete { order: 2; grid-area: auto; }
+    .resa { order: 3; grid-area: auto; position: static; }
+    .apropos { order: 4; margin-top: 8px; }
+    .tuiles { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 8px; }
+    .tuiles li { padding: 10px 4px; font-size: .8rem; overflow-wrap: anywhere; }
+    .resa__tete, .resa__corps { padding-inline: 18px; }
+    .autre__ico { display: none; }
+    .autre__btn { width: 100%; }
   }
 </style>
