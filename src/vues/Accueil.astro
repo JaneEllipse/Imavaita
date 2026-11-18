@@ -1,0 +1,397 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import CarteVente from '../components/CarteVente.astro';
+import CarteVehicule from '../components/CarteVehicule.astro';
+import BlocCatalogue from '../components/BlocCatalogue.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import Icone from '../components/Icone.astro';
+import IconeWhatsApp from '../components/IconeWhatsApp.astro';
+import slideVente from '../assets/accueil/tiggo-8-pro.jpg';
+import slideInterieur from '../assets/accueil/interieur-uni-k.jpg';
+import slideShowroom from '../assets/accueil/showroom-kia.jpg';
+import photoLocation from '../assets/location/changan-cs95.jpg';
+import monument from '../assets/maquette/monument-lome.jpg';
+import { site, waLink, getVente, getVehicules, marquesVente, adresseComplete, entreprise, messages, infos } from '../lib/site';
+import type { NomIcone } from '../lib/icones';
+import { type Lang, t, lien, trad } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const d = t(lang);
+const a = d.accueil_;
+const msg = messages(lang);
+const info = infos(lang);
+
+const vente = await getVente();
+const marques = marquesVente(vente);
+const location = await getVehicules();
+// Règle anti-surcharge : 4 véhicules maximum sur l'accueil (2 en vente + 2 en location), « à la une » d'abord.
+const aLaUne = <T extends { data: { a_la_une: boolean } }>(l: T[]) => [...l].sort((x, y) => Number(y.data.a_la_une) - Number(x.data.a_la_une));
+const uneVente = aLaUne(vente).slice(0, location.length ? 2 : 4);
+const uneLocation = aLaUne(location).slice(0, 4 - uneVente.length);
+const p = a.poles;
+
+// Diaporama du héros (3 photos maximum) : la première s'affiche tout de suite, les suivantes après le chargement.
+const diapos = [
+  { src: slideVente, alt: a.legendes[0], pos: '66% 62%' },
+  { src: slideInterieur, alt: a.legendes[1], pos: '60% 45%' },
+  { src: slideShowroom, alt: a.legendes[2], pos: '60% 55%' },
+];
+const suivantes = await Promise.all(diapos.slice(1).map(async (s) => {
+  const img = await getImage({ src: s.src, widths: [640, 960, 1400], quality: 55 });
+  return { srcset: img.srcSet.attribute, pos: s.pos, w: s.src.width, h: s.src.height };
+}));
+
+const iconesOffres: Record<string, NomIcone> = { vente: 'etiquette', location: 'cle', longue: 'immeuble', transfert: 'avion' };
+const liensOffres: Record<string, string> = {
+  vente: lien(lang, 'vente'),
+  location: lien(lang, 'location'),
+  longue: `${lien(lang, 'services')}#longue-duree`,
+  transfert: `${lien(lang, 'services')}#transferts`,
+};
+const iconesAvantages: NomIcone[] = ['etiquette', 'message', 'route', 'jauge'];
+const iconesEtapes: NomIcone[] = ['suv', 'message', 'cle'];
+const iconesAtouts: NomIcone[] = ['etiquette', 'cle', 'message'];
+const jsonld = await entreprise(Astro.site, lang);
+---
+<Base lang={lang} route="accueil" titre={site.nom} titreSeo={a.titreSeo} description={a.description(marques.slice(0, 6).join(', '))} jsonld={jsonld} image={slideVente}>
+  <section class="hero">
+    <div class="hero__diapo">
+      <Image src={diapos[0].src} alt={diapos[0].alt} widths={[640, 960, 1400]} sizes="100vw" quality={70} style={`object-position:${diapos[0].pos}`} loading="eager" fetchpriority="high" />
+      {suivantes.map((s, i) => <img data-srcset={s.srcset} sizes="100vw" alt={diapos[i + 1].alt} width={s.w} height={s.h} style={`object-position:${s.pos}`} decoding="async" />)}
+    </div>
+    <div class="conteneur hero__contenu">
+      <span class="surtitre hero__surtitre">{a.surtitre}</span>
+      <h1>{a.h1}</h1>
+      <p class="hero__accroche">{info.accroche}</p>
+      <div class="hero__actions">
+        <a href={lien(lang, 'vente')} class="btn btn--orange"><Icone nom="etiquette" />{a.actions.vente}</a>
+        <a href={lien(lang, 'location')} class="btn btn--clair"><Icone nom="cle" />{a.actions.location}</a>
+      </div>
+      <ul class="hero__atouts">
+        {a.atouts.map(([fort, texte], i) => <li><Icone nom={iconesAtouts[i]} /><span><strong>{fort}</strong> {texte}</span></li>)}
+      </ul>
+    </div>
+    <div class="hero__legendes" aria-hidden="true">{diapos.map((s) => <span>{s.alt}</span>)}</div>
+    <div class="hero__points" aria-hidden="true">{diapos.map(() => <span></span>)}</div>
+  </section>
+
+  <div class="marques" aria-label={a.marquesTitre}>
+    <div class="conteneur marques__barre">
+      <p class="marques__titre">{a.marquesTitre}</p>
+      <ul class="marques__liste">{marques.map((m) => <li>{m}</li>)}</ul>
+    </div>
+  </div>
+
+  <section class="section section--pierre">
+    <div class="conteneur">
+      <div class="revele titre-section--centre poles__tete">
+        <span class="surtitre">{p.surtitre}</span>
+        <h2 class="titre-section titre-section--centre">{p.titre}</h2>
+      </div>
+      <div class="poles">
+        <article class="pole revele">
+          <div class="pole__photo"><Image src={slideVente} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="etiquette" />{a.une.vente}</span></div>
+          <div class="pole__corps">
+            <h3>{p.vente.titre}</h3>
+            <p>{p.vente.texte(vente.length, marques.length)}</p>
+            <ul>{p.vente.points.map((x) => <li><Icone nom="check" />{x}</li>)}</ul>
+            <div class="pole__actions">
+              <a href={lien(lang, 'vente')} class="btn btn--marine">{d.bouton.voirVente}<Icone nom="fleche" /></a>
+              <a href={waLink(msg.achat)} class="pole__wa" target="_blank" rel="noopener" data-wa="accueil:achat"><IconeWhatsApp />{d.bouton.demanderPrix}</a>
+            </div>
+          </div>
+        </article>
+        <article class="pole revele" style="transition-delay:90ms">
+          <div class="pole__photo"><Image src={photoLocation} alt={a.location.legende} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="cle" />{a.une.location}</span></div>
+          <div class="pole__corps">
+            <h3>{p.location.titre}</h3>
+            <p>{p.location.texte}</p>
+            <ul>{p.location.points.map((x) => <li><Icone nom="check" />{x}</li>)}</ul>
+            <div class="pole__actions">
+              <a href={lien(lang, 'location')} class="btn btn--marine">{d.bouton.voirLocation}<Icone nom="fleche" /></a>
+              <a href={waLink(msg.location)} class="pole__wa" target="_blank" rel="noopener" data-wa="accueil:location"><IconeWhatsApp />{d.bouton.reserver}</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--serree">
+    <div class="conteneur">
+      <div class="revele">
+        <span class="surtitre">{a.une.surtitre}</span>
+        <h2 class="titre-section">{a.une.titre}</h2>
+      </div>
+      <div class="selection">
+        {uneVente.length > 0 && (
+          <div class="selection__groupe">
+            <div class="selection__tete"><h3><Icone nom="etiquette" />{a.une.vente}</h3><a href={lien(lang, 'vente')}>{a.vente.tous(vente.length)}<Icone nom="fleche" /></a></div>
+            <div class="grille--vehicules">{uneVente.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVente lang={lang} vehicule={v} sizes="(max-width: 900px) 72vw, 280px" /></div>)}</div>
+          </div>
+        )}
+        {uneLocation.length > 0 && (
+          <div class="selection__groupe">
+            <div class="selection__tete"><h3><Icone nom="cle" />{a.une.location}</h3><a href={lien(lang, 'location')}>{a.une.tousLocation}<Icone nom="fleche" /></a></div>
+            <div class="grille--vehicules">{uneLocation.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVehicule lang={lang} vehicule={v} /></div>)}</div>
+          </div>
+        )}
+      </div>
+      <div class="catalogue-zone"><BlocCatalogue lang={lang} modeles={vente.length} marques={marques.length} /></div>
+    </div>
+  </section>
+
+  <section class="section offres">
+    <div class="conteneur">
+      <div class="revele offres__tete">
+        <span class="surtitre">{a.offres.surtitre}</span>
+        <h2 class="titre-section">{a.offres.titre}</h2>
+        <p class="intro">{a.offres.intro}</p>
+      </div>
+      <ol class="offres__liste">
+        {d.offres.map((o, i) => (
+          <li class="offre revele" style={`transition-delay:${i * 80}ms`}>
+            <span class="offre__num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="offre__ico"><Icone nom={iconesOffres[o.cle]} /></span>
+            <h3>{o.titre}</h3>
+            <p>{o.texte}</p>
+            <a href={liensOffres[o.cle]} class="offre__lien">{o.lien}<Icone nom="fleche" /></a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section section--doux section--serree">
+    <div class="conteneur">
+      <div class="revele titre-section--centre">
+        <span class="surtitre">{a.etapes.surtitre}</span>
+        <h2 class="titre-section titre-section--centre">{a.etapes.titre}</h2>
+      </div>
+      <ol class="etapes">
+        {a.etapes.liste.map(([titre, texte], i) => (
+          <li class="revele" style={`transition-delay:${i * 100}ms`}><span class="etapes__num">{i + 1}</span><Icone nom={iconesEtapes[i]} /><strong>{titre}</strong><p>{texte}</p></li>
+        ))}
+      </ol>
+
+      <div class="revele avantages-tete">
+        <span class="surtitre">{a.avantages.surtitre}</span>
+        <h2 class="titre-section">{a.avantages.titre(site.nom)}</h2>
+      </div>
+      <div class="grille grille--atouts">
+        {site.avantages.map((av, i) => (
+          <div class="atout revele" style={`transition-delay:${i * 80}ms`}>
+            <span class="pastille"><Icone nom={iconesAvantages[i % iconesAvantages.length]} /></span>
+            <div><h3>{trad(lang, av.titre, av.titre_en)}</h3><p>{trad(lang, av.texte, av.texte_en)}</p></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {site.temoignages.length > 0 && (
+    <section class="section section--doux">
+      <div class="conteneur">
+        <div class="grille">
+          {site.temoignages.map((tm: { auteur: string; texte: string }) => <blockquote class="carte"><p>« {tm.texte} »</p><footer>— {tm.auteur}</footer></blockquote>)}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <section class="conteneur appel-zone">
+    <div class="appel revele" data-masque-bulle>
+      <div class="appel__texte">
+        <h2>{a.appel.titre}</h2>
+        <p>{a.appel.texte}</p>
+        <div class="appel__actions">
+          <BoutonWhatsApp lang={lang} source="bandeau" />
+          {site.telephone && <a class="appel__info" href={`tel:${site.telephone.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone}</a>}
+          <span class="appel__info"><Icone nom="carte" />{adresseComplete}</span>
+          {info.horaires && <span class="appel__info"><Icone nom="horloge" />{info.horaires}</span>}
+        </div>
+      </div>
+      <div class="appel__photo">
+        <Image src={monument} alt="" widths={[360, 704]} sizes="(max-width: 800px) 100vw, 420px" loading="lazy" />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<script>
+  // Charge les photos 2 et 3 du diaporama une fois la page affichée ; sans JavaScript, la première reste seule.
+  const charger = () => document.querySelectorAll<HTMLImageElement>('.hero__diapo img[data-srcset]').forEach((img) => { img.srcset = img.dataset.srcset!; });
+  const plusTard = () => ('requestIdleCallback' in window ? requestIdleCallback(charger, { timeout: 3000 }) : setTimeout(charger, 1500));
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) (document.readyState === 'complete' ? plusTard() : addEventListener('load', plusTard));
+</script>
+
+<style>
+  /* Héros : diaporama plein cadre (fondu + zoom lent), légende par photo, texte sur voile marine. */
+  .hero { position: relative; overflow: hidden; isolation: isolate; color: #fff; background: var(--marine-900); min-height: min(680px, 88vh); display: flex; align-items: center; padding: clamp(56px, 8vw, 104px) 0 clamp(80px, 8vw, 112px); }
+  .hero__diapo { position: absolute; inset: 0; z-index: -1; }
+  .hero__diapo :global(img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; animation: zoom 18s linear infinite; }
+  .hero__diapo :global(img:nth-child(2)) { opacity: 0; animation: zoom 18s linear infinite, fondu2 18s ease-in-out infinite; }
+  .hero__diapo :global(img:nth-child(3)) { opacity: 0; animation: zoom 18s linear infinite, fondu3 18s ease-in-out infinite; }
+  .hero__diapo::after { content: ''; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgb(0 27 64 / .95) 0%, rgb(0 27 64 / .8) 36%, rgb(0 27 64 / .3) 64%, rgb(0 27 64 / .12) 100%),
+      linear-gradient(0deg, rgb(0 27 64 / .75) 0%, transparent 38%); }
+  @keyframes zoom { from { transform: scale(1); } to { transform: scale(1.08); } }
+  @keyframes fondu2 { 0%, 30% { opacity: 0; } 36%, 63% { opacity: 1; } 69%, 100% { opacity: 0; } }
+  @keyframes fondu3 { 0%, 63% { opacity: 0; } 69%, 94% { opacity: 1; } 100% { opacity: 0; } }
+  .hero__contenu { position: relative; }
+  .hero__contenu > * { max-width: 580px; }
+  .hero__surtitre { color: #ffb347; display: inline-flex; align-items: center; gap: 12px; }
+  .hero__surtitre::after { content: ''; width: 40px; height: 2px; background: var(--orange); }
+  .hero h1 { color: #fff; font-size: clamp(2.2rem, 5.2vw, 3.7rem); max-width: 15ch; text-shadow: 0 2px 24px rgb(0 0 0 / .25); }
+  .hero__accroche { font-size: clamp(1rem, 1.6vw, 1.12rem); max-width: 46ch; color: #e1e9f5; }
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+  .hero__atouts { display: flex; flex-wrap: wrap; gap: 14px 28px; list-style: none; padding: 22px 0 0; margin: 30px 0 0; border-top: 1px solid rgb(255 255 255 / .16); max-width: 640px !important; }
+  .hero__atouts li { display: flex; align-items: center; gap: 10px; font-size: .84rem; line-height: 1.3; color: #d5e1f2; }
+  .hero__atouts strong { display: block; color: #fff; font-weight: 600; }
+  .hero__atouts :global(svg) { width: 30px; height: 30px; color: var(--orange); flex: none; }
+  /* Légendes : chaque légende suit le fondu de sa photo */
+  .hero__legendes { position: absolute; right: max(16px, calc((100vw - var(--largeur)) / 2)); bottom: 22px; }
+  .hero__legendes span { position: absolute; right: 0; bottom: 0; white-space: nowrap; padding: 6px 12px; border-radius: 999px; background: rgb(0 27 64 / .55); border: 1px solid rgb(255 255 255 / .18); backdrop-filter: blur(6px); font-size: .78rem; font-weight: 600; letter-spacing: .02em; color: #fff; opacity: 0; animation: legende 18s ease-in-out infinite; }
+  .hero__legendes span:nth-child(2) { animation-delay: 6s; }
+  .hero__legendes span:nth-child(3) { animation-delay: 12s; }
+  @keyframes legende { 0%, 2% { opacity: 0; transform: translateY(6px); } 5%, 30% { opacity: 1; transform: none; } 34%, 100% { opacity: 0; } }
+  .hero__points { position: absolute; left: max(16px, calc((100vw - var(--largeur)) / 2)); bottom: 32px; display: flex; gap: 8px; }
+  .hero__points span { width: 26px; height: 3px; border-radius: 2px; background: rgb(255 255 255 / .3); overflow: hidden; position: relative; }
+  .hero__points span::after { content: ''; position: absolute; inset: 0; background: var(--orange); transform: scaleX(0); transform-origin: left; animation: point 18s linear infinite; }
+  .hero__points span:nth-child(2)::after { animation-delay: 6s; }
+  .hero__points span:nth-child(3)::after { animation-delay: 12s; }
+  @keyframes point { 0% { transform: scaleX(0); } 33.3% { transform: scaleX(1); } 33.4%, 100% { transform: scaleX(0); } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__diapo :global(img) { animation: none !important; }
+    .hero__points { display: none; }
+    .hero__legendes span:first-child { opacity: 1; }
+  }
+  @media (max-width: 900px) {
+    .hero { min-height: 0; align-items: flex-end; padding: 210px 0 64px; }
+    .hero__diapo::after { background: linear-gradient(180deg, rgb(0 27 64 / .1) 0%, rgb(0 27 64 / .6) 36%, rgb(0 27 64 / .95) 70%); }
+    .hero__actions { flex-direction: column; }
+    .hero__actions :global(.btn) { width: 100%; }
+    .hero__atouts { display: none; }
+    .hero__legendes { top: 16px; bottom: auto; right: 16px; }
+    .hero__legendes span { top: 0; bottom: auto; }
+    .hero__points { bottom: 24px; }
+  }
+
+  /* Bandeau des marques */
+  .marques { background: #fff; border-bottom: 1px solid var(--bord); }
+  .marques__barre { display: flex; align-items: center; gap: 12px 28px; padding-block: 18px; }
+  .marques__titre { margin: 0; flex: none; font-size: .78rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--texte-doux); }
+  .marques__liste { display: flex; flex-wrap: wrap; gap: 6px 26px; list-style: none; margin: 0; padding: 0; }
+  .marques__liste li { font-family: var(--titre); font-weight: 700; font-size: 1.02rem; letter-spacing: .06em; text-transform: uppercase; color: var(--marine-900); opacity: .78; }
+  @media (max-width: 760px) {
+    .marques__barre { flex-direction: column; align-items: flex-start; }
+    .marques__liste { gap: 4px 18px; }
+    .marques__liste li { font-size: .88rem; }
+  }
+
+  .btn--petit { min-height: 44px; padding: .45em 1.1em; font-size: .92rem; }
+  .catalogue-zone { margin-top: clamp(40px, 6vw, 64px); }
+  .section--serree { padding-block: clamp(48px, 6vw, 72px); }
+  @media (max-width: 600px) {
+    /* Accueil mobile : véhicules en bande défilante */
+    .selection .grille--vehicules { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; margin: 0 -16px; padding: 4px 16px 20px; scrollbar-width: none; }
+    .selection .grille--vehicules > div { flex: 0 0 74%; scroll-snap-align: start; }
+  }
+
+  /* Offres : quatre cartes numérotées */
+  .offres { background: var(--grain), #fff; }
+  .offres__tete { max-width: 720px; margin-bottom: 36px; }
+  .offres__liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .offre { position: relative; display: flex; flex-direction: column; padding: 26px 22px 22px; border-radius: 20px; background: #fff; border: 1px solid var(--bord); box-shadow: 0 1px 2px rgb(0 27 64 / .05); overflow: hidden; transition: transform .3s ease, box-shadow .3s ease, border-color .3s; }
+  .offre::before { content: ''; position: absolute; left: 0; top: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--orange), #ffb347); transform: scaleX(.18); transform-origin: left; transition: transform .4s ease; }
+  .offre:hover { transform: translateY(-4px); box-shadow: var(--ombre-forte); border-color: #ffd29c; }
+  .offre:hover::before { transform: scaleX(1); }
+  .offre__num { position: absolute; right: 18px; top: 14px; font-family: var(--titre); font-weight: 800; font-size: 2.6rem; line-height: 1; color: var(--fond-doux); }
+  .offre__ico { position: relative; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: linear-gradient(135deg, var(--marine), var(--marine-700)); color: #fff; margin-bottom: 18px; box-shadow: 0 10px 20px rgb(0 48 110 / .25); }
+  .offre__ico :global(svg) { width: 26px; height: 26px; }
+  .offre h3 { font-size: 1.15rem; }
+  .offre p { color: var(--texte-doux); font-size: .93rem; }
+  .offre__lien { margin-top: auto; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-family: var(--titre); font-weight: 600; font-size: .92rem; color: var(--marine); text-decoration: none; }
+  .offre__lien :global(svg) { width: 18px; height: 18px; transition: transform .2s; }
+  .offre__lien:hover :global(svg) { transform: translateX(4px); }
+  .offre__lien::after { content: ''; position: absolute; inset: 0; }
+  @media (max-width: 1000px) { .offres__liste { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 560px) { .offres__liste { grid-template-columns: minmax(0, 1fr); gap: 12px; } .offre { padding: 22px 18px 16px; } }
+
+  /* Deux métiers : vente et location, au même niveau */
+  .poles__tete { margin-bottom: 32px; }
+  .poles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .pole { display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; background: #fff; border: 1px solid var(--bord); box-shadow: var(--ombre); transition: transform .3s ease, box-shadow .3s ease; }
+  .pole:hover { transform: translateY(-4px); box-shadow: var(--ombre-forte); }
+  .pole__photo { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--marine-900); }
+  .pole__photo :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+  .pole:hover .pole__photo :global(img) { transform: scale(1.04); }
+  .pole__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(0 27 64 / .55), transparent 45%); }
+  .pole__tag { position: absolute; z-index: 1; left: 16px; bottom: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; background: var(--orange); color: #fff; font-family: var(--titre); font-weight: 700; font-size: .85rem; letter-spacing: .03em; text-transform: uppercase; }
+  .pole__tag :global(svg) { width: 18px; height: 18px; }
+  .pole__corps { display: flex; flex-direction: column; flex: 1; padding: clamp(20px, 3vw, 30px); }
+  .pole h3 { font-size: clamp(1.3rem, 2.4vw, 1.6rem); }
+  .pole p { color: var(--texte-doux); }
+  .pole ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 8px; }
+  .pole li { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: .95rem; color: var(--marine-900); }
+  .pole li :global(svg) { width: 22px; height: 22px; padding: 3px; border-radius: 50%; background: var(--orange-50); color: var(--orange-600); flex: none; }
+  .pole__actions { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+  .pole__wa { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--wa-fonce); font-weight: 600; text-decoration: none; }
+  .pole__wa:hover { text-decoration: underline; }
+  .pole__wa :global(svg) { width: 22px; height: 22px; color: var(--wa-600); }
+  @media (max-width: 900px) { .poles { grid-template-columns: minmax(0, 1fr); gap: 18px; } }
+  @media (max-width: 560px) { .pole__actions :global(.btn) { width: 100%; } }
+
+  /* Sélection : 2 véhicules en vente + 2 en location */
+  .selection { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+  .selection__tete { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--bord); }
+  .selection__tete h3 { display: inline-flex; align-items: center; gap: 8px; margin: 0; font-size: 1.1rem; }
+  .selection__tete h3 :global(svg) { width: 22px; height: 22px; color: var(--orange-600); }
+  .selection__tete a { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-weight: 600; font-size: .9rem; color: var(--marine); text-decoration: none; }
+  .selection__tete a :global(svg) { width: 18px; height: 18px; }
+  @media (min-width: 601px) { .selection .grille--vehicules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+  @media (max-width: 1000px) { .selection { grid-template-columns: minmax(0, 1fr); } }
+
+  .etapes { position: relative; display: grid; gap: 24px; grid-template-columns: repeat(3, 1fr); padding: 0; margin: 36px 0 0; list-style: none; }
+  .etapes::before { content: ''; position: absolute; top: 30px; left: 18%; right: 18%; border-top: 2px dashed rgb(255 140 0 / .45); }
+  .etapes li { position: relative; text-align: center; padding: 0 12px; }
+  .etapes li > :global(svg) { display: block; margin: 0 auto 12px; width: 60px; height: 60px; padding: 16px; border-radius: 50%; background: #fff; color: var(--marine); box-shadow: var(--ombre); position: relative; }
+  .etapes__num { position: absolute; top: -6px; left: calc(50% + 14px); z-index: 1; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--orange); color: #fff; font-family: var(--titre); font-weight: 700; font-size: .8rem; }
+  .etapes strong { display: block; font-family: var(--titre); color: var(--marine-900); font-size: 1.05rem; margin-bottom: 4px; }
+  .etapes p { color: var(--texte-doux); font-size: .95rem; margin: 0 auto; max-width: 30ch; }
+  @media (max-width: 760px) { .etapes { grid-template-columns: 1fr; } .etapes::before { display: none; } }
+  .avantages-tete { margin-top: clamp(48px, 7vw, 80px); }
+  .grille--atouts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; margin-top: 8px; }
+  .atout { display: flex; gap: 14px; align-items: flex-start; background: #fff; border: 1px solid var(--bord); border-radius: var(--rayon); padding: 22px; box-shadow: 0 1px 2px rgb(0 27 64 / .05); transition: border-color .25s, box-shadow .25s; }
+  .atout:hover { border-color: #ffc580; box-shadow: var(--ombre); }
+  .atout .pastille { width: 48px; height: 48px; border-radius: 12px; margin: 0; flex: none; }
+  .atout .pastille :global(.ico) { width: 26px; height: 26px; }
+  .atout h3 { font-size: 1.05rem; margin-bottom: .2em; }
+  .atout p { margin: 0; font-size: .92rem; color: var(--texte-doux); }
+  @media (max-width: 900px) {
+    .grille--atouts { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .atout { flex-direction: column; gap: 10px; padding: 16px; }
+  }
+
+  /* Appel final : marine à gauche, monument à droite, séparés par un biais orange */
+  .appel-zone { padding-block: clamp(48px, 6vw, 80px); }
+  .appel { position: relative; display: grid; grid-template-columns: 1.2fr 1fr; overflow: hidden; border-radius: 24px; background: linear-gradient(120deg, var(--marine-900), var(--marine)); color: #fff; box-shadow: var(--ombre-forte); }
+  .appel__texte { position: relative; z-index: 1; padding: clamp(28px, 4vw, 48px); }
+  .appel h2 { color: #fff; font-size: clamp(1.5rem, 3vw, 2rem); max-width: 18ch; }
+  .appel p { color: #d5e1f2; max-width: 46ch; }
+  .appel__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 22px; }
+  .appel__info { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 600; font-size: .95rem; text-decoration: none; }
+  .appel__info :global(svg) { width: 20px; height: 20px; color: var(--orange); flex: none; }
+  .appel__photo { position: relative; clip-path: polygon(14% 0, 100% 0, 100% 100%, 0 100%); }
+  .appel__photo::before { content: ''; position: absolute; z-index: 1; inset: 0 auto 0 0; width: 14%; background: linear-gradient(to top right, transparent calc(50% - 3px), var(--orange) calc(50% - 3px), var(--orange) calc(50% + 3px), transparent calc(50% + 3px)); }
+  .appel__photo :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  @media (max-width: 800px) {
+    .appel { grid-template-columns: 1fr; }
+    .appel__photo { order: -1; height: 150px; clip-path: none; }
+    .appel__photo::before { inset: auto 0 0 0; width: auto; height: 40px; background: linear-gradient(0deg, var(--marine-900), transparent); }
+    .appel__actions :global(.btn) { width: 100%; }
+  }
+</style>

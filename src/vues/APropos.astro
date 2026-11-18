@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import EntetePage from '../components/EntetePage.astro';
+import Icone from '../components/Icone.astro';
+import photo from '../assets/accueil/interieur-sieges.jpg';
+import { site, filAriane, adresseComplete, infos } from '../lib/site';
+import type { NomIcone } from '../lib/icones';
+import { type Lang, t, lien, trad } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const d = t(lang);
+const a = d.apropos;
+const icones: NomIcone[] = ['etiquette', 'message', 'route', 'jauge'];
+const iconesActivites: NomIcone[] = ['etiquette', 'cle', 'avion'];
+---
+<Base lang={lang} route="apropos" titre={a.titre} titreSeo={a.titreSeo} description={a.description(site.nom, site.ville)} jsonld={filAriane(Astro.site, [{ nom: a.titre, chemin: lien(lang, 'apropos') }], lang)}>
+  <EntetePage lang={lang} surtitre={a.titre} titre={a.h1(site.nom)} intro={a.intro(site.raison_sociale || site.nom)} image={photo} fil={[{ label: a.titre }]} />
+  <section class="section">
+    <div class="conteneur apropos">
+      <div class="prose revele">
+        <h2>{a.approche}</h2>
+        <p>{a.p1}</p>
+        <p>{a.p2}</p>
+        <h2>{a.activites}</h2>
+        <ul class="activites">{a.listeActivites.map((x, i) => <li><Icone nom={iconesActivites[i]} />{x}</li>)}</ul>
+        <p class="adresse"><Icone nom="carte" /><span>{adresseComplete}{infos(lang).horaires && <><br />{infos(lang).horaires}</>}</span></p>
+        <p><BoutonWhatsApp lang={lang} source="a-propos" /></p>
+      </div>
+      <div class="grille engagements">
+        {site.avantages.map((av, i) => (
+          <div class="carte revele" style={`transition-delay:${i * 90}ms`}><span class="pastille"><Icone nom={icones[i % icones.length]} /></span><h3>{trad(lang, av.titre, av.titre_en)}</h3><p>{trad(lang, av.texte, av.texte_en)}</p></div>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .apropos { display: grid; gap: 48px; grid-template-columns: 1fr 1fr; align-items: start; }
+  .engagements { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .engagements p { color: var(--texte-doux); margin: 0; }
+  .activites { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 10px; }
+  .activites li { display: flex; align-items: center; gap: 12px; font-weight: 600; color: var(--marine-900); }
+  .activites :global(svg) { width: 36px; height: 36px; padding: 7px; border-radius: 10px; background: var(--orange-50); color: var(--orange-600); flex: none; }
+  .adresse { display: flex; gap: 10px; color: var(--texte-doux); }
+  .adresse :global(svg) { width: 22px; height: 22px; color: var(--orange-600); flex: none; margin-top: 2px; }
+  @media (max-width: 900px) { .apropos { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) { .engagements { grid-template-columns: 1fr; } }
+</style>

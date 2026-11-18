@@ -1,10 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
+import { t, lien } from '../i18n';
+const fr = t('fr').introuvable;
+const en = t('en').introuvable;
 ---
-<Base titre="Page introuvable" description="Cette page n'existe pas." noindex>
+<Base titre={fr.titre} description={fr.texte} noindex>
   <section class="section"><div class="conteneur" style="text-align:center">
-    <h1>Page introuvable</h1>
-    <p>La page demandée n'existe pas ou a été déplacée.</p>
-    <p><a class="btn btn--contour" href="/vehicules/">Voir nos véhicules</a></p>
+    <h1>{fr.titre}</h1>
+    <p>{fr.texte}</p>
+    <p lang="en">{en.titre}. {en.texte}</p>
+    <p style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center">
+      <a class="btn btn--marine" href={lien('fr', 'vente')}>{t('fr').bouton.voirVente}</a>
+      <a class="btn btn--contour" href={lien('en', 'accueil')} lang="en">English version</a>
+    </p>
   </div></section>
 </Base>

@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import EntetePage from '../components/EntetePage.astro';
+import { site } from '../lib/site';
+import { type Lang, t } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const m = t(lang).mentions;
+---
+<Base lang={lang} route="mentions" titre={m.titre} description={m.description(site.nom)}>
+  <EntetePage lang={lang} titre={m.titre} />
+  <section class="section"><div class="conteneur prose">
+    <h2>{m.editeur}</h2>
+    <p>{site.raison_sociale || site.nom}{site.adresse && <>, {site.adresse}</>}, {site.ville}, Togo.{site.email && <> <a href={`mailto:${site.email}`}>{site.email}</a>.</>}</p>
+    <h2>{m.hebergement}</h2>
+    <p>Infomaniak Network SA, rue Eugène-Marziano 25, 1227 Les Acacias (GE), {lang === 'en' ? 'Switzerland' : 'Suisse'}.</p>
+    <h2>{m.propriete}</h2>
+    <p>{m.proprieteTexte(site.nom)}</p>
+  </div></section>
+</Base>

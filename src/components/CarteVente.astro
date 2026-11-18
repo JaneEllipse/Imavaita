@@ -1,0 +1,79 @@
+---
+import { Image } from 'astro:assets';
+import type { VehiculeVente } from '../lib/site';
+import { formatPrix, waLink, messages, nomVente } from '../lib/site';
+import { type Lang, t, trad } from '../i18n';
+import Icone from './Icone.astro';
+import IconeWhatsApp from './IconeWhatsApp.astro';
+
+/** Carte d'un véhicule du catalogue de vente : photo, caractéristiques du catalogue, demande de prix sur WhatsApp. */
+interface Props { lang?: Lang; vehicule: VehiculeVente; prioritaire?: boolean; sizes?: string }
+const { lang = 'fr', vehicule, prioritaire = false, sizes = '(max-width: 600px) 92vw, (max-width: 1000px) 46vw, 300px' } = Astro.props;
+const v = vehicule.data;
+const d = t(lang);
+const nom = nomVente(vehicule);
+const note = v.note ? trad(lang, v.note, v.note_en) : '';
+const caracs = [
+  v.energie && { icone: 'carburant', val: d.carac.energie[v.energie] },
+  v.puissance && { icone: 'jauge', val: d.carac.ch(v.puissance) },
+  v.boite && { icone: 'boite', val: d.carac.boite[v.boite] },
+].filter(Boolean) as { icone: 'carburant' | 'jauge' | 'boite'; val: string }[];
+const details = [v.moteur, v.consommation, note].filter(Boolean) as string[];
+---
+<article class="cvv">
+  <div class="cvv__media">
+    {v.photo
+      ? <Image src={v.photo} alt={nom} widths={[320, 480, 640]} sizes={sizes} quality={68} loading={prioritaire ? 'eager' : 'lazy'} />
+      : <div class="cvv__vide"><Icone nom="voiture" /></div>}
+    {v.annee && <span class="cvv__annee">{v.annee}</span>}
+    {v.statut === 'brouillon' && <span class="badge badge--brouillon cvv__brouillon">{d.location.brouillon}</span>}
+  </div>
+  <div class="cvv__corps">
+    <p class="cvv__marque">{v.marque}</p>
+    <h3>{v.nom}</h3>
+    {caracs.length > 0 && <ul class="cvv__caracs">{caracs.map((c) => <li><Icone nom={c.icone} />{c.val}</li>)}</ul>}
+    {details.length > 0 && <p class="cvv__details">{details.join(' · ')}</p>}
+    <div class="cvv__pied">
+      <p class="cvv__prix">{v.prix ? formatPrix(v.prix, lang) : d.prixSurDemande}</p>
+      <a href={waLink(messages(lang).prixVente(nom))} target="_blank" rel="noopener" class="btn btn--wa cvv__btn" data-wa={`vente:${vehicule.id}`} aria-label={`${d.bouton.demanderPrix} : ${nom}`}>
+        <IconeWhatsApp /><span>{d.bouton.demanderPrix}</span>
+      </a>
+    </div>
+  </div>
+</article>
+
+<style>
+  .cvv { position: relative; display: flex; flex-direction: column; height: 100%; background: #fff; border: 1px solid var(--bord); border-radius: 18px; overflow: hidden; box-shadow: 0 1px 2px rgb(0 27 64 / .05), 0 6px 18px rgb(0 27 64 / .06); transition: transform .3s ease, box-shadow .3s ease, border-color .3s; }
+  .cvv:hover { transform: translateY(-4px); box-shadow: var(--ombre-forte); border-color: #ffd29c; }
+  .cvv__media { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: linear-gradient(180deg, #f6f8fb, #e9eef5); }
+  .cvv__media :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+  .cvv:hover .cvv__media :global(img) { transform: scale(1.05); }
+  .cvv__vide { display: grid; place-items: center; height: 100%; color: #b8c3d3; }
+  .cvv__vide :global(svg) { width: 64px; height: 64px; }
+  .cvv__annee { position: absolute; left: 12px; top: 12px; padding: 4px 10px; border-radius: 8px; background: rgb(0 27 64 / .82); color: #fff; font-family: var(--titre); font-weight: 600; font-size: .78rem; letter-spacing: .04em; backdrop-filter: blur(4px); }
+  .cvv__brouillon { position: absolute; right: 12px; top: 12px; }
+  .cvv__corps { display: flex; flex-direction: column; flex: 1; padding: 14px 16px 16px; }
+  .cvv__marque { margin: 0 0 2px; font-family: var(--titre); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--orange-texte); }
+  .cvv h3 { font-size: 1.12rem; margin: 0 0 10px; }
+  .cvv__caracs { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0 0 8px; }
+  .cvv__caracs li { display: inline-flex; align-items: center; gap: 5px; font-size: .76rem; font-weight: 600; color: var(--marine); background: var(--fond-doux); padding: 4px 9px; border-radius: 999px; }
+  .cvv__caracs :global(svg) { width: 15px; height: 15px; }
+  .cvv__details { margin: 0 0 12px; font-size: .82rem; line-height: 1.45; color: var(--texte-doux); }
+  .cvv__pied { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 10px; padding-top: 12px; border-top: 1px dashed var(--bord); }
+  .cvv__prix { margin: 0; font-family: var(--titre); font-weight: 700; font-size: .9rem; color: var(--marine-900); }
+  .cvv__btn { flex: 1 0 auto; min-height: 44px; padding: .4em 1em; font-size: .86rem; box-shadow: none; white-space: nowrap; }
+  .cvv__btn :global(svg) { width: 1.2em; height: 1.2em; }
+  /* Mobile : cartes compactes en deux colonnes pour parcourir tout le catalogue sans défilement interminable */
+  @media (max-width: 560px) {
+    .cvv { border-radius: 14px; }
+    .cvv__annee { left: 8px; top: 8px; padding: 2px 7px; font-size: .7rem; }
+    .cvv__corps { padding: 10px 10px 12px; }
+    .cvv h3 { font-size: .95rem; margin-bottom: 6px; }
+    .cvv__caracs { gap: 4px; margin-bottom: 6px; }
+    .cvv__caracs li { font-size: .7rem; padding: 3px 7px; }
+    .cvv__caracs li:nth-child(3), .cvv__details { display: none; }
+    .cvv__pied { padding-top: 8px; gap: 6px; }
+    .cvv__prix { font-size: .78rem; }
+    .cvv__btn { width: 100%; padding: .4em .5em; font-size: .78rem; gap: .35em; }
+  }
+</style>

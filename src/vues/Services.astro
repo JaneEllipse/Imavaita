@@ -1,0 +1,216 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import EntetePage from '../components/EntetePage.astro';
+import Icone from '../components/Icone.astro';
+import photoVente from '../assets/accueil/tiggo-8-pro.jpg';
+import photoLocation from '../assets/location/changan-cs95.jpg';
+import { site, filAriane, messages } from '../lib/site';
+import type { NomIcone } from '../lib/icones';
+import { type Lang, t, lien, trad } from '../i18n';
+import faq from '../data/faq.json';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const d = t(lang);
+const s = d.services;
+const msg = messages(lang);
+const ancres = ['vente', 'longue-duree', 'transferts', 'conditions', 'faq'];
+const iconesTransferts: NomIcone[] = ['avion', 'avion', 'badge', 'personnes'];
+const questions = faq.questions.map((q) => ({ question: trad(lang, q.question, q.question_en), reponse: trad(lang, q.reponse, q.reponse_en) }));
+const jsonld = [
+  { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: questions.map((q) => ({ '@type': 'Question', name: q.question, acceptedAnswer: { '@type': 'Answer', text: q.reponse } })) },
+  filAriane(Astro.site, [{ nom: s.titre, chemin: lien(lang, 'services') }], lang),
+];
+---
+<Base lang={lang} route="services" titre={s.titre} titreSeo={s.titreSeo} description={s.description} jsonld={jsonld}>
+  <EntetePage lang={lang} surtitre={s.titre} titre={s.h1} intro={s.intro} fil={[{ label: s.titre }]}>
+    <nav class="sommaire" aria-label={s.titre}>
+      {s.sommaire.map((libelle, i) => <a href={`#${ancres[i]}`}>{libelle}</a>)}
+    </nav>
+  </EntetePage>
+
+  <section class="section section--serree" id="vente">
+    <div class="conteneur">
+      <div class="revele">
+        <span class="surtitre">{s.duo.surtitre}</span>
+        <h2 class="titre-section">{s.duo.titre}</h2>
+      </div>
+      <div class="duo">
+        <article class="duo__carte revele">
+          <div class="duo__photo"><Image src={photoVente} alt={d.accueil_.legendes[0]} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /></div>
+          <div class="duo__corps">
+            <span class="surtitre">{s.vente.surtitre}</span>
+            <h3>{s.vente.titre}</h3>
+            <p>{s.vente.texte}</p>
+            <div class="actions">
+              <a class="btn btn--marine" href={lien(lang, 'vente')}>{d.bouton.voirVente}<Icone nom="fleche" /></a>
+              {site.catalogue_pdf && <a class="btn btn--contour" href={site.catalogue_pdf} target="_blank" rel="noopener"><Icone nom="document" />{d.bouton.consulterPdf}</a>}
+            </div>
+          </div>
+        </article>
+        <article class="duo__carte revele" style="transition-delay:90ms">
+          <div class="duo__photo"><Image src={photoLocation} alt={d.accueil_.location.legende} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /></div>
+          <div class="duo__corps">
+            <span class="surtitre">{s.courte.surtitre}</span>
+            <h3>{s.courte.titre}</h3>
+            <p>{s.courte.texte}</p>
+            <div class="actions">
+              <a class="btn btn--marine" href={lien(lang, 'location')}>{d.bouton.voirLocation}<Icone nom="fleche" /></a>
+              <BoutonWhatsApp lang={lang} libelle={d.bouton.reserver} source="services:location" message={msg.location} />
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--pierre" id="longue-duree">
+    <div class="conteneur">
+      <div class="revele">
+        <span class="surtitre">{s.longue.surtitre}</span>
+        <h2 class="titre-section">{s.longue.titre}</h2>
+        <p class="intro">{s.longue.intro}</p>
+        <ul class="durees">{s.longue.durees.map((x) => <li>{x}</li>)}</ul>
+      </div>
+      <div class="formules">
+        {s.longue.formules.map((fo, i) => (
+          <article class:list={['formule', 'revele', { 'formule--sombre': i === 1 }]} style={`transition-delay:${i * 90}ms`}>
+            <span class="formule__ico"><Icone nom={i === 0 ? 'cle' : 'volant'} /></span>
+            <h3>{fo.titre}</h3>
+            <p>{fo.texte}</p>
+            <ul>{fo.points.map((p) => <li><Icone nom="check" />{p}</li>)}</ul>
+            <BoutonWhatsApp lang={lang} libelle={d.bouton.devis} source={`longue-duree:${i === 0 ? 'sans' : 'avec'}-chauffeur`} message={msg.longueDuree} />
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="transferts">
+    <div class="conteneur">
+      <div class="revele">
+        <span class="surtitre">{s.transferts.surtitre}</span>
+        <h2 class="titre-section">{s.transferts.titre}</h2>
+      </div>
+      <div class="grille transferts">
+        {site.services.map((sv, i) => (
+          <div class="carte revele" style={`transition-delay:${i * 80}ms`}>
+            <span class:list={['pastille', { 'pastille--retour': i === 1 }]}><Icone nom={iconesTransferts[i % iconesTransferts.length]} /></span>
+            <h3>{trad(lang, sv.titre, sv.titre_en)}</h3><p>{trad(lang, sv.texte, sv.texte_en)}</p>
+          </div>
+        ))}
+      </div>
+      <p class="transferts__cta"><BoutonWhatsApp lang={lang} libelle={d.bulle.choix.transfert} source="services:transfert" message={msg.transfert} /></p>
+    </div>
+  </section>
+
+  <section class="section section--doux" id="conditions">
+    <div class="conteneur">
+      <div class="revele">
+        <span class="surtitre">{s.conditions.surtitre}</span>
+        <h2 class="titre-section">{s.conditions.titre}</h2>
+      </div>
+      <div class="conditions">
+        {s.conditions.blocs.map((b, i) => (
+          <div class="condition revele" style={`transition-delay:${(i % 3) * 80}ms`}>
+            <h3><span><Icone nom={b.icone as NomIcone} /></span>{b.titre}</h3>
+            <ul>{b.points.map((p) => <li>{p}</li>)}</ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {questions.length > 0 && (
+    <section class="section" id="faq">
+      <div class="conteneur prose">
+        <h2 class="titre-section">{s.faq}</h2>
+        {questions.map((q) => (
+          <details class="faq"><summary>{q.question}</summary><p>{q.reponse}</p></details>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="conteneur appel-zone">
+    <div class="tarif-encart revele" data-masque-bulle>
+      <div>
+        <h2>{s.appel.titre}</h2>
+        <p>{s.appel.texte}</p>
+      </div>
+      <div class="tarif-encart__actions">
+        <a class="btn btn--clair" href={lien(lang, 'location')}>{d.bouton.voirLocation}</a>
+        <BoutonWhatsApp lang={lang} libelle={d.bouton.devis} source="services" />
+      </div>
+    </div>
+  </section>
+</Base>
+<style>
+  .sommaire { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .sommaire a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgb(255 255 255 / .3); color: #fff; text-decoration: none; font-weight: 600; font-size: .9rem; background: rgb(255 255 255 / .06); transition: background .2s, border-color .2s; }
+  .sommaire a:hover { background: rgb(255 255 255 / .16); border-color: #ffb347; }
+  section[id] { scroll-margin-top: 80px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
+  .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .duo__carte { display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; background: #fff; border: 1px solid var(--bord); box-shadow: var(--ombre); }
+  .duo__photo { aspect-ratio: 16 / 9; overflow: hidden; }
+  .duo__photo :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .duo__corps { display: flex; flex-direction: column; flex: 1; padding: clamp(20px, 3vw, 30px); }
+  .duo__corps h3 { font-size: clamp(1.3rem, 2.4vw, 1.6rem); }
+  .duo__corps p { color: var(--texte-doux); }
+  .duo__corps .actions { margin-top: auto; }
+  @media (max-width: 900px) { .duo { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 600px) { .actions .btn { width: 100%; } }
+
+  .durees { display: flex; flex-wrap: wrap; gap: 10px; list-style: none; padding: 0; margin: 8px 0 32px; }
+  .durees li { padding: 10px 18px; border-radius: 12px; background: #fff; border: 1px solid var(--bord); font-family: var(--titre); font-weight: 700; color: var(--marine-900); box-shadow: 0 1px 2px rgb(0 27 64 / .05); }
+  .durees li:last-child { border-style: dashed; color: var(--orange-texte); }
+  .formules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  @media (max-width: 860px) { .formules { grid-template-columns: minmax(0, 1fr); } }
+  .formule { display: flex; flex-direction: column; padding: clamp(24px, 3.5vw, 36px); border-radius: 24px; background: #fff; border: 1px solid var(--bord); box-shadow: var(--ombre); }
+  .formule--sombre { color: #fff; border-color: transparent; background: var(--grain-clair), radial-gradient(500px 240px at 100% 0%, rgb(255 140 0 / .25), transparent 70%), linear-gradient(135deg, var(--marine-900), var(--marine)); }
+  .formule--sombre h3 { color: #fff; }
+  .formule.formule--sombre p, .formule.formule--sombre li { color: #d5e1f2; }
+  .formule__ico { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 16px; background: var(--orange-50); color: var(--orange-600); margin-bottom: 18px; }
+  .formule--sombre .formule__ico { background: rgb(255 140 0 / .18); color: #ffb347; }
+  .formule__ico :global(svg) { width: 28px; height: 28px; }
+  .formule h3 { font-size: 1.4rem; }
+  .formule p { color: var(--texte-doux); }
+  .formule ul { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 10px; }
+  .formule li { display: flex; gap: 10px; align-items: flex-start; font-size: .95rem; }
+  .formule li :global(svg) { width: 20px; height: 20px; margin-top: 2px; color: var(--orange-600); flex: none; }
+  .formule :global(.btn) { margin-top: auto; align-self: flex-start; }
+  @media (max-width: 600px) { .formule :global(.btn) { width: 100%; } }
+
+  .transferts { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+  .transferts h3 { font-size: 1.1rem; }
+  .transferts p { color: var(--texte-doux); margin: 0; font-size: .95rem; }
+  .pastille--retour :global(svg) { transform: scaleX(-1); }
+  .transferts__cta { margin: 28px 0 0; }
+
+  .conditions { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 8px; }
+  @media (max-width: 1000px) { .conditions { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .conditions { grid-template-columns: minmax(0, 1fr); } }
+  .condition { padding: 22px; border-radius: 18px; background: #fff; border: 1px solid var(--bord); }
+  .condition h3 { display: flex; align-items: center; gap: 12px; font-size: 1.08rem; margin-bottom: 12px; }
+  .condition h3 span { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--fond-doux); color: var(--marine); flex: none; }
+  .condition h3 :global(svg) { width: 22px; height: 22px; }
+  .condition ul { margin: 0; padding-left: 1.1em; display: grid; gap: 6px; color: var(--texte-doux); font-size: .92rem; }
+  .condition li::marker { color: var(--orange); }
+
+  .faq { background: #fff; border: 1px solid var(--bord); border-radius: 16px; margin-bottom: 12px; box-shadow: var(--ombre); }
+  .faq summary { cursor: pointer; font-family: var(--titre); font-weight: 600; padding: 18px 20px; min-height: 48px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: '+'; color: var(--orange-600); font-size: 1.4rem; line-height: 1; transition: transform .2s; }
+  .faq[open] summary::after { transform: rotate(45deg); }
+  .faq p { padding: 0 20px 18px; margin: 0; color: var(--texte-doux); }
+
+  .appel-zone { padding-bottom: clamp(48px, 6vw, 80px); }
+  .tarif-encart { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px; padding: 32px; border-radius: 24px; color: #fff; background: radial-gradient(500px 240px at 100% 0%, rgb(255 140 0 / .3), transparent 70%), linear-gradient(120deg, var(--marine-900), var(--marine-700)); box-shadow: var(--ombre-forte); }
+  .tarif-encart h2 { color: #fff; font-size: 1.5rem; }
+  .tarif-encart p { color: #d5e1f2; margin: 0; }
+  .tarif-encart__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  @media (max-width: 600px) { .tarif-encart { padding: 24px 20px; } .tarif-encart__actions :global(.btn) { width: 100%; } }
+</style>

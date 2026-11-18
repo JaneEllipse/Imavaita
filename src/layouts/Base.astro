@@ -5,37 +5,40 @@ import '@fontsource/poppins/latin-800.css';
 import '../styles/global.css';
 import type { ImageMetadata } from 'astro';
 import { Image, getImage } from 'astro:assets';
-import imagePartage from '../assets/maquette/hero-lome.jpg';
+import imagePartage from '../assets/accueil/tiggo-8-pro.jpg';
 import logo from '../assets/logo-imavaita.png';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
 import BulleWhatsApp from '../components/BulleWhatsApp.astro';
 import Icone from '../components/Icone.astro';
-import { site, waLink, messageGeneral, carte, adresseComplete } from '../lib/site';
+import { site, waLink, messages, carte, adresseComplete, infos } from '../lib/site';
+import { type Lang, type Route, t, lien } from '../i18n';
 
 /**
+ * lang + route (+ id pour une fiche) : construisent la navigation, le sélecteur de langue et les liens hreflang.
  * titreSeo : titre de l'onglet et de Google (mots-clés locaux), sans le nom de la marque qui est ajouté.
  * image : visuel des partages (WhatsApp, Facebook) ; par défaut la photo de l'accueil.
  */
-interface Props { titre: string; titreSeo?: string; description: string; image?: ImageMetadata; jsonld?: Record<string, unknown> | Record<string, unknown>[]; noindex?: boolean; vehicule?: string }
-const { titre, titreSeo, description, image, jsonld, noindex = false, vehicule } = Astro.props;
-const titreComplet = titreSeo ? `${titreSeo} | ${site.nom}` : titre === site.nom ? `${site.nom} – ${site.slogan}` : `${titre} | ${site.nom}`;
+interface Props { lang?: Lang; route?: Route; id?: string; titre: string; titreSeo?: string; description: string; image?: ImageMetadata; jsonld?: Record<string, unknown> | Record<string, unknown>[]; noindex?: boolean; vehicule?: string }
+const { lang = 'fr', route, id, titre, titreSeo, description, image, jsonld, noindex = false, vehicule } = Astro.props;
+const d = t(lang);
+const autre: Lang = lang === 'fr' ? 'en' : 'fr';
+const titreComplet = titreSeo ? `${titreSeo} | ${site.nom}` : route === 'accueil' ? `${site.nom} – ${infos(lang).slogan}` : `${titre} | ${site.nom}`;
 const source = image ?? imagePartage;
 const partage = await getImage({ src: source, width: Math.min(1200, source.width), format: 'jpg', quality: 80 });
 const imageUrl = new URL(partage.src, Astro.site).href;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const chemin = Astro.url.pathname;
+const alternates = route ? { fr: new URL(lien('fr', route, id), Astro.site).href, en: new URL(lien('en', route, id), Astro.site).href } : undefined;
+const lienAutre = route ? lien(autre, route, id) : lien(autre, 'accueil');
 
-const nav = [
-  { href: '/', label: 'Accueil' },
-  { href: '/vehicules/', label: 'Nos véhicules' },
-  { href: '/tarifs-services/', label: 'Tarifs et services' },
-  { href: '/a-propos/', label: 'À propos' },
-  { href: '/contact/', label: 'Contact' },
-];
-const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWith(href));
+const nav = (['vente', 'location', 'services', 'apropos', 'contact'] as const).map((r) => ({ href: lien(lang, r), label: d.nav[r], court: d.navCourt[r] }));
+const navPied = [{ href: lien(lang, 'accueil'), label: d.accueil }, ...nav];
+const actif = (href: string) => chemin.startsWith(href);
+const msg = messages(lang);
+const horaires = infos(lang).horaires;
 ---
 <!doctype html>
-<html lang="fr">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -50,7 +53,8 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#00306e" />
     <meta property="og:type" content="website" />
-    <meta property="og:locale" content="fr_TG" />
+    <meta property="og:locale" content={d.ogLocale} />
+    {alternates && <><link rel="alternate" hreflang="fr" href={alternates.fr} /><link rel="alternate" hreflang="en" href={alternates.en} /><link rel="alternate" hreflang="x-default" href={alternates.fr} /></>}
     <meta property="og:site_name" content={site.nom} />
     <meta property="og:title" content={titreComplet} />
     <meta property="og:description" content={description} />
@@ -64,23 +68,24 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
     {jsonld && <script type="application/ld+json" set:html={JSON.stringify(jsonld)} />}
   </head>
   <body>
-    <a class="sr-only" href="#contenu">Aller au contenu</a>
+    <a class="sr-only" href="#contenu">{d.allerAuContenu}</a>
     <header class="entete" data-entete>
       <div class="conteneur entete__barre">
-        <a href="/" class="entete__logo" aria-label={`${site.nom}, accueil`}>
+        <a href={lien(lang, 'accueil')} class="entete__logo" aria-label={`${site.nom}, ${d.accueil}`}>
           <Image src={logo} alt={site.nom} width={170} densities={[1, 2]} loading="eager" />
         </a>
         <button type="button" class="entete__menu" aria-expanded="false" aria-controls="nav-principale" data-menu>
-          <span></span><span></span><span></span><span class="sr-only">Menu</span>
+          <span></span><span></span><span></span><span class="sr-only">{d.menu}</span>
         </button>
-        <nav aria-label="Navigation principale" class="nav" id="nav-principale">
+        <nav aria-label={d.pied.navigation} class="nav" id="nav-principale">
           <ul>
             {nav.map((l) => (
-              <li><a href={l.href} aria-current={actif(l.href) ? 'page' : undefined}>{l.label}</a></li>
+              <li><a href={l.href} aria-current={actif(l.href) ? 'page' : undefined}><span class="nav__long">{l.label}</span><span class="nav__court" aria-hidden="true">{l.court}</span></a></li>
             ))}
           </ul>
-          <a class="btn btn--wa nav__cta" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="entete">
-            <IconeWhatsApp />Réserver sur WhatsApp
+          <a class="nav__langue" href={lienAutre} hreflang={autre} lang={autre} aria-label={d.autreLangue.label}><Icone nom="globe" />{d.autreLangue.code}</a>
+          <a class="btn btn--wa nav__cta" href={waLink(msg.general)} target="_blank" rel="noopener" data-wa="entete">
+            <IconeWhatsApp />{d.ctaEntete}
           </a>
         </nav>
       </div>
@@ -92,34 +97,39 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
       <div class="conteneur pied__grille">
         <div class="pied__marque">
           <Image src={logo} alt={site.nom} width={170} densities={[1, 2]} />
-          <p>{site.slogan}. Des véhicules fiables et confortables à {site.ville} et partout dans le pays. Réservation simple sur WhatsApp.</p>
+          <p>{d.pied.texte}</p>
         </div>
         <div>
-          <p class="pied__titre">Navigation</p>
-          <ul class="pied__liens">{nav.map((l) => <li><a href={l.href}>{l.label}</a></li>)}</ul>
+          <p class="pied__titre">{d.pied.navigation}</p>
+          <ul class="pied__liens">
+            {navPied.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            {site.catalogue_pdf && <li><a href={site.catalogue_pdf} target="_blank" rel="noopener" class="pied__pdf"><Icone nom="document" />{d.pied.catalogue}</a></li>}
+            <li><a href={lienAutre} hreflang={autre} lang={autre}><Icone nom="globe" />{d.autreLangue.label}</a></li>
+          </ul>
         </div>
         <div>
-          <p class="pied__titre">Contact</p>
+          <p class="pied__titre">{d.pied.contact}</p>
           <ul class="pied__liens pied__contact">
-            <li><a href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="pied"><IconeWhatsApp />Réserver sur WhatsApp</a></li>
+            <li><a href={waLink(msg.general)} target="_blank" rel="noopener" data-wa="pied"><IconeWhatsApp />{site.whatsapp ? `+${site.whatsapp.replace(/^228(\d{2})(\d{2})(\d{2})(\d{2})$/, '228 $1 $2 $3 $4')}` : d.pied.ecrire}</a></li>
             {site.telephone && <li><a href={`tel:${site.telephone.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone}</a></li>}
+            {site.telephone_2 && <li><a href={`tel:${site.telephone_2.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone_2}</a></li>}
             {site.email && <li><a href={`mailto:${site.email}`}><Icone nom="mail" />{site.email}</a></li>}
-            {site.horaires && <li><span><Icone nom="horloge" />{site.horaires}</span></li>}
+            {horaires && <li><span><Icone nom="horloge" />{horaires}</span></li>}
             <li class="pied__adresse">
               <Icone nom="carte" />
-              <span>{adresseComplete}{carte.lien && <a href={carte.lien} target="_blank" rel="noopener" class="pied__maps">Nous trouver sur Google Maps</a>}</span>
+              <span>{adresseComplete}{carte.lien && <a href={carte.lien} target="_blank" rel="noopener" class="pied__maps">{d.pied.maps}</a>}</span>
             </li>
           </ul>
         </div>
       </div>
       <div class="conteneur pied__legal">
-        <span>© {new Date().getFullYear()} {site.nom}</span>
-        <a href="/mentions-legales/">Mentions légales</a>
-        <a href="/confidentialite/">Confidentialité</a>
+        <span>© {new Date().getFullYear()} {site.raison_sociale || site.nom}</span>
+        <a href={lien(lang, 'mentions')}>{d.pied.mentions}</a>
+        <a href={lien(lang, 'confidentialite')}>{d.pied.confidentialite}</a>
       </div>
     </footer>
 
-    <BulleWhatsApp vehicule={vehicule} />
+    <BulleWhatsApp lang={lang} vehicule={vehicule} />
 
     <script>
       // Mesure des clics WhatsApp : n'envoie rien tant qu'aucun outil de statistiques n'est chargé.
@@ -162,6 +172,11 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
       .nav li a:hover::after, .nav li a[aria-current='page']::after { transform: scaleX(1); }
       .nav li a[aria-current='page'] { color: var(--marine); }
       .nav__cta { min-height: 46px; padding: .55em 1.2em; font-size: .95rem; }
+      .nav__court { display: none; }
+      @media (min-width: 1001px) and (max-width: 1240px) { .nav__long { display: none; } .nav__court { display: inline; } }
+      .nav__langue { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 12px; border: 1px solid var(--bord); border-radius: 999px; color: var(--marine); font-family: var(--titre); font-weight: 600; font-size: .88rem; text-decoration: none; transition: border-color .2s, background .2s; }
+      .nav__langue:hover { border-color: var(--marine); background: var(--fond-doux); }
+      .nav__langue :global(svg) { width: 18px; height: 18px; }
       .entete__menu { display: none; }
       @media (max-width: 1000px) {
         .entete__barre { min-height: 66px; }
@@ -177,6 +192,7 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
         .nav li a { padding: 14px 8px; border-bottom: 1px solid var(--bord); font-size: 1.05rem; }
         .nav li a::after { display: none; }
         .nav li a[aria-current='page'] { color: var(--orange-texte); }
+        .nav__langue { align-self: flex-start; }
         /* Sans JavaScript, le menu reste visible */
         :global(html:not(.js)) .entete__menu { display: none; }
         :global(html:not(.js)) .nav { position: static; display: flex; box-shadow: none; }
@@ -195,6 +211,8 @@ const actif = (href: string) => (href === '/' ? chemin === '/' : chemin.startsWi
       .pied__contact > li > a, .pied__contact > li > span { display: inline-flex; align-items: center; gap: 10px; }
       .pied__adresse { display: flex; gap: 10px; align-items: flex-start; }
       .pied__adresse > span { display: grid !important; gap: 2px; }
+      .pied__liens a { display: inline-flex; align-items: center; gap: 8px; }
+      .pied__liens > li > a > :global(svg) { width: 18px; height: 18px; color: var(--orange); flex: none; }
       .pied__maps { color: var(--orange) !important; font-weight: 600; text-decoration: underline !important; text-underline-offset: 3px; }
       .pied__contact :global(svg) { width: 20px; height: 20px; color: var(--orange); flex: none; }
       .pied__legal { display: flex; flex-wrap: wrap; gap: 8px 22px; border-top: 1px solid rgb(255 255 255 / .12); margin-top: 40px; padding-top: 20px; font-size: .9rem; }

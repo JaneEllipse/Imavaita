@@ -1,15 +1,19 @@
 ---
 import { Image } from 'astro:assets';
 import type { Vehicule } from '../lib/site';
-import { formatPrix, waLink, messageVehicule } from '../lib/site';
+import { formatPrix, waLink, messages } from '../lib/site';
+import { type Lang, t, lien, trad } from '../i18n';
 import Icone from './Icone.astro';
 import IconeWhatsApp from './IconeWhatsApp.astro';
 
 /** `ligne` : carte horizontale du catalogue (image à gauche sur grand écran). */
-interface Props { vehicule: Vehicule; prioritaire?: boolean; ligne?: boolean }
-const { vehicule, prioritaire = false, ligne = false } = Astro.props;
+interface Props { lang?: Lang; vehicule: Vehicule; prioritaire?: boolean; ligne?: boolean }
+const { lang = 'fr', vehicule, prioritaire = false, ligne = false } = Astro.props;
 const v = vehicule.data;
-const href = `/vehicules/${vehicule.id}/`;
+const d = t(lang);
+const href = lien(lang, 'location', vehicule.id);
+const categorie = d.carac.categorieLocation[v.categorie] ?? v.categorie;
+const resume = v.resume ? trad(lang, v.resume, v.resume_en) : '';
 ---
 <article class:list={['cv', { 'cv--ligne': ligne }]}>
   <a href={href} class="cv__media" tabindex="-1" aria-hidden="true">
@@ -18,28 +22,28 @@ const href = `/vehicules/${vehicule.id}/`;
       : <div class="cv__vide"><Icone nom="voiture" /></div>}
     {(v.statut === 'brouillon' || v.nouveau || ligne) && (
       <span class="cv__badges">
-        {ligne && <span class="badge">{v.categorie}</span>}
-        {v.nouveau && <span class="badge badge--marine">Nouveau</span>}
-        {v.statut === 'brouillon' && <span class="badge badge--brouillon">Brouillon</span>}
+        {ligne && <span class="badge">{categorie}</span>}
+        {v.nouveau && <span class="badge badge--marine">{d.location.nouveau}</span>}
+        {v.statut === 'brouillon' && <span class="badge badge--brouillon">{d.location.brouillon}</span>}
       </span>
     )}
   </a>
   <div class="cv__corps">
-    {!ligne && <p class="cv__cat">{v.categorie}</p>}
+    {!ligne && <p class="cv__cat">{categorie}</p>}
     <h3><a href={href}>{v.nom}</a></h3>
-    {v.resume && <p class="cv__resume">{v.resume}</p>}
+    {resume && <p class="cv__resume">{resume}</p>}
     <ul class="cv__caracs">
-      {v.places && <li><Icone nom="personnes" />{v.places} places</li>}
-      {v.transmission && <li><Icone nom="boite" />{v.transmission}</li>}
-      {v.options.includes('Climatisation') && <li><Icone nom="flocon" />Clim</li>}
+      {v.places && <li><Icone nom="personnes" />{d.carac.places(v.places)}</li>}
+      {v.transmission && <li><Icone nom="boite" />{d.carac.boite[v.transmission]}</li>}
+      {v.options.includes('Avec ou sans chauffeur') && <li><Icone nom="volant" />{lang === 'en' ? 'Driver optional' : 'Avec ou sans chauffeur'}</li>}
     </ul>
     <div class="cv__pied">
       <p class="cv__prix">
-        {v.prix_jour ? <>À partir de <strong>{formatPrix(v.prix_jour)}</strong> / jour</> : <>Tarif : <strong>Sur demande</strong></>}
+        {v.prix_jour ? <Fragment set:html={d.location.tarifJour(`<strong>${formatPrix(v.prix_jour, lang)}</strong>`)} /> : <>{`${d.location.tarif} `}<strong>{d.tarifSurDemande}</strong></>}
       </p>
       <div class="cv__actions">
-        <a href={href} class="btn btn--marine cv__voir">Voir le véhicule<Icone nom="fleche" /></a>
-        {ligne && <a href={waLink(messageVehicule(v.nom))} target="_blank" rel="noopener" class="btn btn--wa cv__wa" data-wa={`carte:${vehicule.id}`} aria-label={`Réserver ${v.nom} sur WhatsApp`}><IconeWhatsApp /></a>}
+        <a href={href} class="btn btn--marine cv__voir">{d.bouton.voirVehicule}<Icone nom="fleche" /></a>
+        {ligne && <a href={waLink(messages(lang).vehicule(v.nom))} target="_blank" rel="noopener" class="btn btn--wa cv__wa" data-wa={`carte:${vehicule.id}`} aria-label={`${d.bouton.reserver} : ${v.nom}`}><IconeWhatsApp /></a>}
       </div>
     </div>
   </div>

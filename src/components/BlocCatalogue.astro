@@ -1,0 +1,49 @@
+---
+import { Image } from 'astro:assets';
+import couverture from '../assets/accueil/couverture-catalogue.jpg';
+import Icone from './Icone.astro';
+import { site } from '../lib/site';
+import { type Lang, t } from '../i18n';
+
+/** Encart « catalogue PDF » : consultation dans le navigateur ou téléchargement. Masqué si aucun PDF n'est renseigné. */
+interface Props { lang?: Lang; modeles: number; marques: number }
+const { lang = 'fr', modeles, marques } = Astro.props;
+const d = t(lang);
+const pdf = site.catalogue_pdf;
+---
+{pdf && (
+  <div class="bc revele">
+    <a class="bc__couv" href={pdf} target="_blank" rel="noopener" aria-label={d.bouton.consulterPdf} tabindex="-1">
+      <Image src={couverture} alt="" widths={[220, 440]} sizes="220px" loading="lazy" />
+    </a>
+    <div class="bc__texte">
+      <span class="surtitre bc__sur">{d.catalogue.surtitre}</span>
+      <h2>{d.catalogue.titre}</h2>
+      <p>{d.catalogue.texte(modeles, marques)}</p>
+      <div class="bc__actions">
+        <a class="btn btn--orange" href={pdf} target="_blank" rel="noopener" data-pdf="consulter"><Icone nom="oeil" />{d.bouton.consulterPdf}</a>
+        <a class="btn btn--clair" href={pdf} download data-pdf="telecharger"><Icone nom="telechargement" />{d.bouton.telechargerPdf}</a>
+      </div>
+      <p class="bc__poids"><Icone nom="document" />{d.catalogue.poids}</p>
+    </div>
+  </div>
+)}
+
+<style>
+  .bc { position: relative; display: grid; grid-template-columns: 240px 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; padding: clamp(24px, 4vw, 48px); border-radius: 28px; overflow: hidden; isolation: isolate; color: #fff;
+    background: var(--grain-clair), var(--lignes), radial-gradient(600px 300px at 0% 100%, rgb(255 140 0 / .28), transparent 70%), linear-gradient(125deg, var(--marine-900), var(--marine) 75%); box-shadow: var(--ombre-forte); }
+  .bc__couv { display: block; justify-self: center; width: 200px; transform: rotate(-4deg); border-radius: 6px; overflow: hidden; box-shadow: 0 30px 50px rgb(0 0 0 / .45), 0 0 0 1px rgb(255 255 255 / .15); transition: transform .4s ease; }
+  .bc__couv:hover { transform: rotate(0) scale(1.03); }
+  .bc__couv :global(img) { width: 100%; height: auto; }
+  .bc__sur { color: #ffb347; }
+  .bc h2 { color: #fff; font-size: clamp(1.5rem, 3vw, 2.1rem); max-width: 20ch; }
+  .bc p { color: #d5e1f2; max-width: 52ch; }
+  .bc__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+  .bc__poids { display: inline-flex; align-items: center; gap: 6px; margin: 14px 0 0; font-size: .82rem; color: #a9bbd6 !important; }
+  .bc__poids :global(svg) { width: 16px; height: 16px; }
+  @media (max-width: 760px) {
+    .bc { grid-template-columns: 1fr; text-align: left; }
+    .bc__couv { width: 140px; justify-self: start; }
+    .bc__actions .btn { width: 100%; }
+  }
+</style>

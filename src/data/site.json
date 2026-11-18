@@ -1,27 +1,35 @@
 {
   "nom": "IMAVAITA",
-  "slogan": "Location de véhicules au Togo",
-  "accroche": "Des véhicules fiables, confortables et disponibles rapidement. Réservez en quelques secondes sur WhatsApp.",
-  "whatsapp": "",
-  "telephone": "",
-  "email": "",
-  "adresse": "",
+  "raison_sociale": "IMAVAITA SARL U",
+  "slogan": "Vente et location de véhicules au Togo",
+  "slogan_en": "Vehicle sales and rental in Togo",
+  "accroche": "Vente de véhicules de grandes marques et location avec ou sans chauffeur, à Lomé et dans tout le Togo. Choisissez en ligne, notre équipe vous répond sur WhatsApp.",
+  "accroche_en": "Vehicles from leading brands for sale, and rentals with or without a driver, in Lomé and across Togo. Choose online and our team answers you on WhatsApp.",
+  "whatsapp": "22871868687",
+  "telephone": "+228 96 77 00 00",
+  "telephone_2": "+228 70 81 05 05",
+  "email": "contact@imavaita.com",
+  "adresse": "Carrefour Agoè Plateau, à côté de l'immeuble Queen Store",
   "ville": "Lomé",
-  "zones": "",
-  "horaires": "",
+  "zones": "Grand Lomé et tout le Togo",
+  "zones_en": "Greater Lomé and all of Togo",
+  "horaires": "Lundi – vendredi : 8 h – 18 h · Samedi : 9 h – 15 h",
+  "horaires_en": "Monday – Friday: 8 am – 6 pm · Saturday: 9 am – 3 pm",
   "google_maps_url": "",
   "gps": "",
   "google_verification": "",
+  "catalogue_pdf": "/catalogue/imavaita-catalogue-ventes-2024-2025.pdf",
   "avantages": [
-    { "titre": "Fiabilité", "texte": "Des véhicules récents et bien entretenus." },
-    { "titre": "Simplicité", "texte": "Une réservation rapide sur WhatsApp." },
-    { "titre": "Flexibilité", "texte": "Location courte ou longue durée." },
-    { "titre": "Accompagnement", "texte": "Une équipe à votre écoute." }
+    { "titre": "Vente et location", "texte": "Une seule équipe pour acheter ou louer votre véhicule.", "titre_en": "Sales and rental", "texte_en": "One team to buy or rent your vehicle." },
+    { "titre": "Réponse sur WhatsApp", "texte": "Prix, tarifs et disponibilités donnés directement par notre équipe.", "titre_en": "Answers on WhatsApp", "texte_en": "Prices, rates and availability straight from our team." },
+    { "titre": "Livraison offerte", "texte": "Véhicules de location livrés et récupérés gratuitement dans le Grand Lomé.", "titre_en": "Free delivery", "texte_en": "Rental vehicles delivered and collected free of charge across Greater Lomé." },
+    { "titre": "Kilométrage illimité", "texte": "Toutes nos locations roulent sans limite sur le territoire togolais.", "titre_en": "Unlimited mileage", "texte_en": "All our rentals come with unlimited mileage within Togo." }
   ],
   "services": [
-    { "titre": "Location avec ou sans chauffeur", "texte": "Conduisez vous-même ou laissez-vous conduire par un chauffeur qui connaît la route." },
-    { "titre": "Courte et longue durée", "texte": "Pour une journée, une semaine ou plusieurs mois : dites-nous vos dates, nous vous proposons la formule adaptée." },
-    { "titre": "Transferts et déplacements de groupe", "texte": "Aéroport, séminaires, mariages : un véhicule adapté au nombre de passagers." }
+    { "titre": "Accueil et transfert à l'arrivée", "texte": "Accueil à l'aéroport, aide avec les bagages et transport jusqu'à votre hôtel ou votre domicile.", "titre_en": "Airport arrival transfer", "texte_en": "Meet and greet at the airport, help with luggage and a ride to your hotel or home." },
+    { "titre": "Transfert vers l'aéroport", "texte": "Prise en charge à votre domicile, hôtel ou bureau pour vous conduire à l'aéroport.", "titre_en": "Airport departure transfer", "texte_en": "Pick-up from your home, hotel or office and a ride to the airport." },
+    { "titre": "Transfert VIP et professionnel", "texte": "Transport haut de gamme pour dirigeants, diplomates, hommes d'affaires et délégations.", "titre_en": "VIP and business transfer", "texte_en": "Premium transport for executives, diplomats, business travellers and delegations." },
+    { "titre": "Transfert de groupes", "texte": "Transport d'équipes, de touristes, de familles et de délégations en minibus ou en bus.", "titre_en": "Group transfer", "texte_en": "Transport for teams, tourists, families and delegations by minibus or bus." }
   ],
   "temoignages": []
 }
