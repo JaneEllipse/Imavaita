@@ -12,7 +12,7 @@ Hors périmètre V1 : paiement en ligne, calendrier de disponibilités, espace c
 - Astro 5 en génération statique (`npm run dev`, `npm run build`), dépendances d'exécution : `astro`, `@fontsource/poppins`.
 - Catalogues : `src/content/vente/*.md` (véhicules en vente, page `/vente/`) et `src/content/vehicules/*.md` (location, `/vehicules/`), schémas dans `src/content.config.ts`. Champs `*_en` = version anglaise (vide = texte français repris).
 - Catalogue PDF de vente : `public/catalogue/` (chemin dans `site.json` → `catalogue_pdf`), version allégée du PDF client.
-- Visuels : `src/assets/vente/` (photos du catalogue constructeur), `src/assets/location/` (photos réelles de la flotte), `src/assets/accueil/` (diaporama, intérieurs Changan), `src/assets/maquette/` (monument de Lomé).
+- Visuels : `src/assets/vente/` (photos du catalogue constructeur), `src/assets/location/` (photos réelles de la flotte), `src/assets/accueil/` (diaporama, intérieurs Changan).
 - Coordonnées, avantages, services, avis : `src/data/site.json` ; FAQ : `src/data/faq.json`.
 - Admin client : Sveltia CMS sur `/admin/` (`public/admin/config.yml`). **Tout champ ajouté au schéma doit l'être aussi dans `config.yml`**, et inversement.
 - Hébergement : Infomaniak (Apache, `public/.htaccess`). L'action GitHub `build.yml` construit puis envoie `dist/` par rsync/SSH à chaque push sur `main`, y compris les enregistrements de l'admin.
