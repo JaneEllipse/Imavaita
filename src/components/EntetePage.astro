@@ -5,12 +5,12 @@ import Icone from './Icone.astro';
 import { type Lang, t, lien } from '../i18n';
 
 /** `image` : photo fondue dans le marine sur la droite (comme le héros de l'accueil). */
-interface Props { lang?: Lang; titre: string; surtitre?: string; intro?: string; image?: ImageMetadata; imageAlt?: string; fil?: { href?: string; label: string }[] }
-const { lang = 'fr', titre, surtitre, intro, image, imageAlt = '', fil } = Astro.props;
+interface Props { lang?: Lang; titre: string; surtitre?: string; intro?: string; image?: ImageMetadata; imageAlt?: string; cadrage?: string; fil?: { href?: string; label: string }[] }
+const { lang = 'fr', titre, surtitre, intro, image, imageAlt = '', cadrage, fil } = Astro.props;
 const d = t(lang);
 ---
 <section class:list={['ep', { 'ep--image': image }]}>
-  {image && <div class="ep__photo"><Image src={image} alt={imageAlt} widths={[640, 1000, 1592]} sizes="(max-width: 800px) 100vw, 60vw" loading="eager" /></div>}
+  {image && <div class="ep__photo"><Image src={image} alt={imageAlt} style={cadrage ? `object-position:${cadrage}` : undefined} widths={[640, 1000, 1592]} sizes="(max-width: 800px) 100vw, 60vw" loading="eager" /></div>}
   <div class="conteneur ep__contenu">
     {fil && (
       <nav aria-label={d.fiche.filAriane} class="ep__fil">
@@ -28,9 +28,9 @@ const d = t(lang);
   .ep { position: relative; overflow: hidden; isolation: isolate; color: #fff; padding: clamp(36px, 5vw, 64px) 0 clamp(40px, 6vw, 72px);
     background: var(--grain-clair), var(--lignes), radial-gradient(700px 300px at 95% 0%, rgb(255 140 0 / .2), transparent 65%), linear-gradient(135deg, var(--marine-900), var(--marine) 70%); }
   .ep--image { background: var(--grain-clair), var(--marine-900); }
-  .ep__photo { position: absolute; z-index: -1; top: 0; right: 0; bottom: 0; width: 60%; }
+  .ep__photo { position: absolute; z-index: -1; top: 0; right: 0; bottom: 0; width: 62%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 40%); mask-image: linear-gradient(90deg, transparent 0%, #000 40%); }
   .ep__photo :global(img) { width: 100%; height: 100%; object-fit: cover; object-position: 30% 55%; }
-  .ep__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, var(--marine-900) 0%, rgb(0 27 64 / .7) 25%, transparent 65%); }
+  .ep__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgb(0 27 64 / .55) 0%, transparent 60%); }
   .ep__contenu { position: relative; }
   .ep__fil { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin-bottom: 14px; font-size: .9rem; color: #c9d6ea; }
   .ep__fil a { display: inline-flex; align-items: center; gap: 6px; color: #fff; text-decoration: none; }
@@ -40,7 +40,7 @@ const d = t(lang);
   .ep h1 { color: #fff; font-size: clamp(1.9rem, 4.5vw, 2.9rem); max-width: 18ch; }
   .ep p { color: #d5e1f2; max-width: 52ch; font-size: 1.05rem; margin: 0; }
   @media (max-width: 800px) {
-    .ep__photo { width: 100%; opacity: .45; }
+    .ep__photo { width: 100%; opacity: .45; -webkit-mask-image: none; mask-image: none; }
     .ep__photo::after { background: linear-gradient(90deg, var(--marine-900) 10%, rgb(0 27 64 / .5)); }
   }
 </style>
