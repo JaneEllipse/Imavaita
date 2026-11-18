@@ -1,9 +1,10 @@
 ---
 import IconeWhatsApp from './IconeWhatsApp.astro';
-import { waLink, messageGeneral } from '../lib/site';
+import { waLink, messages } from '../lib/site';
+import { type Lang, t } from '../i18n';
 
-interface Props { message?: string; libelle?: string; variante?: 'wa' | 'orange'; source?: string; class?: string }
-const { message = messageGeneral, libelle = 'Réserver sur WhatsApp', variante = 'wa', source = 'general', class: cls = '' } = Astro.props;
+interface Props { lang?: Lang; message?: string; libelle?: string; variante?: 'wa' | 'orange'; source?: string; class?: string }
+const { lang = 'fr', message = messages(lang).general, libelle = t(lang).bouton.whatsapp, variante = 'wa', source = 'general', class: cls = '' } = Astro.props;
 ---
 <a class:list={['btn', `btn--${variante}`, cls]} href={waLink(message)} target="_blank" rel="noopener" data-wa={source}>
   <IconeWhatsApp />{libelle}

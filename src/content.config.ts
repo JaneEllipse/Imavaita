@@ -28,7 +28,39 @@ const vehicules = defineCollection({
       a_la_une: z.boolean().default(false),
       ordre: z.number().int().default(100),
       resume: z.string().max(160).optional(),
+      // Version anglaise (pages /en/). Vide = le texte français est repris.
+      resume_en: z.string().max(160).optional(),
+      description_en: z.string().optional(),
     }),
 });
 
-export const collections = { vehicules };
+/**
+ * Véhicule du catalogue de vente (catalogue PDF 2024-2025). Pas de fiche détaillée :
+ * chaque carte mène à une demande de prix sur WhatsApp. Formulaire « Véhicules en vente »
+ * de l'admin (public/admin/config.yml) : garder les deux alignés.
+ */
+const vente = defineCollection({
+  loader: glob({ pattern: '*.md', base: './src/content/vente' }),
+  schema: ({ image }) =>
+    z.object({
+      nom: z.string(),
+      marque: z.string(),
+      annee: z.string().optional(),
+      categorie: z.enum(['SUV', 'Berline', 'Pick-up', 'Poids lourd', 'Autre']),
+      energie: z.enum(['Essence', 'Diesel', 'Hybride', 'Hybride rechargeable', 'Électrique']).optional(),
+      moteur: z.string().optional(),
+      puissance: z.number().int().positive().optional(),
+      boite: z.enum(['Manuelle', 'Automatique']).optional(),
+      consommation: z.string().optional(),
+      note: z.string().optional(),
+      note_en: z.string().optional(),
+      photo: image().optional(),
+      // Prix en FCFA. Vide = « Prix sur demande ». N'afficher que des prix validés par IMAVAITA.
+      prix: z.number().positive().optional(),
+      statut: z.enum(['brouillon', 'publie', 'masque']).default('brouillon'),
+      a_la_une: z.boolean().default(false),
+      ordre: z.number().int().default(100),
+    }),
+});
+
+export const collections = { vehicules, vente };

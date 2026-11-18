@@ -1,7 +1,34 @@
 {
   "questions": [
-    { "question": "Comment réserver un véhicule ?", "reponse": "Choisissez un véhicule puis cliquez sur « Réserver sur WhatsApp ». Indiquez vos dates et le lieu de prise en charge : notre équipe vous confirme la disponibilité, le tarif et les modalités." },
-    { "question": "Les prix sont-ils fixes ?", "reponse": "Le tarif dépend du véhicule, de la durée et des options (chauffeur, livraison). Il vous est communiqué précisément sur WhatsApp avant toute réservation." },
-    { "question": "Puis-je louer avec chauffeur ?", "reponse": "Précisez-le dans votre message WhatsApp : nous vous indiquons si un chauffeur est disponible pour vos dates." }
+    {
+      "question": "Comment connaître le prix d'un véhicule en vente ?",
+      "reponse": "Les prix sont communiqués sur devis. Choisissez un modèle dans le catalogue puis cliquez sur « Demander le prix » : votre message WhatsApp est prérempli avec le modèle, notre équipe vous répond directement.",
+      "question_en": "How do I find out the price of a vehicle for sale?",
+      "reponse_en": "Prices are given on request. Pick a model from the catalogue and tap “Ask for the price”: your WhatsApp message is pre-filled with the model and our team answers you directly."
+    },
+    {
+      "question": "Comment réserver un véhicule de location ?",
+      "reponse": "Choisissez un véhicule puis cliquez sur « Réserver sur WhatsApp ». Indiquez vos dates et le lieu de prise en charge : notre équipe vous confirme la disponibilité, le tarif et les modalités. La réservation est validée après le versement d'un acompte.",
+      "question_en": "How do I book a rental vehicle?",
+      "reponse_en": "Choose a vehicle and tap “Book on WhatsApp”. Give your dates and pick-up location: our team confirms availability, the rate and the terms. The booking is confirmed once a deposit has been paid."
+    },
+    {
+      "question": "La livraison est-elle comprise ?",
+      "reponse": "Oui, la livraison et la récupération des véhicules de location sont gratuites dans tout le Grand Lomé. Dans les autres villes du Togo, la livraison est possible moyennant des frais calculés selon la distance.",
+      "question_en": "Is delivery included?",
+      "reponse_en": "Yes, rental vehicles are delivered and collected free of charge anywhere in Greater Lomé. Delivery to other towns in Togo is possible for an extra fee based on distance."
+    },
+    {
+      "question": "Puis-je sortir du Togo avec un véhicule de location ?",
+      "reponse": "Nos véhicules circulent sur l'ensemble du territoire togolais. La conduite dans les pays limitrophes est possible sur demande préalable et autorisation de l'agence.",
+      "question_en": "Can I drive a rental vehicle outside Togo?",
+      "reponse_en": "Our vehicles can be driven anywhere in Togo. Driving into neighbouring countries is possible with prior request and authorisation from the agency."
+    },
+    {
+      "question": "Puis-je louer avec chauffeur ?",
+      "reponse": "Oui, toutes nos formules existent avec ou sans chauffeur, en courte comme en longue durée. Précisez-le dans votre message WhatsApp.",
+      "question_en": "Can I rent with a driver?",
+      "reponse_en": "Yes, all our plans are available with or without a driver, for short and long-term rentals. Just mention it in your WhatsApp message."
+    }
   ]
 }

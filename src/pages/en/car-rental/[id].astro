@@ -1,0 +1,11 @@
+---
+import FicheLocation from '../../../vues/FicheLocation.astro';
+import { getVehicules, type Vehicule } from '../../../lib/site';
+
+export async function getStaticPaths() {
+  const vehicules = await getVehicules();
+  return vehicules.map((v) => ({ params: { id: v.id }, props: { vehicule: v } }));
+}
+const { vehicule } = Astro.props as { vehicule: Vehicule };
+---
+<FicheLocation lang="en" vehicule={vehicule} />

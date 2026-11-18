@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
+import EntetePage from '../components/EntetePage.astro';
+import Icone from '../components/Icone.astro';
+import IconeWhatsApp from '../components/IconeWhatsApp.astro';
+import monument from '../assets/maquette/monument-lome.jpg';
+import { site, carte, adresseComplete, entreprise, filAriane, infos } from '../lib/site';
+import { type Lang, t, lien } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const d = t(lang);
+const c = d.contact;
+const jsonld = [await entreprise(Astro.site, lang), filAriane(Astro.site, [{ nom: c.titre, chemin: lien(lang, 'contact') }], lang)];
+const tel = (n: string) => `<a href="tel:${n.replace(/\s/g, '')}">${n}</a>`;
+const telephones = [site.telephone, site.telephone_2].filter(Boolean);
+const wa = site.whatsapp ? `+${site.whatsapp.replace(/^228(\d{2})(\d{2})(\d{2})(\d{2})$/, '228 $1 $2 $3 $4')}` : '';
+const infosContact = [
+  telephones.length > 0 && { icone: 'telephone', titre: c.telephone, html: telephones.map(tel).join('<br>') },
+  site.email && { icone: 'mail', titre: c.email, html: `<a href="mailto:${site.email}">${site.email}</a>` },
+  infos(lang).horaires && { icone: 'horloge', titre: c.horaires, html: infos(lang).horaires.replace(' · ', '<br>') },
+].filter(Boolean) as { icone: 'telephone' | 'mail' | 'horloge'; titre: string; html: string }[];
+const embed = lang === 'en' ? carte.embed.replace('hl=fr', 'hl=en') : carte.embed;
+---
+<Base lang={lang} route="contact" titre={c.titre} titreSeo={c.titreSeo(site.ville)} description={c.description(site.nom, site.ville)} jsonld={jsonld}>
+  <EntetePage lang={lang} titre={c.titre} intro={c.intro} image={monument} fil={[{ label: c.titre }]} />
+  <section class="section">
+    <div class="conteneur contact">
+      <div class="contact__infos">
+        <div class="contact-wa revele" data-masque-bulle>
+          <span class="contact-wa__icone"><IconeWhatsApp /></span>
+          <div><h2>{c.waTitre}</h2><p>{c.waTexte}</p>{wa && <p class="contact-wa__num">{wa}</p>}</div>
+          <BoutonWhatsApp lang={lang} libelle={d.bulle.demarrer} source="contact" />
+        </div>
+        <ul class="infos">
+          <li class="revele">
+            <span class="pastille"><Icone nom="carte" /></span>
+            <div>
+              <h2>{c.agence}</h2>
+              <p>{adresseComplete}</p>
+              {carte.lien && <a href={carte.lien} target="_blank" rel="noopener">{d.pied.maps}</a>}
+            </div>
+          </li>
+          {infosContact.map((i) => <li class="revele"><span class="pastille"><Icone nom={i.icone} /></span><div><h2>{i.titre}</h2><p set:html={i.html} /></div></li>)}
+        </ul>
+      </div>
+
+      {embed && (
+        <div class="plan revele">
+          <iframe src={embed} title={c.plan(site.nom)} loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+          <div class="plan__barre">
+            <p><Icone nom="carte" /><span><strong>{site.nom}</strong>{adresseComplete}</span></p>
+            <a class="btn btn--orange plan__btn" href={carte.itineraire} target="_blank" rel="noopener">{c.itineraire}<Icone nom="fleche" /></a>
+          </div>
+        </div>
+      )}
+    </div>
+  </section>
+</Base>
+<style>
+  .contact { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; }
+  .contact:not(:has(.plan)) { grid-template-columns: minmax(0, 1fr); max-width: 760px; }
+  .contact-wa { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 22px; padding: 26px; border-radius: 20px; background: linear-gradient(120deg, #e9fbf0, #fff); border: 1px solid #c9f0d8; }
+  .contact-wa > div { flex: 1 1 240px; }
+  .contact-wa h2 { font-size: 1.3rem; margin-bottom: .25em; }
+  .contact-wa p { margin: 0; color: var(--texte-doux); font-size: .95rem; }
+  .contact-wa .contact-wa__num { margin-top: 6px; font-family: var(--titre); font-weight: 700; font-size: 1.1rem; color: var(--wa-fonce); }
+  .contact-wa__icone { display: grid; place-items: center; width: 60px; height: 60px; border-radius: 50%; background: var(--wa); color: #fff; box-shadow: 0 8px 20px rgb(37 211 102 / .3); }
+  .contact-wa__icone :global(svg) { width: 34px; height: 34px; }
+  .contact-wa :global(.btn) { width: 100%; }
+  .infos { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 12px; }
+  .infos li { display: flex; gap: 16px; align-items: flex-start; padding: 18px 20px; border: 1px solid var(--bord); border-radius: 16px; background: #fff; }
+  .infos .pastille { width: 44px; height: 44px; margin: 0; flex: none; }
+  .infos .pastille :global(svg) { width: 24px; height: 24px; }
+  .infos h2 { font-size: 1.05rem; margin-bottom: .15em; }
+  .infos p { margin: 0; color: var(--texte-doux); }
+  .infos a { font-weight: 600; }
+  .plan { position: relative; border-radius: 20px; overflow: hidden; border: 1px solid var(--bord); box-shadow: var(--ombre-forte); background: var(--fond-doux); }
+  .plan iframe { display: block; width: 100%; height: 440px; border: 0; }
+  .plan__barre { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 16px 18px; background: #fff; border-top: 1px solid var(--bord); }
+  .plan__barre p { display: flex; gap: 10px; margin: 0; font-size: .92rem; color: var(--texte-doux); }
+  .plan__barre p :global(svg) { width: 22px; height: 22px; color: var(--orange-600); flex: none; }
+  .plan__barre strong { display: block; color: var(--marine-900); font-family: var(--titre); }
+  .plan__btn { min-height: 46px; padding: .45em 1.3em; }
+  @media (max-width: 900px) {
+    .contact { grid-template-columns: minmax(0, 1fr); }
+    .plan iframe { height: 320px; }
+    .plan__btn { width: 100%; }
+  }
+</style>

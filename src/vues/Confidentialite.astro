@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import EntetePage from '../components/EntetePage.astro';
+import { site } from '../lib/site';
+import { type Lang, t } from '../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const c = t(lang).confidentialite;
+const paragraphes = c.p.map((p) => (typeof p === 'function' ? p(site.nom) : p));
+---
+<Base lang={lang} route="confidentialite" titre={c.titreCourt} description={c.description(site.nom)}>
+  <EntetePage lang={lang} titre={c.titre} />
+  <section class="section"><div class="conteneur prose">
+    {paragraphes.map((p) => <p>{p}</p>)}
+    <p><a href={c.googleUrl} rel="noopener">{c.google}</a></p>
+  </div></section>
+</Base>

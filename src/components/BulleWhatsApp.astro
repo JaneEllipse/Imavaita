@@ -1,14 +1,20 @@
 ---
 import IconeWhatsApp from './IconeWhatsApp.astro';
 import Icone from './Icone.astro';
-import { site, waLink, messageGeneral, messageVehicule, getVehicules } from '../lib/site';
+import { site, waLink, messages } from '../lib/site';
+import { type Lang, t } from '../i18n';
 
-interface Props { vehicule?: string }
-const { vehicule } = Astro.props;
-const vehicules = (await getVehicules()).slice(0, 6);
-const choix = vehicule
-  ? [{ libelle: `Réserver : ${vehicule}`, message: messageVehicule(vehicule), source: 'bulle:fiche' }]
-  : vehicules.map((v) => ({ libelle: v.data.nom, message: messageVehicule(v.data.nom), source: `bulle:${v.id}` }));
+interface Props { lang?: Lang; vehicule?: string }
+const { lang = 'fr', vehicule } = Astro.props;
+const d = t(lang).bulle;
+const m = messages(lang);
+const choix = [
+  ...(vehicule ? [{ libelle: d.reserverCe(vehicule), message: m.vehicule(vehicule), source: 'bulle:fiche' }] : []),
+  { libelle: d.choix.achat, message: m.achat, source: 'bulle:achat' },
+  { libelle: d.choix.location, message: m.location, source: 'bulle:location' },
+  { libelle: d.choix.longue, message: m.longueDuree, source: 'bulle:longue-duree' },
+  { libelle: d.choix.transfert, message: m.transfert, source: 'bulle:transfert' },
+].slice(0, vehicule ? 3 : 4);
 ---
 <div class="bulle" data-bulle>
   <div class="bulle__panneau" id="bulle-panneau" role="dialog" aria-modal="false" aria-labelledby="bulle-titre" hidden>
@@ -16,26 +22,26 @@ const choix = vehicule
       <span class="bulle__avatar" aria-hidden="true">I<span></span></span>
       <div>
         <p class="bulle__nom" id="bulle-titre">{site.nom}</p>
-        <p class="bulle__statut">Location de véhicules · {site.ville}</p>
+        <p class="bulle__statut">{d.statut}</p>
       </div>
-      <button type="button" class="bulle__fermer" data-bulle-fermer aria-label="Fermer"><Icone nom="croix" /></button>
+      <button type="button" class="bulle__fermer" data-bulle-fermer aria-label={d.fermer}><Icone nom="croix" /></button>
     </div>
     <div class="bulle__corps">
-      <p class="bulle__message">Bonjour 👋<br />{vehicule ? `Ce véhicule vous intéresse ? Envoyez-nous vos dates, nous vous confirmons la disponibilité.` : 'Quel véhicule souhaitez-vous louer ? Choisissez ci-dessous, nous vous répondons sur WhatsApp.'}</p>
+      <p class="bulle__message">{d.bonjour}<br />{vehicule ? d.questionFiche : d.question}</p>
       <div class="bulle__choix">
         {choix.map((c) => (
           <a href={waLink(c.message)} target="_blank" rel="noopener" data-wa={c.source}>{c.libelle}<Icone nom="fleche" /></a>
         ))}
       </div>
     </div>
-    <a class="btn btn--wa bulle__go" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="bulle:general">
-      <IconeWhatsApp />Démarrer la discussion
+    <a class="btn btn--wa bulle__go" href={waLink(m.general)} target="_blank" rel="noopener" data-wa="bulle:general">
+      <IconeWhatsApp />{d.demarrer}
     </a>
   </div>
 
-  <p class="bulle__teaser" data-bulle-teaser hidden>Besoin d'un véhicule ? <strong>Écrivez-nous</strong></p>
+  <p class="bulle__teaser" data-bulle-teaser hidden>{d.teaser[0]} <strong>{d.teaser[1]}</strong></p>
 
-  <a class="bulle__bouton" href={waLink(messageGeneral)} target="_blank" rel="noopener" data-wa="bulle:bouton" data-bulle-ouvrir aria-controls="bulle-panneau" aria-expanded="false" aria-label="Discuter avec nous sur WhatsApp">
+  <a class="bulle__bouton" href={waLink(m.general)} target="_blank" rel="noopener" data-wa="bulle:bouton" data-bulle-ouvrir aria-controls="bulle-panneau" aria-expanded="false" aria-label={d.ouvrir}>
     <IconeWhatsApp />
   </a>
 </div>

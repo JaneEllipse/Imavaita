@@ -2,17 +2,19 @@
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import Icone from './Icone.astro';
+import { type Lang, t, lien } from '../i18n';
 
 /** `image` : photo fondue dans le marine sur la droite (comme le héros de l'accueil). */
-interface Props { titre: string; surtitre?: string; intro?: string; image?: ImageMetadata; imageAlt?: string; fil?: { href?: string; label: string }[] }
-const { titre, surtitre, intro, image, imageAlt = '', fil } = Astro.props;
+interface Props { lang?: Lang; titre: string; surtitre?: string; intro?: string; image?: ImageMetadata; imageAlt?: string; fil?: { href?: string; label: string }[] }
+const { lang = 'fr', titre, surtitre, intro, image, imageAlt = '', fil } = Astro.props;
+const d = t(lang);
 ---
 <section class:list={['ep', { 'ep--image': image }]}>
   {image && <div class="ep__photo"><Image src={image} alt={imageAlt} widths={[640, 1000, 1592]} sizes="(max-width: 800px) 100vw, 60vw" loading="eager" /></div>}
   <div class="conteneur ep__contenu">
     {fil && (
-      <nav aria-label="Fil d'Ariane" class="ep__fil">
-        <a href="/"><Icone nom="maison" /><span>Accueil</span></a>
+      <nav aria-label={d.fiche.filAriane} class="ep__fil">
+        <a href={lien(lang, 'accueil')}><Icone nom="maison" /><span>{d.accueil}</span></a>
         {fil.map((f) => <><span aria-hidden="true">›</span>{f.href ? <a href={f.href}>{f.label}</a> : <span aria-current="page">{f.label}</span>}</>)}
       </nav>
     )}

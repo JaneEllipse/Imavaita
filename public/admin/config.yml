@@ -13,8 +13,8 @@ backend:
 
 site_url: https://imavaita.com # À remplacer par le domaine définitif
 display_url: https://imavaita.com
-media_folder: src/assets/vehicules
-public_folder: ../../assets/vehicules
+media_folder: src/assets/location
+public_folder: ../../assets/location
 
 media_libraries:
   default:
@@ -23,9 +23,40 @@ media_libraries:
         raster_image: { format: webp, quality: 80, width: 1600, height: 1600 }
 
 collections:
+  - name: vente
+    label: Véhicules en vente
+    label_singular: Véhicule en vente
+    folder: src/content/vente
+    media_folder: ../../assets/vente
+    public_folder: ../../assets/vente
+    create: true
+    slug: '{{nom}}-{{annee}}'
+    summary: '{{nom}} {{annee}} — {{statut}}'
+    sortable_fields: [ordre, nom, marque, statut]
+    view_groups:
+      - { label: Statut, field: statut }
+      - { label: Marque, field: marque }
+    fields:
+      - { name: nom, label: Modèle (ex. Toyota RAV4), widget: string }
+      - { name: marque, label: Marque, widget: string }
+      - { name: annee, label: Année, widget: string, required: false, hint: 'Ex. 2025 ou 2017-2025' }
+      - { name: statut, label: Statut, widget: select, default: brouillon, hint: '« Publié » = visible sur le site. « Masqué » = gardé mais invisible (vendu ou indisponible).', options: [{ label: Brouillon, value: brouillon }, { label: Publié, value: publie }, { label: Masqué, value: masque }] }
+      - { name: categorie, label: Catégorie, widget: select, options: ['SUV', 'Berline', 'Pick-up', 'Poids lourd', 'Autre'] }
+      - { name: energie, label: Énergie, widget: select, required: false, options: [Essence, Diesel, Hybride, Hybride rechargeable, Électrique] }
+      - { name: moteur, label: Moteur, widget: string, required: false, hint: 'Ex. 1.5L Turbo' }
+      - { name: puissance, label: Puissance (ch), widget: number, value_type: int, required: false }
+      - { name: boite, label: Boîte de vitesses, widget: select, required: false, options: [Manuelle, Automatique] }
+      - { name: consommation, label: Consommation, widget: string, required: false, hint: 'Ex. 6,8 L/100 km' }
+      - { name: note, label: Autre caractéristique, widget: string, required: false, hint: 'Ex. capacité de charge. Affichée après la consommation.' }
+      - { name: note_en, label: Autre caractéristique (anglais), widget: string, required: false }
+      - { name: photo, label: Photo, widget: image, required: false, hint: 'Format paysage, de préférence.' }
+      - { name: prix, label: Prix (FCFA), widget: number, value_type: int, required: false, hint: 'Laisser vide pour afficher « Prix sur demande ».' }
+      - { name: a_la_une, label: À la une (accueil), widget: boolean, default: false, hint: "L'accueil affiche 4 véhicules maximum." }
+      - { name: ordre, label: Ordre d'affichage, widget: number, value_type: int, default: 100, hint: 'Plus petit = affiché en premier.' }
+
   - name: vehicules
-    label: Véhicules
-    label_singular: Véhicule
+    label: Véhicules de location
+    label_singular: Véhicule de location
     folder: src/content/vehicules
     create: true
     slug: '{{nom}}'
@@ -52,7 +83,9 @@ collections:
       - { name: a_la_une, label: À la une (accueil), widget: boolean, default: false, hint: "L'accueil affiche 4 véhicules maximum." }
       - { name: ordre, label: Ordre d'affichage, widget: number, value_type: int, default: 100, hint: 'Plus petit = affiché en premier.' }
       - { name: resume, label: Résumé (carte), widget: string, required: false, hint: '160 caractères maximum.', pattern: ['^.{0,160}$', '160 caractères maximum'] }
+      - { name: resume_en, label: Résumé en anglais, widget: string, required: false, hint: 'Version anglaise du site. Vide = résumé français.', pattern: ['^.{0,160}$', '160 caractères maximum'] }
       - { name: body, label: Description, widget: markdown, required: false, buttons: [bold, italic, bulleted-list], editor_components: [] }
+      - { name: description_en, label: Description en anglais, widget: text, required: false, hint: 'Version anglaise du site. Vide = description française.' }
 
   - name: reglages
     label: Informations du site
@@ -62,23 +95,30 @@ collections:
         file: src/data/site.json
         fields:
           - { name: nom, label: Nom, widget: string }
-          - { name: slogan, label: Titre de l'accueil, widget: string }
-          - { name: accroche, label: Texte d'accroche, widget: text }
+          - { name: raison_sociale, label: Raison sociale, widget: string, required: false }
+          - { name: slogan, label: Slogan (titre de l'onglet), widget: string }
+          - { name: slogan_en, label: Slogan en anglais, widget: string, required: false }
+          - { name: accroche, label: Texte d'accroche (accueil), widget: text }
+          - { name: accroche_en, label: Texte d'accroche en anglais, widget: text, required: false }
           - { name: whatsapp, label: Numéro WhatsApp (format international sans +), widget: string, hint: 'Ex. 22890000000', pattern: ['^[0-9]{8,15}$', 'Chiffres uniquement, avec indicatif pays'] }
           - { name: telephone, label: Téléphone affiché, widget: string }
+          - { name: telephone_2, label: Second téléphone, widget: string, required: false }
           - { name: email, label: Email, widget: string }
           - { name: adresse, label: Adresse, widget: string }
           - { name: ville, label: Ville, widget: string }
           - { name: zones, label: Zones desservies, widget: string }
+          - { name: zones_en, label: Zones desservies en anglais, widget: string, required: false }
           - { name: horaires, label: Horaires, widget: string }
+          - { name: horaires_en, label: Horaires en anglais, widget: string, required: false }
+          - { name: catalogue_pdf, label: Catalogue de ventes (PDF), widget: file, required: false, media_folder: /public/catalogue, public_folder: /catalogue, hint: 'Fichier PDF proposé en consultation et en téléchargement. Vide = encart masqué. Préférer un PDF de moins de 5 Mo.' }
           - { name: google_maps_url, label: Lien Google Maps (fiche de l'agence), widget: string, required: false, hint: "Bouton Partager de la fiche Google Maps de l'agence. Utilisé pour « Nous trouver sur Google Maps »." }
           - { name: google_verification, label: Code de vérification Google Search Console, widget: string, required: false, hint: "Search Console > Ajouter une propriété > Préfixe de l'URL > Balise HTML : coller uniquement la valeur de content=\"…\"." }
           - { name: gps, label: Coordonnées GPS de l'agence, widget: string, required: false, hint: "Ex. 6.1319, 1.2228 (clic droit sur le point exact dans Google Maps, puis copier les chiffres). Affiche la carte et le bouton Itinéraire sur la page Contact. Vide : l'adresse est utilisée." }
-          - { name: avantages, label: Avantages (accueil), widget: list, max: 4, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: string }] }
-          - { name: services, label: Services, widget: list, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: text }] }
+          - { name: avantages, label: Avantages (accueil), widget: list, max: 4, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: string }, { name: titre_en, label: Titre en anglais, widget: string, required: false }, { name: texte_en, label: Texte en anglais, widget: string, required: false }] }
+          - { name: services, label: Transferts (page Offres et services), widget: list, fields: [{ name: titre, label: Titre, widget: string }, { name: texte, label: Texte, widget: text }, { name: titre_en, label: Titre en anglais, widget: string, required: false }, { name: texte_en, label: Texte en anglais, widget: text, required: false }] }
           - { name: temoignages, label: Avis clients (réels et autorisés), widget: list, required: false, fields: [{ name: auteur, label: Auteur, widget: string }, { name: texte, label: Avis, widget: text }] }
       - name: faq
         label: Questions fréquentes
         file: src/data/faq.json
         fields:
-          - { name: questions, label: Questions, widget: list, fields: [{ name: question, label: Question, widget: string }, { name: reponse, label: Réponse, widget: text }] }
+          - { name: questions, label: Questions, widget: list, fields: [{ name: question, label: Question, widget: string }, { name: reponse, label: Réponse, widget: text }, { name: question_en, label: Question en anglais, widget: string, required: false }, { name: reponse_en, label: Réponse en anglais, widget: text, required: false }] }
