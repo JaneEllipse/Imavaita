@@ -66,8 +66,8 @@ const jsonld = await entreprise(Astro.site, lang);
       <h1>{a.h1}</h1>
       <p class="hero__accroche">{info.accroche}</p>
       <div class="hero__actions">
-        <a href={lien(lang, 'vente')} class="btn btn--orange"><Icone nom="etiquette" />{a.actions.vente}</a>
-        <a href={lien(lang, 'location')} class="btn btn--clair"><Icone nom="cle" />{a.actions.location}</a>
+        <a href={lien(lang, 'location')} class="btn btn--orange"><Icone nom="cle" />{a.actions.location}</a>
+        <a href={lien(lang, 'vente')} class="btn btn--clair"><Icone nom="etiquette" />{a.actions.vente}</a>
       </div>
       <ul class="hero__atouts">
         {a.atouts.map(([fort, texte], i) => <li><Icone nom={iconesAtouts[i]} /><span><strong>{fort}</strong> {texte}</span></li>)}
@@ -92,18 +92,6 @@ const jsonld = await entreprise(Astro.site, lang);
       </div>
       <div class="poles">
         <article class="pole revele">
-          <div class="pole__photo"><Image src={slideVente} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="etiquette" />{a.une.vente}</span></div>
-          <div class="pole__corps">
-            <h3>{p.vente.titre}</h3>
-            <p>{p.vente.texte(vente.length, marques.length)}</p>
-            <ul>{p.vente.points.map((x) => <li><Icone nom="check" />{x}</li>)}</ul>
-            <div class="pole__actions">
-              <a href={lien(lang, 'vente')} class="btn btn--marine">{d.bouton.voirVente}<Icone nom="fleche" /></a>
-              <a href={waLink(msg.achat)} class="pole__wa" target="_blank" rel="noopener" data-wa="accueil:achat"><IconeWhatsApp />{d.bouton.demanderPrix}</a>
-            </div>
-          </div>
-        </article>
-        <article class="pole revele" style="transition-delay:90ms">
           <div class="pole__photo"><Image src={photoLocation} alt={a.location.legende} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="cle" />{a.une.location}</span></div>
           <div class="pole__corps">
             <h3>{p.location.titre}</h3>
@@ -112,6 +100,18 @@ const jsonld = await entreprise(Astro.site, lang);
             <div class="pole__actions">
               <a href={lien(lang, 'location')} class="btn btn--marine">{d.bouton.voirLocation}<Icone nom="fleche" /></a>
               <a href={waLink(msg.location)} class="pole__wa" target="_blank" rel="noopener" data-wa="accueil:location"><IconeWhatsApp />{d.bouton.reserver}</a>
+            </div>
+          </div>
+        </article>
+        <article class="pole revele" style="transition-delay:90ms">
+          <div class="pole__photo"><Image src={slideVente} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="etiquette" />{a.une.vente}</span></div>
+          <div class="pole__corps">
+            <h3>{p.vente.titre}</h3>
+            <p>{p.vente.texte(vente.length, marques.length)}</p>
+            <ul>{p.vente.points.map((x) => <li><Icone nom="check" />{x}</li>)}</ul>
+            <div class="pole__actions">
+              <a href={lien(lang, 'vente')} class="btn btn--marine">{d.bouton.voirVente}<Icone nom="fleche" /></a>
+              <a href={waLink(msg.achat)} class="pole__wa" target="_blank" rel="noopener" data-wa="accueil:achat"><IconeWhatsApp />{d.bouton.demanderPrix}</a>
             </div>
           </div>
         </article>
@@ -126,16 +126,16 @@ const jsonld = await entreprise(Astro.site, lang);
         <h2 class="titre-section">{a.une.titre}</h2>
       </div>
       <div class="selection">
-        {uneVente.length > 0 && (
-          <div class="selection__groupe">
-            <div class="selection__tete"><h3><Icone nom="etiquette" />{a.une.vente}</h3><a href={lien(lang, 'vente')}>{a.vente.tous(vente.length)}<Icone nom="fleche" /></a></div>
-            <div class="grille--vehicules">{uneVente.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVente lang={lang} vehicule={v} sizes="(max-width: 900px) 72vw, 280px" /></div>)}</div>
-          </div>
-        )}
         {uneLocation.length > 0 && (
           <div class="selection__groupe">
             <div class="selection__tete"><h3><Icone nom="cle" />{a.une.location}</h3><a href={lien(lang, 'location')}>{a.une.tousLocation}<Icone nom="fleche" /></a></div>
             <div class="grille--vehicules">{uneLocation.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVehicule lang={lang} vehicule={v} /></div>)}</div>
+          </div>
+        )}
+        {uneVente.length > 0 && (
+          <div class="selection__groupe">
+            <div class="selection__tete"><h3><Icone nom="etiquette" />{a.une.vente}</h3><a href={lien(lang, 'vente')}>{a.vente.tous(vente.length)}<Icone nom="fleche" /></a></div>
+            <div class="grille--vehicules">{uneVente.map((v, i) => <div class="revele" style={`transition-delay:${i * 80}ms`}><CarteVente lang={lang} vehicule={v} sizes="(max-width: 900px) 72vw, 280px" /></div>)}</div>
           </div>
         )}
       </div>

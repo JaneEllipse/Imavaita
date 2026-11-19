@@ -8,6 +8,7 @@ moteur: "1.5L Turbo"
 puissance: 188
 boite: Automatique
 consommation: "6,45 L/100 km"
+photo: ../../assets/vente/changan-x5-plus-2025.jpg
 statut: publie
 a_la_une: false
 ordre: 40

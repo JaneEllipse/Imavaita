@@ -81,6 +81,11 @@ p { margin: 0 0 1em; }
 .badge { display: inline-block; font-family: var(--titre); font-size: .72rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; padding: .3em .75em; border-radius: 999px; background: var(--orange); color: #fff; }
 .badge--marine { background: var(--marine); }
 .badge--brouillon { background: #b42318; }
+/* Pastille « À vendre » / « À louer » à côté du nombre de modèles, dans les filtres des catalogues */
+.type-offre { display: inline-flex; align-items: center; gap: 5px; padding: .35em .8em; border-radius: 999px; font-family: var(--titre); font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: #fff; }
+.type-offre svg { width: 14px; height: 14px; }
+.type-offre--vente { background: var(--orange-texte); }
+.type-offre--location { background: var(--marine); }
 
 .prose { max-width: 70ch; }
 .prose h2 { margin-top: 1.6em; font-size: 1.5rem; }

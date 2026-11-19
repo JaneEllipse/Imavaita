@@ -33,6 +33,7 @@ const fr = {
     places: (n: number) => `${n} places`,
     ch: (n: number) => `${n} ch`,
   },
+  typeOffre: { vente: 'À vendre', location: 'À louer' },
   prixSurDemande: 'Prix sur demande',
   tarifSurDemande: 'Sur demande',
   wa: {

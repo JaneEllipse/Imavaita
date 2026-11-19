@@ -38,6 +38,7 @@ const en: Dico = {
     places: (n: number) => `${n} seats`,
     ch: (n: number) => `${n} hp`,
   },
+  typeOffre: { vente: 'For sale', location: 'For rent' },
   prixSurDemande: 'Price on request',
   tarifSurDemande: 'On request',
   wa: {

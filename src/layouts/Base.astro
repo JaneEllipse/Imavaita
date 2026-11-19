@@ -31,7 +31,7 @@ const chemin = Astro.url.pathname;
 const alternates = route ? { fr: new URL(lien('fr', route, id), Astro.site).href, en: new URL(lien('en', route, id), Astro.site).href } : undefined;
 const lienAutre = route ? lien(autre, route, id) : lien(autre, 'accueil');
 
-const nav = (['vente', 'location', 'services', 'apropos', 'contact'] as const).map((r) => ({ href: lien(lang, r), label: d.nav[r], court: d.navCourt[r] }));
+const nav = (['location', 'vente', 'services', 'apropos', 'contact'] as const).map((r) => ({ href: lien(lang, r), label: d.nav[r], court: d.navCourt[r] }));
 const navPied = [{ href: lien(lang, 'accueil'), label: d.accueil }, ...nav];
 const actif = (href: string) => chemin.startsWith(href);
 const msg = messages(lang);
