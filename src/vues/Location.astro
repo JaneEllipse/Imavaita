@@ -21,7 +21,9 @@ const jsonld = [
   filAriane(Astro.site, [{ nom: l.titre, chemin }], lang),
   { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: vehicules.map((v, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(lien(lang, 'location', v.id), Astro.site).href, name: v.data.nom })) },
 ];
-const avecFiltres = categories.length > 1;
+const marques = [...new Set(vehicules.map((v) => v.data.marque).filter((m): m is string => !!m))].sort();
+const compte = (c: string) => vehicules.filter((v) => v.data.categorie === c).length;
+const avecFiltres = categories.length > 1 || marques.length > 1;
 const icone = (c: string): NomIcone => ({ 'SUV / 4x4': 'suv', Berline: 'berline', Citadine: 'berline', 'Pick-up': 'pickup', Minibus: 'minibus', Utilitaire: 'minibus' } as Record<string, NomIcone>)[c] ?? 'voiture';
 const points: [NomIcone, string][] = d.accueil_.location.points.map((p, i) => [(['route', 'jauge', 'volant'] as NomIcone[])[i], p]);
 ---
@@ -32,14 +34,23 @@ const points: [NomIcone, string][] = d.accueil_.location.points.map((p, i) => [(
   <section class="section section--catalogue section--pierre">
     <div class="conteneur">
       {avecFiltres && (
-        <div class="onglets" role="group" aria-label={l.filtres}>
-          <button type="button" aria-pressed="true" data-cat=""><Icone nom="grille" />{l.tous}</button>
-          {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}><Icone nom={icone(c)} />{nomCat(c)}</button>)}
-        </div>
+        <form class="filtres" id="filtres-location" aria-label={l.filtres} hidden>
+          {categories.length > 1 && (
+            <div class="onglets" role="group" aria-label={l.filtres}>
+              {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}><Icone nom={icone(c)} />{nomCat(c)}<span class="onglets__n">{compte(c)}</span></button>)}
+            </div>
+          )}
+          <div class="filtres__ligne">
+            {marques.length > 1 && <select name="marque" aria-label={l.marque}><option value="">{l.marque}</option>{marques.map((m) => <option value={m}>{m}</option>)}</select>}
+            <output id="nb-location" data-un={l.nbVehicules(1)} data-plusieurs={l.nbVehicules(2)} aria-live="polite">{l.nbVehicules(vehicules.length)}</output>
+            <button type="reset" class="filtres__effacer" hidden><Icone nom="croix" />{l.effacer}</button>
+          </div>
+        </form>
       )}
       {vehicules.length > 0
-        ? <div class="liste" id="catalogue">{vehicules.map((v, i) => <div data-cat={v.data.categorie} class="revele" style={`transition-delay:${(i % 2) * 80}ms`}><CarteVehicule lang={lang} vehicule={v} prioritaire={i < 2} ligne /></div>)}</div>
+        ? <div class="liste" id="catalogue">{vehicules.map((v, i) => <div data-cat={v.data.categorie} data-marque={v.data.marque} class="revele" style={`transition-delay:${(i % 2) * 80}ms`}><CarteVehicule lang={lang} vehicule={v} prioritaire={i < 2} ligne /></div>)}</div>
         : <p>{l.vide} <BoutonWhatsApp lang={lang} source="catalogue-vide" message={messages(lang).location} /></p>}
+      <p class="filtres__vide" id="vide-location" hidden>{l.aucun}</p>
       <div class="aide revele">
         <span class="aide__icone"><Icone nom="voiture" /></span>
         <div><h2>{l.aide.titre}</h2><p>{l.aide.texte}</p></div>
@@ -50,29 +61,60 @@ const points: [NomIcone, string][] = d.accueil_.location.points.map((p, i) => [(
   </section>
 </Base>
 
-{avecFiltres && (
-  <script>
-    const boutons = document.querySelectorAll<HTMLButtonElement>('.onglets button');
+<script>
+  // Filtres catégorie (onglets, un second clic désactive) et marque. Sans JavaScript, toute la flotte reste affichée.
+  const f = document.getElementById('filtres-location') as HTMLFormElement | null;
+  if (f) {
     const cartes = document.querySelectorAll<HTMLElement>('#catalogue > [data-cat]');
-    boutons.forEach((b) => b.addEventListener('click', () => {
-      boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      cartes.forEach((c) => { c.hidden = !!b.dataset.cat && c.dataset.cat !== b.dataset.cat; c.classList.add('vu'); });
-    }));
-  </script>
-)}
+    const onglets = f.querySelectorAll<HTMLButtonElement>('.onglets button');
+    const nb = document.getElementById('nb-location')!;
+    const vide = document.getElementById('vide-location')!;
+    const effacer = f.querySelector<HTMLButtonElement>('.filtres__effacer')!;
+    let cat = '';
+    const maj = () => {
+      const marque = (f.elements.namedItem('marque') as HTMLSelectElement | null)?.value ?? '';
+      let n = 0;
+      onglets.forEach((o) => o.setAttribute('aria-pressed', String(o.dataset.cat === cat)));
+      cartes.forEach((c) => {
+        const ok = (!cat || c.dataset.cat === cat) && (!marque || c.dataset.marque === marque);
+        c.hidden = !ok; c.classList.add('vu'); if (ok) n++;
+      });
+      nb.textContent = (n > 1 ? nb.dataset.plusieurs! : nb.dataset.un!).replace(/\d+/, String(n));
+      vide.hidden = n > 0;
+      effacer.hidden = !(cat || marque);
+    };
+    onglets.forEach((o) => o.addEventListener('click', () => { cat = cat === o.dataset.cat ? '' : o.dataset.cat!; maj(); }));
+    f.hidden = false;
+    f.addEventListener('change', maj);
+    f.addEventListener('reset', () => { cat = ''; setTimeout(maj); });
+  }
+</script>
 
 <style>
-  .ep-points { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; margin: 22px 0 0; }
-  .ep-points li { display: inline-flex; align-items: center; gap: 8px; font-size: .92rem; font-weight: 600; color: #fff; }
-  .ep-points :global(svg) { width: 22px; height: 22px; color: #ffb347; }
-  .section--catalogue { padding-top: 28px; }
-  .onglets { display: flex; gap: 4px; margin: 0 0 28px; border-bottom: 1px solid var(--bord); overflow-x: auto; scrollbar-width: none; }
-  .onglets button { position: relative; display: inline-flex; align-items: center; gap: 10px; flex: none; min-height: 52px; padding: 0 18px; border: 0; background: none; font: inherit; font-weight: 600; color: var(--texte-doux); cursor: pointer; white-space: nowrap; }
+  .filtres { margin: 0 0 28px; }
+  .filtres[hidden] { display: none; }
+  .onglets { display: flex; gap: 4px; border-bottom: 1px solid var(--bord); overflow-x: auto; scrollbar-width: none; }
+  .onglets button { position: relative; display: inline-flex; align-items: center; gap: 10px; flex: none; min-height: 52px; padding: 0 16px; border: 0; background: none; font: inherit; font-weight: 600; color: var(--texte-doux); cursor: pointer; white-space: nowrap; }
   .onglets button::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px; border-radius: 2px; background: var(--orange); transform: scaleX(0); transition: transform .2s ease; }
   .onglets button:hover { color: var(--marine); }
   .onglets button[aria-pressed='true'] { color: var(--marine-900); }
   .onglets button[aria-pressed='true']::after { transform: scaleX(1); }
   .onglets :global(svg) { width: 24px; height: 24px; }
+  .onglets__n { display: inline-grid; place-items: center; min-width: 24px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--fond-doux); font-size: .75rem; color: var(--marine); }
+  .filtres__ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; }
+  .filtres__ligne select { min-height: 44px; padding: 0 34px 0 16px; border: 1px solid rgb(0 48 110 / .22); border-radius: 999px; font: inherit; font-size: .9rem; font-weight: 600; color: var(--marine-900); background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300306e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; cursor: pointer; }
+  .filtres__ligne select:hover { border-color: var(--marine-700); }
+  .filtres__ligne select:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  #nb-location { margin-left: auto; font-size: .88rem; color: var(--texte-doux); }
+  .filtres__effacer { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: .88rem; font-weight: 600; color: var(--orange-texte); cursor: pointer; }
+  .filtres__effacer[hidden] { display: none; }
+  .filtres__effacer :global(svg) { width: 16px; height: 16px; }
+  .filtres__vide { margin: 8px 0 0; padding: 18px 20px; border-radius: 14px; background: #fff; border: 1px dashed var(--bord); color: var(--texte-doux); }
+  @media (max-width: 560px) { .filtres__ligne select { flex: 1 1 0; min-width: 0; } }
+  .ep-points { display: flex; flex-wrap: wrap; gap: 10px 22px; list-style: none; padding: 0; margin: 22px 0 0; }
+  .ep-points li { display: inline-flex; align-items: center; gap: 8px; font-size: .92rem; font-weight: 600; color: #fff; }
+  .ep-points :global(svg) { width: 22px; height: 22px; color: #ffb347; }
+  .section--catalogue { padding-top: 28px; }
   :global(html:not(.js)) .onglets { display: none; }
   .liste { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); }
   @media (max-width: 699px) { .liste { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); } }

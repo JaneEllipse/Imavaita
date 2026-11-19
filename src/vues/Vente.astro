@@ -1,4 +1,5 @@
 ---
+import { getImage } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CarteVente from '../components/CarteVente.astro';
 import BlocCatalogue from '../components/BlocCatalogue.astro';
@@ -16,16 +17,39 @@ const d = t(lang);
 const v = d.vente;
 const msg = messages(lang);
 
-const vehicules = await getVente();
+// Les modèles encore sans photo passent en fin de liste.
+const vehicules = (await getVente()).sort((a, b) => Number(!a.data.photo) - Number(!b.data.photo));
 const marques = marquesVente(vehicules);
 const ordreCat = ['SUV', 'Berline', 'Pick-up', 'Poids lourd', 'Autre'];
 const categories = ordreCat.filter((c) => vehicules.some((x) => x.data.categorie === c));
+// Années : « 2025 » ou une plage « 2017-2025 » ; un modèle correspond à toute année de sa plage.
+const plage = (a?: string): [number, number] | null => {
+  const n = (a ?? '').match(/\d{4}/g)?.map(Number);
+  return n?.length ? [Math.min(...n), Math.max(...n)] : null;
+};
 const icone = (c: string): NomIcone => ({ SUV: 'suv', Berline: 'berline', 'Pick-up': 'pickup', 'Poids lourd': 'camion' } as Record<string, NomIcone>)[c] ?? 'voiture';
 const compte = (c: string) => vehicules.filter((x) => x.data.categorie === c).length;
+const annees = [...new Set(vehicules.flatMap((x) => plage(x.data.annee) ?? []))].sort((a, b) => b - a);
 const chemin = lien(lang, 'vente');
 const jsonld = [
   filAriane(Astro.site, [{ nom: v.titre, chemin }], lang),
-  { '@context': 'https://schema.org', '@type': 'ItemList', name: v.titre, numberOfItems: vehicules.length, itemListElement: vehicules.map((x, i) => ({ '@type': 'ListItem', position: i + 1, name: nomVente(x) })) },
+  {
+    '@context': 'https://schema.org', '@type': 'ItemList', name: v.titre, numberOfItems: vehicules.length,
+    itemListElement: await Promise.all(vehicules.map(async (x, i) => {
+      const p = plage(x.data.annee);
+      const image = x.data.photo ? new URL((await getImage({ src: x.data.photo, width: 640, format: 'jpg' })).src, Astro.site).href : undefined;
+      return {
+        '@type': 'ListItem', position: i + 1,
+        item: {
+          '@type': 'Car', name: nomVente(x), url: new URL(`${chemin}#${x.id}`, Astro.site).href,
+          brand: { '@type': 'Brand', name: x.data.marque },
+          ...(p ? { vehicleModelDate: String(p[1]) } : {}),
+          ...(image ? { image } : {}),
+          offeredBy: { '@id': new URL('/#agence', Astro.site).href },
+        },
+      };
+    })),
+  },
 ];
 ---
 <Base lang={lang} route="vente" titre={v.titre} titreSeo={v.titreSeo} description={v.description(vehicules.length, marques.join(', '))} image={banniere} jsonld={jsonld}>
@@ -40,15 +64,23 @@ const jsonld = [
 
   <section class="section section--catalogue section--pierre">
     <div class="conteneur">
-      {categories.length > 1 && (
-        <div class="onglets" role="group" aria-label={v.filtres}>
-          <button type="button" aria-pressed="true" data-cat=""><Icone nom="grille" />{v.tous}<span class="onglets__n">{vehicules.length}</span></button>
-          {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}><Icone nom={icone(c)} />{d.carac.categorieVente[c]}<span class="onglets__n">{compte(c)}</span></button>)}
+      <form class="filtres" id="filtres-vente" aria-label={v.filtres} hidden>
+        {categories.length > 1 && (
+          <div class="onglets" role="group" aria-label={v.categorie}>
+            {categories.map((c) => <button type="button" aria-pressed="false" data-cat={c}><Icone nom={icone(c)} />{d.carac.categorieVente[c]}<span class="onglets__n">{compte(c)}</span></button>)}
+          </div>
+        )}
+        <div class="filtres__ligne">
+          <select name="marque" aria-label={v.marque}><option value="">{v.marque}</option>{marques.map((m) => <option value={m}>{m}</option>)}</select>
+          {annees.length > 1 && <select name="annee" aria-label={v.annee}><option value="">{v.annee}</option>{annees.map((a) => <option value={a}>{a}</option>)}</select>}
+          <output id="nb-vente" data-un={v.nbModeles(1)} data-plusieurs={v.nbModeles(2)} aria-live="polite">{v.nbModeles(vehicules.length)}</output>
+          <button type="reset" class="filtres__effacer" hidden><Icone nom="croix" />{v.effacer}</button>
         </div>
-      )}
+      </form>
       <div class="liste" id="catalogue-vente">
-        {vehicules.map((x, i) => <div data-cat={x.data.categorie} class="revele" style={`transition-delay:${(i % 3) * 70}ms`}><CarteVente lang={lang} vehicule={x} prioritaire={i < 3} /></div>)}
+        {vehicules.map((x, i) => { const p = plage(x.data.annee); return <div id={x.id} data-cat={x.data.categorie} data-marque={x.data.marque} data-de={p?.[0]} data-a={p?.[1]} class="revele" style={`transition-delay:${(i % 3) * 70}ms`}><CarteVente lang={lang} vehicule={x} prioritaire={i < 3} /></div>; })}
       </div>
+      <p class="filtres__vide" id="vide-vente" hidden>{v.aucun}</p>
       <p class="mention"><Icone nom="badge" />{v.mentionPhotos}</p>
 
       <div class="duo duo--seul">
@@ -64,22 +96,44 @@ const jsonld = [
   </section>
 </Base>
 
-{categories.length > 1 && (
-  <script>
-    const boutons = document.querySelectorAll<HTMLButtonElement>('.onglets button');
+<script>
+  // Filtres catégorie (onglets, un second clic désactive), marque et année. Sans JavaScript, tout le catalogue reste affiché.
+  const f = document.getElementById('filtres-vente') as HTMLFormElement | null;
+  if (f) {
     const cartes = document.querySelectorAll<HTMLElement>('#catalogue-vente > [data-cat]');
-    boutons.forEach((b) => b.addEventListener('click', () => {
-      boutons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-      cartes.forEach((c) => { c.hidden = !!b.dataset.cat && c.dataset.cat !== b.dataset.cat; c.classList.add('vu'); });
-    }));
-  </script>
-)}
+    const onglets = f.querySelectorAll<HTMLButtonElement>('.onglets button');
+    const nb = document.getElementById('nb-vente')!;
+    const vide = document.getElementById('vide-vente')!;
+    const effacer = f.querySelector<HTMLButtonElement>('.filtres__effacer')!;
+    const val = (n: string) => (f.elements.namedItem(n) as HTMLSelectElement | null)?.value ?? '';
+    let cat = '';
+    const maj = () => {
+      const marque = val('marque'), an = Number(val('annee'));
+      let n = 0;
+      onglets.forEach((o) => o.setAttribute('aria-pressed', String(o.dataset.cat === cat)));
+      cartes.forEach((c) => {
+        const d = c.dataset;
+        const ok = (!cat || d.cat === cat) && (!marque || d.marque === marque) && (!an || (Number(d.de) <= an && an <= Number(d.a)));
+        c.hidden = !ok; c.classList.add('vu'); if (ok) n++;
+      });
+      nb.textContent = (n > 1 ? nb.dataset.plusieurs! : nb.dataset.un!).replace(/\d+/, String(n));
+      vide.hidden = n > 0;
+      effacer.hidden = !(cat || marque || an);
+    };
+    onglets.forEach((o) => o.addEventListener('click', () => { cat = cat === o.dataset.cat ? '' : o.dataset.cat!; maj(); }));
+    f.hidden = false;
+    f.addEventListener('change', maj);
+    f.addEventListener('reset', () => { cat = ''; setTimeout(maj); });
+  }
+</script>
 
 <style>
   .ep-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
   @media (max-width: 600px) { .ep-actions .btn { width: 100%; } }
   .section--catalogue { padding-top: 28px; }
-  .onglets { display: flex; gap: 4px; margin: 0 0 28px; border-bottom: 1px solid var(--bord); overflow-x: auto; scrollbar-width: none; }
+  .filtres { margin: 0 0 28px; }
+  .filtres[hidden] { display: none; }
+  .onglets { display: flex; gap: 4px; border-bottom: 1px solid var(--bord); overflow-x: auto; scrollbar-width: none; }
   .onglets button { position: relative; display: inline-flex; align-items: center; gap: 10px; flex: none; min-height: 52px; padding: 0 16px; border: 0; background: none; font: inherit; font-weight: 600; color: var(--texte-doux); cursor: pointer; white-space: nowrap; }
   .onglets button::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 3px; border-radius: 2px; background: var(--orange); transform: scaleX(0); transition: transform .2s ease; }
   .onglets button:hover { color: var(--marine); }
@@ -87,7 +141,17 @@ const jsonld = [
   .onglets button[aria-pressed='true']::after { transform: scaleX(1); }
   .onglets :global(svg) { width: 24px; height: 24px; }
   .onglets__n { display: inline-grid; place-items: center; min-width: 24px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--fond-doux); font-size: .75rem; color: var(--marine); }
-  :global(html:not(.js)) .onglets { display: none; }
+  .filtres__ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; }
+  .filtres__ligne select { min-height: 44px; padding: 0 34px 0 16px; border: 1px solid rgb(0 48 110 / .22); border-radius: 999px; font: inherit; font-size: .9rem; font-weight: 600; color: var(--marine-900); background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300306e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; cursor: pointer; }
+  .filtres__ligne select:hover { border-color: var(--marine-700); }
+  .filtres__ligne select:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  #nb-vente { margin-left: auto; font-size: .88rem; color: var(--texte-doux); }
+  .filtres__effacer { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: .88rem; font-weight: 600; color: var(--orange-texte); cursor: pointer; }
+  .filtres__effacer[hidden] { display: none; }
+  .filtres__effacer :global(svg) { width: 16px; height: 16px; }
+  .filtres__vide { margin: 8px 0 0; padding: 18px 20px; border-radius: 14px; background: #fff; border: 1px dashed var(--bord); color: var(--texte-doux); }
+  @media (max-width: 560px) { .filtres__ligne select { flex: 1 1 0; min-width: 0; } #nb-vente { flex-basis: 100%; margin-left: 0; } }
+  .liste > div { scroll-margin-top: 96px; }
   .liste { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
   @media (max-width: 560px) { .liste { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
   .mention { display: flex; align-items: center; gap: 8px; margin: 22px 0 0; font-size: .82rem; color: var(--texte-doux); }

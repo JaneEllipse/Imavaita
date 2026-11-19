@@ -9,7 +9,7 @@ import Icone from '../components/Icone.astro';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
 import slideVente from '../assets/accueil/tiggo-8-pro.jpg';
 import slideInterieur from '../assets/accueil/interieur-uni-k.jpg';
-import slideShowroom from '../assets/accueil/showroom-kia.jpg';
+import slideFlotte from '../assets/location/kia-sorento.jpg';
 import photoLocation from '../assets/location/changan-cs95.jpg';
 import photoAppel from '../assets/location/changan-cs95-2.jpg';
 import { site, waLink, getVente, getVehicules, marquesVente, adresseComplete, entreprise, messages, infos } from '../lib/site';
@@ -36,7 +36,7 @@ const p = a.poles;
 const diapos = [
   { src: slideVente, alt: a.legendes[0], pos: '66% 62%' },
   { src: slideInterieur, alt: a.legendes[1], pos: '60% 45%' },
-  { src: slideShowroom, alt: a.legendes[2], pos: '60% 55%' },
+  { src: slideFlotte, alt: a.legendes[2], pos: '58% 55%' },
 ];
 const suivantes = await Promise.all(diapos.slice(1).map(async (s) => {
   const img = await getImage({ src: s.src, widths: [640, 960, 1400], quality: 55 });
