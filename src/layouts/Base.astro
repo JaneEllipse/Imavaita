@@ -115,6 +115,7 @@ const horaires = infos(lang).horaires;
             {site.telephone && <li><a href={`tel:${site.telephone.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone}</a></li>}
             {site.telephone_2 && <li><a href={`tel:${site.telephone_2.replace(/\s/g, '')}`}><Icone nom="telephone" />{site.telephone_2}</a></li>}
             {site.email && <li><a href={`mailto:${site.email}`}><Icone nom="mail" />{site.email}</a></li>}
+            {site.facebook && <li><a href={site.facebook} target="_blank" rel="noopener"><Icone nom="facebook" />Facebook</a></li>}
             {horaires && <li><span><Icone nom="horloge" />{horaires}</span></li>}
             <li class="pied__adresse">
               <Icone nom="carte" />

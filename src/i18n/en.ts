@@ -235,6 +235,7 @@ const en: Dico = {
     agence: 'Our office',
     telephone: 'Phone',
     email: 'Email',
+    facebook: 'Facebook',
     horaires: 'Opening hours',
     plan: (nom: string) => `Map to ${nom}`,
     itineraire: 'Directions',

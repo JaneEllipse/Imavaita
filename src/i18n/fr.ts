@@ -231,6 +231,7 @@ const fr = {
     agence: 'Notre agence',
     telephone: 'Téléphone',
     email: 'Email',
+    facebook: 'Facebook',
     horaires: 'Horaires',
     plan: (nom: string) => `Plan d'accès à ${nom}`,
     itineraire: 'Itinéraire',

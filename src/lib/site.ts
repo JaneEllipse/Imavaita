@@ -101,6 +101,7 @@ export async function entreprise(base: URL | undefined, lang: Lang = 'fr') {
     ...(Number.isFinite(lat) && Number.isFinite(lng) && site.gps ? { geo: { '@type': 'GeoCoordinates', latitude: lat, longitude: lng } } : {}),
     ...(carte.lien ? { hasMap: carte.lien } : {}),
     areaServed: [{ '@type': 'City', name: site.ville }, { '@type': 'Country', name: 'Togo' }, { '@type': 'Continent', name: lang === 'en' ? 'Africa' : 'Afrique' }],
+    ...(site.facebook ? { sameAs: [site.facebook] } : {}),
     currenciesAccepted: 'XOF',
   };
 }
