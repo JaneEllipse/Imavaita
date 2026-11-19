@@ -100,7 +100,7 @@ export async function entreprise(base: URL | undefined, lang: Lang = 'fr') {
     address: { '@type': 'PostalAddress', ...(site.adresse ? { streetAddress: site.adresse } : {}), addressLocality: site.ville, addressCountry: 'TG' },
     ...(Number.isFinite(lat) && Number.isFinite(lng) && site.gps ? { geo: { '@type': 'GeoCoordinates', latitude: lat, longitude: lng } } : {}),
     ...(carte.lien ? { hasMap: carte.lien } : {}),
-    areaServed: [{ '@type': 'City', name: site.ville }, { '@type': 'Country', name: 'Togo' }],
+    areaServed: [{ '@type': 'City', name: site.ville }, { '@type': 'Country', name: 'Togo' }, { '@type': 'Continent', name: lang === 'en' ? 'Africa' : 'Afrique' }],
     currenciesAccepted: 'XOF',
   };
 }
