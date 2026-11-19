@@ -104,6 +104,7 @@ collections:
           - { name: telephone, label: Téléphone affiché, widget: string }
           - { name: telephone_2, label: Second téléphone, widget: string, required: false }
           - { name: email, label: Email, widget: string }
+          - { name: facebook, label: Page Facebook (lien complet), widget: string, required: false, hint: 'Ex. https://www.facebook.com/Imavaita2025/ ; vide = icône masquée' }
           - { name: adresse, label: Adresse, widget: string }
           - { name: ville, label: Ville, widget: string }
           - { name: zones, label: Zones desservies, widget: string }

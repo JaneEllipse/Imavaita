@@ -19,8 +19,9 @@ const wa = site.whatsapp ? `+${site.whatsapp.replace(/^228(\d{2})(\d{2})(\d{2})(
 const infosContact = [
   telephones.length > 0 && { icone: 'telephone', titre: c.telephone, html: telephones.map(tel).join('<br>') },
   site.email && { icone: 'mail', titre: c.email, html: `<a href="mailto:${site.email}">${site.email}</a>` },
+  site.facebook && { icone: 'facebook', titre: c.facebook, html: `<a href="${site.facebook}" target="_blank" rel="noopener">${site.facebook.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a>` },
   infos(lang).horaires && { icone: 'horloge', titre: c.horaires, html: infos(lang).horaires.replace(' · ', '<br>') },
-].filter(Boolean) as { icone: 'telephone' | 'mail' | 'horloge'; titre: string; html: string }[];
+].filter(Boolean) as { icone: 'telephone' | 'mail' | 'facebook' | 'horloge'; titre: string; html: string }[];
 const embed = lang === 'en' ? carte.embed.replace('hl=fr', 'hl=en') : carte.embed;
 ---
 <Base lang={lang} route="contact" titre={c.titre} titreSeo={c.titreSeo(site.ville)} description={c.description(site.nom, site.ville)} jsonld={jsonld}>
