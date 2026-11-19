@@ -73,7 +73,7 @@ const jsonld = [
         <div class="filtres__ligne">
           <select name="marque" aria-label={v.marque}><option value="">{v.marque}</option>{marques.map((m) => <option value={m}>{m}</option>)}</select>
           {annees.length > 1 && <select name="annee" aria-label={v.annee}><option value="">{v.annee}</option>{annees.map((a) => <option value={a}>{a}</option>)}</select>}
-          <output id="nb-vente" data-un={v.nbModeles(1)} data-plusieurs={v.nbModeles(2)} aria-live="polite">{v.nbModeles(vehicules.length)}</output>
+          <span class="filtres__bilan"><span class="type-offre type-offre--vente"><Icone nom="etiquette" />{d.typeOffre.vente}</span><output id="nb-vente" data-un={v.nbModeles(1)} data-plusieurs={v.nbModeles(2)} aria-live="polite">{v.nbModeles(vehicules.length)}</output></span>
           <button type="reset" class="filtres__effacer" hidden><Icone nom="croix" />{v.effacer}</button>
         </div>
       </form>
@@ -145,12 +145,13 @@ const jsonld = [
   .filtres__ligne select { min-height: 44px; padding: 0 34px 0 16px; border: 1px solid rgb(0 48 110 / .22); border-radius: 999px; font: inherit; font-size: .9rem; font-weight: 600; color: var(--marine-900); background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300306e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center; appearance: none; cursor: pointer; }
   .filtres__ligne select:hover { border-color: var(--marine-700); }
   .filtres__ligne select:focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
-  #nb-vente { margin-left: auto; font-size: .88rem; color: var(--texte-doux); }
+  .filtres__bilan { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+  #nb-vente { font-size: .88rem; color: var(--texte-doux); }
   .filtres__effacer { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 4px; border: 0; background: none; font: inherit; font-size: .88rem; font-weight: 600; color: var(--orange-texte); cursor: pointer; }
   .filtres__effacer[hidden] { display: none; }
   .filtres__effacer :global(svg) { width: 16px; height: 16px; }
   .filtres__vide { margin: 8px 0 0; padding: 18px 20px; border-radius: 14px; background: #fff; border: 1px dashed var(--bord); color: var(--texte-doux); }
-  @media (max-width: 560px) { .filtres__ligne select { flex: 1 1 0; min-width: 0; } #nb-vente { flex-basis: 100%; margin-left: 0; } }
+  @media (max-width: 560px) { .filtres__ligne select { flex: 1 1 0; min-width: 0; } .filtres__bilan { flex-basis: 100%; margin-left: 0; } }
   .liste > div { scroll-margin-top: 96px; }
   .liste { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
   @media (max-width: 560px) { .liste { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } }
