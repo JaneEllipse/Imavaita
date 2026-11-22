@@ -73,7 +73,7 @@ const q = encodeURIComponent(lieu);
 export const carte = {
   /** Carte intégrée (sans clé d'API) */
   embed: lieu ? `https://maps.google.com/maps?q=${q}&z=16&hl=fr&output=embed` : '',
-  itineraire: lieu ? `https://www.google.com/maps/dir/?api=1&destination=${q}` : site.google_maps_url,
+  itineraire: lieu ? `https://www.google.com/maps/dir/?api=1&destination=${q}${site.google_place_id ? `&destination_place_id=${site.google_place_id}` : ''}` : site.google_maps_url,
   lien: site.google_maps_url || (lieu ? `https://www.google.com/maps/search/?api=1&query=${q}` : ''),
 };
 /** Adresse lisible : « rue…, Lomé, Togo » (la ville seule si l'adresse n'est pas encore saisie). */

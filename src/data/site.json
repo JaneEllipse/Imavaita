@@ -16,8 +16,9 @@
   "zones_en": "Lomé, all of Togo and across Africa",
   "horaires": "Lundi – vendredi : 8 h – 18 h · Samedi : 9 h – 15 h",
   "horaires_en": "Monday – Friday: 8 am – 6 pm · Saturday: 9 am – 3 pm",
-  "google_maps_url": "",
-  "gps": "",
+  "google_maps_url": "https://www.google.com/maps/place/?q=place_id:ChIJx_s7bsxZIRARMrJl_0dIIYY",
+  "google_place_id": "ChIJx_s7bsxZIRARMrJl_0dIIYY",
+  "gps": "6.2148423, 1.1856595",
   "google_verification": "",
   "catalogue_pdf": "/catalogue/imavaita-catalogue-ventes-2024-2025.pdf",
   "avantages": [
