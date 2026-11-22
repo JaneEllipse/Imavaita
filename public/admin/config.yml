@@ -13,8 +13,10 @@ backend:
 
 site_url: https://imavaita.com # À remplacer par le domaine définitif
 display_url: https://imavaita.com
-media_folder: src/assets/location
-public_folder: ../../assets/location
+# Dossier global (bibliothèque de médias) : le chemin public doit commencer par « / ».
+# Les photos des véhicules utilisent les dossiers relatifs définis dans chaque collection.
+media_folder: src/assets
+public_folder: /src/assets
 
 media_libraries:
   default:
@@ -58,6 +60,8 @@ collections:
     label: Véhicules de location
     label_singular: Véhicule de location
     folder: src/content/vehicules
+    media_folder: ../../assets/location
+    public_folder: ../../assets/location
     create: true
     slug: '{{nom}}'
     summary: '{{nom}} — {{statut}}'
