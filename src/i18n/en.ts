@@ -96,7 +96,7 @@ const en: Dico = {
       ['Rental', 'with or without a driver'],
       ['Quick answer', 'on WhatsApp'],
     ],
-    legendes: ['Chery Tiggo 8 Pro · for sale', 'Changan UNI-K interior', 'Kia Sorento · for rent'],
+    legendes: ['Chery Tiggo 8 Pro · for sale', 'Changan UNI-K interior', 'Our rental fleet'],
     marquesTitre: 'Brands in our catalogue',
     vente: { surtitre: 'Sales catalogue', titre: 'Cars for sale', tous: (n: number) => `See all ${n} models` },
     poles: {
