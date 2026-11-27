@@ -4,7 +4,7 @@ import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
 import IconeWhatsApp from '../components/IconeWhatsApp.astro';
-import photo from '../assets/location/toyota-land-cruiser-prado.jpg';
+import photo from '../assets/location/geely-starray.jpg';
 import { site, carte, adresseComplete, entreprise, filAriane, infos } from '../lib/site';
 import { type Lang, t, lien } from '../i18n';
 
@@ -25,7 +25,7 @@ const infosContact = [
 const embed = lang === 'en' ? carte.embed.replace('hl=fr', 'hl=en') : carte.embed;
 ---
 <Base lang={lang} route="contact" titre={c.titre} titreSeo={c.titreSeo(site.ville)} description={c.description(site.nom, site.ville)} jsonld={jsonld}>
-  <EntetePage lang={lang} titre={c.titre} intro={c.intro} image={photo} cadrage="50% 42%" fil={[{ label: c.titre }]} />
+  <EntetePage lang={lang} titre={c.titre} intro={c.intro} image={photo} cadrage="45% 60%" fil={[{ label: c.titre }]} />
   <section class="section">
     <div class="conteneur contact">
       <div class="contact__infos">

@@ -5,7 +5,7 @@ import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
 import photoVente from '../assets/accueil/tiggo-8-pro.jpg';
-import photoLocation from '../assets/location/changan-cs95.jpg';
+import photoLocation from '../assets/location/toyota-land-cruiser-250.jpg';
 import { site, filAriane, messages } from '../lib/site';
 import type { NomIcone } from '../lib/icones';
 import { type Lang, t, lien, trad } from '../i18n';
@@ -39,7 +39,7 @@ const jsonld = [
       </div>
       <div class="duo">
         <article class="duo__carte revele">
-          <div class="duo__photo"><Image src={photoVente} alt={d.accueil_.legendes[0]} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /></div>
+          <a class="duo__photo" href={lien(lang, 'vente')} aria-label={d.bouton.voirVente}><Image src={photoVente} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /></a>
           <div class="duo__corps">
             <span class="surtitre">{s.vente.surtitre}</span>
             <h3>{s.vente.titre}</h3>
@@ -51,7 +51,7 @@ const jsonld = [
           </div>
         </article>
         <article class="duo__carte revele" style="transition-delay:90ms">
-          <div class="duo__photo"><Image src={photoLocation} alt={d.accueil_.location.legende} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /></div>
+          <a class="duo__photo" href={lien(lang, 'location')} aria-label={d.bouton.voirLocation}><Image src={photoLocation} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /></a>
           <div class="duo__corps">
             <span class="surtitre">{s.courte.surtitre}</span>
             <h3>{s.courte.titre}</h3>
@@ -155,8 +155,10 @@ const jsonld = [
   .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 8px; }
   .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
   .duo__carte { display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; background: #fff; border: 1px solid var(--bord); box-shadow: var(--ombre); }
-  .duo__photo { aspect-ratio: 16 / 9; overflow: hidden; }
-  .duo__photo :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .duo__photo { display: block; aspect-ratio: 16 / 9; overflow: hidden; }
+  .duo__photo :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
+  .duo__photo:hover :global(img) { transform: scale(1.04); }
+  @media (prefers-reduced-motion: reduce) { .duo__photo:hover :global(img) { transform: none; } }
   .duo__corps { display: flex; flex-direction: column; flex: 1; padding: clamp(20px, 3vw, 30px); }
   .duo__corps h3 { font-size: clamp(1.3rem, 2.4vw, 1.6rem); }
   .duo__corps p { color: var(--texte-doux); }

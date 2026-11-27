@@ -10,8 +10,8 @@ import IconeWhatsApp from '../components/IconeWhatsApp.astro';
 import slideVente from '../assets/accueil/tiggo-8-pro.jpg';
 import slideInterieur from '../assets/accueil/interieur-uni-k.jpg';
 import slideFlotte from '../assets/location/kia-sorento.jpg';
-import photoLocation from '../assets/location/changan-cs95.jpg';
-import photoAppel from '../assets/location/changan-cs95-2.jpg';
+import photoLocation from '../assets/accueil/flotte-imavaita.jpg';
+import photoAppel from '../assets/location/changan-hunter-plus-2.jpg';
 import { site, waLink, getVente, getVehicules, marquesVente, adresseComplete, entreprise, messages, infos } from '../lib/site';
 import type { NomIcone } from '../lib/icones';
 import { type Lang, t, lien, trad } from '../i18n';
@@ -92,7 +92,7 @@ const jsonld = await entreprise(Astro.site, lang);
       </div>
       <div class="poles">
         <article class="pole revele">
-          <div class="pole__photo"><Image src={photoLocation} alt={a.location.legende} widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="cle" />{a.une.location}</span></div>
+          <a href={lien(lang, 'location')} class="pole__photo" aria-label={d.bouton.voirLocation}><Image src={photoLocation} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="cle" />{a.une.location}</span></a>
           <div class="pole__corps">
             <h3>{p.location.titre}</h3>
             <p>{p.location.texte}</p>
@@ -104,7 +104,7 @@ const jsonld = await entreprise(Astro.site, lang);
           </div>
         </article>
         <article class="pole revele" style="transition-delay:90ms">
-          <div class="pole__photo"><Image src={slideVente} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="etiquette" />{a.une.vente}</span></div>
+          <a href={lien(lang, 'vente')} class="pole__photo" aria-label={d.bouton.voirVente}><Image src={slideVente} alt="" widths={[480, 760]} sizes="(max-width: 900px) 100vw, 560px" quality={62} loading="lazy" /><span class="pole__tag"><Icone nom="etiquette" />{a.une.vente}</span></a>
           <div class="pole__corps">
             <h3>{p.vente.titre}</h3>
             <p>{p.vente.texte(vente.length, marques.length)}</p>
@@ -326,7 +326,7 @@ const jsonld = await entreprise(Astro.site, lang);
   .poles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
   .pole { display: flex; flex-direction: column; border-radius: 24px; overflow: hidden; background: #fff; border: 1px solid var(--bord); box-shadow: var(--ombre); transition: transform .3s ease, box-shadow .3s ease; }
   .pole:hover { transform: translateY(-4px); box-shadow: var(--ombre-forte); }
-  .pole__photo { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--marine-900); }
+  .pole__photo { display: block; position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: var(--marine-900); }
   .pole__photo :global(img) { width: 100%; height: 100%; object-fit: cover; transition: transform .6s ease; }
   .pole:hover .pole__photo :global(img) { transform: scale(1.04); }
   .pole__photo::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(0 27 64 / .55), transparent 45%); }
