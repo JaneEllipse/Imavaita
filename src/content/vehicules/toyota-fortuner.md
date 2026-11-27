@@ -4,7 +4,10 @@ marque: Toyota
 modele: Fortuner
 categorie: SUV / 4x4
 couverture: ../../assets/location/toyota-fortuner.jpg
-galerie: []
+galerie:
+  - ../../assets/location/toyota-fortuner-2.jpg
+  - ../../assets/location/toyota-fortuner-3.jpg
+  - ../../assets/location/toyota-fortuner-4.jpg
 options: [Avec ou sans chauffeur, Kilométrage illimité au Togo, Livraison gratuite dans le Grand Lomé]
 statut: publie
 a_la_une: false

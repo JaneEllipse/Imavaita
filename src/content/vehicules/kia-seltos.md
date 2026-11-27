@@ -7,6 +7,7 @@ couverture: ../../assets/location/kia-seltos.jpg
 galerie:
   - ../../assets/location/kia-seltos-2.jpg
   - ../../assets/location/kia-seltos-3.jpg
+  - ../../assets/location/kia-seltos-4.jpg
 options: [Avec ou sans chauffeur, Kilométrage illimité au Togo, Livraison gratuite dans le Grand Lomé]
 statut: publie
 a_la_une: true
