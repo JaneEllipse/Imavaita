@@ -4,8 +4,9 @@ import Base from '../layouts/Base.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
-import photoVente from '../assets/accueil/tiggo-8-pro.jpg';
-import photoLocation from '../assets/location/toyota-land-cruiser-250.jpg';
+import photoVente from '../assets/pages/services-vente.jpg';
+import photoLocation from '../assets/pages/services-location.jpg';
+import banniere from '../assets/pages/services-banniere.jpg';
 import { site, filAriane, messages } from '../lib/site';
 import type { NomIcone } from '../lib/icones';
 import { type Lang, t, lien, trad } from '../i18n';
@@ -25,7 +26,7 @@ const jsonld = [
 ];
 ---
 <Base lang={lang} route="services" titre={s.titre} titreSeo={s.titreSeo} description={s.description} jsonld={jsonld}>
-  <EntetePage lang={lang} surtitre={s.titre} titre={s.h1} intro={s.intro} fil={[{ label: s.titre }]}>
+  <EntetePage lang={lang} surtitre={s.titre} titre={s.h1} intro={s.intro} image={banniere} cadrage="70% 55%" fil={[{ label: s.titre }]}>
     <nav class="sommaire" aria-label={s.titre}>
       {s.sommaire.map((libelle, i) => <a href={`#${ancres[i]}`}>{libelle}</a>)}
     </nav>

@@ -4,7 +4,7 @@ import CarteVehicule from '../components/CarteVehicule.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
-import banniere from '../assets/accueil/flotte-alignee.jpg';
+import banniere from '../assets/pages/location-banniere.jpg';
 import { site, getVehicules, filAriane, messages, infos } from '../lib/site';
 import type { NomIcone } from '../lib/icones';
 import { type Lang, t, lien } from '../i18n';
@@ -28,7 +28,7 @@ const icone = (c: string): NomIcone => ({ 'SUV / 4x4': 'suv', Berline: 'berline'
 const points: [NomIcone, string][] = d.accueil_.location.points.map((p, i) => [(['route', 'jauge', 'volant'] as NomIcone[])[i], p]);
 ---
 <Base lang={lang} route="location" titre={l.titre} titreSeo={l.titreSeo} description={l.description(categories.map(nomCat).join(', '))} image={banniere} jsonld={jsonld}>
-  <EntetePage lang={lang} titre={l.titre} intro={l.intro} image={banniere} cadrage="72% 62%" fil={[{ label: l.titre }]}>
+  <EntetePage lang={lang} titre={l.titre} intro={l.intro} image={banniere} cadrage="60% 60%" fil={[{ label: l.titre }]}>
     <ul class="ep-points">{points.map(([i, p]) => <li><Icone nom={i} />{p}</li>)}</ul>
   </EntetePage>
   <section class="section section--catalogue section--pierre">
