@@ -92,7 +92,7 @@ const fr = {
       ['Location', 'avec ou sans chauffeur'],
       ['Réponse rapide', 'sur WhatsApp'],
     ],
-    legendes: ['Chery Tiggo 8 Pro · en vente', 'Intérieur Changan UNI-K', 'Kia Sorento · en location'],
+    legendes: ['Chery Tiggo 8 Pro · en vente', 'Intérieur Changan UNI-K', 'Notre flotte de location'],
     marquesTitre: 'Les marques de notre catalogue',
     vente: { surtitre: 'Catalogue de ventes', titre: 'Véhicules en vente', tous: (n: number) => `Voir les ${n} modèles` },
     poles: {
