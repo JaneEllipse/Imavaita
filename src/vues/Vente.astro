@@ -6,7 +6,7 @@ import BlocCatalogue from '../components/BlocCatalogue.astro';
 import BoutonWhatsApp from '../components/BoutonWhatsApp.astro';
 import EntetePage from '../components/EntetePage.astro';
 import Icone from '../components/Icone.astro';
-import banniere from '../assets/accueil/starray.jpg';
+import banniere from '../assets/accueil/banniere-vente.jpg';
 import { site, getVente, marquesVente, filAriane, messages, nomVente } from '../lib/site';
 import type { NomIcone } from '../lib/icones';
 import { type Lang, t, lien } from '../i18n';
@@ -53,7 +53,7 @@ const jsonld = [
 ];
 ---
 <Base lang={lang} route="vente" titre={v.titre} titreSeo={v.titreSeo} description={v.description(vehicules.length, marques.join(', '))} image={banniere} jsonld={jsonld}>
-  <EntetePage lang={lang} surtitre={d.catalogue.surtitre} titre={v.titre} intro={v.intro} image={banniere} fil={[{ label: v.titre }]}>
+  <EntetePage lang={lang} surtitre={d.catalogue.surtitre} titre={v.titre} intro={v.intro} image={banniere} cadrage="60% 55%" fil={[{ label: v.titre }]}>
     {site.catalogue_pdf && (
       <div class="ep-actions">
         <a class="btn btn--orange" href={site.catalogue_pdf} target="_blank" rel="noopener" data-pdf="consulter"><Icone nom="oeil" />{d.bouton.consulterPdf}</a>
